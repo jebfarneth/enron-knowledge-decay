@@ -1,0 +1,12 @@
+enron_mail_20110402.tar.gz
+maildir/
+*.parquet
+venv/
+emails.csv
+archive.zip
+*.npy
+*.graphml
+expertise_profiles.parquet
+mini_demo.html
+*_demo.html
+_archive/
