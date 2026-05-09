@@ -35,3 +35,22 @@ This repository contains both the analytical pipeline and the generated dashboar
 - `dashboard_data.json`, `topic_categories.json`, `topic_words.json`, and `clean_names.json` are exported artifacts used by the dashboard.
 - Raw Enron corpus files, virtual environments, parquet files, embedding arrays, and graph artifacts are excluded from GitHub for size and cleanliness.
 
+
+## Pipeline Order
+
+The public dashboard is generated from a multi-stage Python pipeline:
+
+1. `pipeline/ingest.py` converts the raw Enron `emails.csv` export into structured parquet data.
+2. `pipeline/clean_data.py` resolves sender identities, removes system accounts, and normalizes duplicate aliases.
+3. `pipeline/build_nlp_graph.py` applies BERTopic and sentence-transformer embeddings, builds expertise profiles, and exports the knowledge graph.
+4. `pipeline/decay_simulation.py` computes employee-level knowledge-risk and departure-impact metrics.
+5. `pipeline/oi_simulation.py` runs the organizational-impact recovery simulation used by the dashboard.
+6. `pipeline/export_dashboard_data.py` combines graph outputs, risk scores, topic labels, role metadata, descriptions, and simulation results into `dashboard_data.json`.
+7. `pipeline/generate_descriptions.py` is an optional enrichment step that converts already-computed metrics into concise dashboard briefings.
+
+The current public dashboard is implemented as a static browser application using `index.html`, `styles.css`, and `app.js`.
+
+## Prototypes
+
+`prototypes/streamlit_dashboard.py` preserves an earlier Streamlit dashboard prototype. It is retained for development history only and is not part of the current public dashboard path.
+
