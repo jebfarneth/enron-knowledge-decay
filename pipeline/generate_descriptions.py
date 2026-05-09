@@ -1,7 +1,29 @@
 #!/usr/bin/env python3
 """
-Generate per-person descriptions for the top 50 people by risk_score using Claude API.
-People ranked 51-200 get a short computed description. Saves updated dashboard_data.json.
+generate_descriptions.py
+
+Optional dashboard-enrichment step that generates short executive briefings for
+high-risk employees after the analytical pipeline has already computed scores,
+topics, quadrants, communication partners, and recovery metrics.
+
+The top 50 employees by risk_score receive Claude-generated descriptions using
+only structured fields from dashboard_data.json. Employees ranked 51-200 receive
+deterministic computed descriptions. The updated descriptions are written back
+to dashboard_data.json for display in the browser dashboard.
+
+Inputs:
+    dashboard_data.json
+
+Outputs:
+    dashboard_data.json
+
+Usage:
+    ANTHROPIC_API_KEY=... python pipeline/generate_descriptions.py
+
+Notes:
+    This file does not determine risk scores, topic assignments, graph metrics,
+    or recovery estimates. It only translates already-computed metrics into
+    concise human-readable dashboard copy.
 """
 
 import json
