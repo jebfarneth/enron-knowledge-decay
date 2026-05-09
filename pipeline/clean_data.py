@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 """
-clean_data.py — Enron name resolution and system-account removal.
+clean_data.py
 
-Phase 1: Build email → display-name lookup from emails.csv X-From headers.
-Phase 2: Apply REMOVE list and NAME_FIXES overrides.
-Phase 3: Print all discovered/fixed/unknown names for verification.
-Phase 4: Write clean_names.json for use by export_dashboard_data.py.
+Resolves Enron email addresses into display names and removes system accounts,
+newsletter senders, malformed addresses, duplicate aliases, and non-person
+entities before dashboard export.
+
+Pipeline stages:
+    1. Scan emails.csv for X-From headers and build an email-to-display-name map.
+    2. Apply explicit removal rules for system accounts and non-person senders.
+    3. Apply manual name fixes and duplicate alias mappings.
+    4. Print discovered, fixed, removed, and unresolved names for inspection.
+    5. Write clean_names.json for export_dashboard_data.py.
+
+Inputs:
+    emails.csv
+    risk_scores.parquet
+
+Outputs:
+    clean_names.json
 
 Usage:
-  python3 clean_data.py
+    python pipeline/clean_data.py
+
+Notes:
+    The explicit name-fix and removal dictionaries are part of the data-cleaning
+    methodology. They document how noisy Enron email identities were normalized
+    before organizational risk scoring.
 """
 
 import csv
