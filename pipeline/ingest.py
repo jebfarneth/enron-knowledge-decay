@@ -1,5 +1,31 @@
+#!/usr/bin/env python3
+"""
+ingest.py
+
+Converts the raw Enron `emails.csv` export into a structured parquet file for
+the downstream NLP and knowledge-graph pipeline.
+
+The script parses message headers, sender and recipient fields, dates, subjects,
+and plain-text bodies while preserving malformed records for auditability.
+
+Inputs:
+    emails.csv
+
+Outputs:
+    enron_emails.parquet
+
+Usage:
+    python pipeline/ingest.py
+
+Notes:
+    The current ingestion path targets the public Enron email corpus. The TODO
+    below documents the intended extension path for client data formats such as
+    CSV exports, mailbox exports, Slack JSON, or other organizational archives.
+"""
+
 import email
 import email.utils
+
 import pandas as pd
 
 # TODO: Generalize ingestion layer to accept client data formats
