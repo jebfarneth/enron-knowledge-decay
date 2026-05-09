@@ -25,3 +25,13 @@ Enron Email Corpus. Originally prepared by the CALO Project at Carnegie Mellon U
 ## Author
 
 Jeb Farneth · Independent Research · March 2026
+
+## Repository Structure
+
+This repository contains both the analytical pipeline and the generated dashboard layer.
+
+- `pipeline/` contains the Python NLP and modeling pipeline used to preprocess the Enron corpus, run BERTopic topic modeling, construct the knowledge graph, compute employee risk scores, simulate organizational knowledge decay, and export dashboard-ready data.
+- `index.html` is the static interactive dashboard generated from the pipeline outputs.
+- `dashboard_data.json`, `topic_categories.json`, `topic_words.json`, and `clean_names.json` are exported artifacts used by the dashboard.
+- Raw Enron corpus files, virtual environments, parquet files, embedding arrays, and graph artifacts are excluded from GitHub for size and cleanliness.
+
