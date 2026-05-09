@@ -1,3 +1,31 @@
+#!/usr/bin/env python3
+"""
+oi_simulation.py
+
+Runs the organizational-impact recovery simulation used by the Enron dashboard.
+
+The simulation models how knowledge work is rerouted after employee departure,
+including successor capacity, ramp-up curves, partial/full routing quality,
+memory accumulation, expertise upgrades, permanent knowledge loss detection,
+and capped routing logs for dashboard inspection.
+
+Inputs:
+    knowledge_graph.graphml
+    expertise_profiles.parquet
+    risk_scores.parquet
+
+Outputs:
+    organizational_impact_simulation.json
+
+Usage:
+    python pipeline/oi_simulation.py
+
+Notes:
+    The simulation uses fixed random seeds for reproducibility. Agent memory,
+    bandwidth, and ramp-up parameters are intentionally explicit so the recovery
+    model can be audited and adjusted.
+"""
+
 import warnings
 warnings.filterwarnings("ignore")
 
