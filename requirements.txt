@@ -1,0 +1,11 @@
+anthropic
+bertopic
+sentence-transformers
+hdbscan
+pandas
+numpy
+networkx
+scikit-learn
+umap-learn
+matplotlib
+pyarrow
