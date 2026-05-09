@@ -2,6 +2,10 @@
 
 *Quantifying institutional knowledge risk, departure cascades, and AI substitution exposure across 517,000 emails and 200 employees.*
 
+**Live Demo:** https://www.jebfarneth.com/enron  
+**Repository Type:** Python NLP/modeling pipeline + static interactive dashboard  
+**Core Techniques:** Topic modeling, graph analytics, organizational simulation, retrospective validation
+
 ## Abstract
 
 This project develops an original analytical framework for measuring organizational knowledge concentration risk using the Enron Corporation email corpus (517,401 emails, 200 employees, 1998–2002). Employees are scored on two independent axes, Knowledge Risk and Positional Impact, producing a four-quadrant classification system (Organizational Emergency, Silent Threat, Replaceable Executive, Low Priority). A 12-month decay simulation models recovery trajectories following individual and simultaneous departures, with a non-linear cascade amplification formula that penalizes topic overlap between departing employees. An AI substitution layer scores 13 knowledge categories on three dimensions of automability and projects residual human knowledge gaps from 2024 to 2032. The model's predictions were validated retrospectively against documented Enron collapse outcomes sourced from the Powers Report, FBI investigation records, Senate Permanent Subcommittee findings, DOJ indictments, FERC reports, and the Supreme Court opinion in Skilling v. United States. Final concordance: 72% across 18 testable predictions (13 hits, 2 partial, 1 contextual, 2 known misses).
@@ -16,7 +20,13 @@ The model identifies four employees as Organizational Emergency classifications 
 
 ## Tech Stack
 
-Single-file HTML/JavaScript dashboard (D3.js v7), Python data pipeline (BERTopic, sentence-transformers, HDBSCAN, pandas, NetworkX). All visualization and simulation logic executes client-side with no backend dependencies.
+**Modeling / Data Pipeline:** Python, pandas, NumPy, BERTopic, sentence-transformers, HDBSCAN, NetworkX, parquet, GraphML.
+
+**Dashboard:** Static browser application using HTML, CSS, JavaScript, and D3.js. The dashboard runs client-side with no backend dependencies.
+
+**Pipeline Outputs:** `dashboard_data.json`, `topic_categories.json`, `topic_words.json`, `clean_names.json`.
+
+**Deployment:** Hosted as a static site at `jebfarneth.com/enron`.
 
 ## Data Source
 
@@ -25,6 +35,10 @@ Enron Email Corpus. Originally prepared by the CALO Project at Carnegie Mellon U
 ## Author
 
 Jeb Farneth · Independent Research · March 2026
+
+## What This Project Demonstrates
+
+This project demonstrates an end-to-end analytical product workflow: raw corpus ingestion, identity resolution, NLP topic modeling, graph construction, employee-level risk scoring, simulation design, historical validation, and browser-based dashboard deployment. The result is not a notebook or static report, but an interactive system for exploring organizational knowledge concentration and departure risk.
 
 ## Repository Structure
 
