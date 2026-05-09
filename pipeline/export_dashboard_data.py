@@ -1,9 +1,41 @@
+#!/usr/bin/env python3
+"""
+export_dashboard_data.py
+
+Builds the dashboard-ready JSON artifact used by the Enron interactive
+knowledge-decay dashboard.
+
+This script combines graph outputs, expertise profiles, topic labels, cleaned
+name mappings, role metadata, hand-curated duplicate/system-account filters,
+employee descriptions, quadrant classifications, and simulation outputs into
+the final `dashboard_data.json` consumed by the browser dashboard.
+
+Inputs:
+    knowledge_graph.graphml
+    expertise_profiles.parquet
+    clean_names.json
+    topic_categories.json
+    topic_words.json
+
+Outputs:
+    dashboard_data.json
+
+Usage:
+    python pipeline/export_dashboard_data.py
+
+Notes:
+    The curation rules in this file are intentionally explicit. They document
+    duplicate aliases, system accounts, non-person senders, and role/title
+    corrections that affect the public dashboard output.
+"""
+
 import json
 import os
 import re
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
 
 # ── Additional removals (on top of clean_names.json) ───────────────────────────
 # Match on email local part (exact) or full email.
