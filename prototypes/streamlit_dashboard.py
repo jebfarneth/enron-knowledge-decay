@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+"""
+streamlit_dashboard.py
+
+Legacy Streamlit prototype for the Enron knowledge-decay dashboard.
+
+This was the first dashboard layer used after data ingestion and modeling. It
+has been superseded by the static browser dashboard in `index.html`,
+`styles.css`, and `app.js`, which is the current public-facing implementation.
+
+The file is preserved for development history only. It is not part of the
+current production dashboard path.
+"""
+
 import json
 
 import numpy as np
