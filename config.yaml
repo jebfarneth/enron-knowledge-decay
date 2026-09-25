@@ -16,6 +16,7 @@ paths:
   interim: data/interim
   processed: data/processed
   figures: figures
+  results: results
 
 ingest:
   # Analysis window (inclusive). Messages dated outside it are counted in the
@@ -42,5 +43,45 @@ threads:
   # A message replies to the latest earlier message with the same normalized
   # subject that was sent to its sender within this many days.
   max_reply_days: 14
+
+formal_rank:
+  # Shetty & Adibi (2004) title list for Enron employees, as archived by the
+  # Internet Archive on 2013-09-18 (the original ISI page is offline).
+  url: http://web.archive.org/web/20130918164648id_/http://www.isi.edu:80/~adibi/Enron/Enron_Employee_Status.xls
+  filename: Enron_Employee_Status.xls
+  sha256: 5f67ea06209a51a57c5b05608cc9f56c58c97e62892735eed4232313ff54c071
+  # Ordinal seniority level for each title in the list (higher = more senior).
+  # Rows with no title are excluded.
+  levels:
+    CEO: 6
+    President: 5
+    Managing Director: 4
+    Vice President: 3
+    Director: 2
+    Director of Trading: 2
+    Manager: 1
+    In House Lawyer: 1
+    Trader: 0
+    Employee: 0
+  # Reviewed corrections: spelling errors in the 2004 list mapped to the
+  # person key found in the corpus. Every entry was checked against the
+  # person's own sent mail. Names not listed and not found stay unmatched
+  # (e.g. "Jacob Thomas": the thomas-p mailbox belongs to Paul D. Thomas).
+  corrections:
+    Micheal Swerzzbin: michael swerzbin
+    James Schweiger: james schwieger
+    TimothyHeizenrader: timothy heizenrader
+    Douglas Gilberth-Smith: douglas gilbert-smith
+    Thomos Alonso: thomas alonso
+    Cristopher Foster: christopher foster
+    John Lloldra: john llodra
+    Eric Lynder: eric linder
+    Daron Giron: darron giron
+    John Giffith: john griffith
+    Harpreet Arora: harry arora
+
+evaluation:
+  # Person-level bootstrap resamples for 95% intervals.
+  bootstrap_reps: 1000
 
 random_seed: 42
