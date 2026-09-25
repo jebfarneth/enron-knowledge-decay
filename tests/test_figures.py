@@ -18,5 +18,5 @@ def test_baselines_figure_orders_measures_by_accuracy(tmp_path):
                           "ci_low": [0.57, 0.53, 0.44], "ci_high": [0.72, 0.69, 0.60]})
     fig = draw_baselines(table)
     labels = [t.get_text() for t in fig.axes[0].get_yticklabels()]
-    assert labels[-1] == "Degree (distinct contacts)" and labels[0] == "Email sent (weighted)"
+    assert labels[-1] == "Degree (distinct contacts)" and labels[0] == "Email sent (messages)"
     save(fig, tmp_path, "baselines")
