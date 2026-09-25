@@ -8,7 +8,7 @@ corpus:
   filename: enron_mail_20150507.tar.gz
   # CMU does not publish a checksum. This SHA-256 was recorded on the first
   # download (2026-09-25); any later download must match it byte for byte.
-  sha256: null
+  sha256: b3da1b3fe0369ec3140bb4fbce94702c33b7da810ec15d718b3fadf5cd748ca7
   bytes: 443254787
 
 paths:
@@ -30,5 +30,10 @@ senders:
   # template once digits and times are masked (e.g. scheduling feeds).
   min_messages: 50
   template_share: 0.5
+
+threads:
+  # A message replies to the latest earlier message with the same normalized
+  # subject that was sent to its sender within this many days.
+  max_reply_days: 14
 
 random_seed: 42
