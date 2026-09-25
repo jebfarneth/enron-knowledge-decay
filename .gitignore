@@ -10,3 +10,11 @@ expertise_profiles.parquet
 mini_demo.html
 *_demo.html
 _archive/
+
+# Rebuild: raw corpus and generated data never enter git
+data/raw/
+data/interim/
+data/processed/
+.venv/
+__pycache__/
+.pytest_cache/
