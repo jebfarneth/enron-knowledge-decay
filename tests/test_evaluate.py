@@ -86,3 +86,29 @@ def test_gold_table_scores_pairs_and_splits_by_type():
     assert table.loc["all", "accuracy"] == pytest.approx(2.5 / 3)
     assert table.loc["core", "accuracy"] == 0.5 and table.loc["inter", "pairs"] == 1
     assert table.loc["all", "ci_low"] <= table.loc["all", "accuracy"] <= table.loc["all", "ci_high"]
+
+
+def test_bootstrap_matches_an_independent_brute_force_oracle():
+    levels = np.array([3, 2, 2, 1, 0, 0, 1, 3, 2, 0], dtype=float)
+    scores = np.array([9, 4, 7, 3, 1, 5, 2, 6, 8, 0], dtype=float)
+    rng = np.random.default_rng(7)
+    draws = []
+    for _ in range(300):
+        idx = rng.integers(0, len(levels), len(levels))
+        credit = total = 0.0
+        for a in range(len(idx)):
+            for b in range(a + 1, len(idx)):
+                la, lb, sa, sb = levels[idx[a]], levels[idx[b]], scores[idx[a]], scores[idx[b]]
+                if la == lb:
+                    continue
+                total += 1
+                credit += 0.5 if sa == sb else float((la > lb) == (sa > sb))
+        draws.append(credit / total)
+    expected = tuple(float(v) for v in np.percentile(draws, [2.5, 97.5]))
+    assert bootstrap_interval(levels, scores, reps=300, seed=7) == pytest.approx(expected)
+    assert expected[0] < 0.9 < expected[1]  # a non-degenerate interval
+
+
+def test_near_ties_are_symmetric():
+    a, b = 17.80489355345007, 17.804893571254965
+    assert pairwise_accuracy(np.array([0.0, 1.0]), np.array([a, b])) == pairwise_accuracy(np.array([1.0, 0.0]), np.array([b, a]))

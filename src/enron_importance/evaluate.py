@@ -38,10 +38,15 @@ BASELINES = ["degree", "in_strength", "out_strength", "pagerank", "betweenness"]
 RTOL = 1e-9
 
 
+def _near(a: np.ndarray, b: np.ndarray, rtol: float) -> np.ndarray:
+    """Symmetric relative closeness: |a - b| <= rtol * max(|a|, |b|)."""
+    return np.abs(a - b) <= rtol * np.maximum(np.abs(a), np.abs(b))
+
+
 def _sign_gap(values: np.ndarray, rtol: float = 0.0) -> np.ndarray:
     gap = np.sign(values[:, None] - values[None, :])
     if rtol:
-        gap[np.isclose(values[:, None], values[None, :], rtol=rtol, atol=0.0)] = 0
+        gap[_near(values[:, None], values[None, :], rtol)] = 0
     return gap
 
 
@@ -159,7 +164,7 @@ def sensitivity(config: dict, ranks: pd.DataFrame, measures: pd.DataFrame) -> pd
 
 def pair_credit(dominant: np.ndarray, subordinate: np.ndarray) -> np.ndarray:
     """1 when the dominant score is higher, 0.5 for a tie (relative 1e-9), 0 otherwise."""
-    tie = np.isclose(dominant, subordinate, rtol=RTOL, atol=0.0)
+    tie = _near(dominant, subordinate, RTOL)
     return np.where(tie, 0.5, (dominant > subordinate).astype(float))
 
 
