@@ -89,3 +89,11 @@ def test_cache_is_rebuilt_when_its_stamp_does_not_match(tmp_path):
     manifest = prepare(config)
     assert manifest["funnel"]["parsed_files"] == 4
     assert json.loads(stamp.read_text())["corpus_sha256"] == config["corpus"]["sha256"]
+
+
+def test_an_altered_parsed_cache_is_rebuilt(tmp_path):
+    config = build(tmp_path)
+    prepare(config)
+    table = tmp_path / "interim" / "messages_raw.parquet"
+    pd.read_parquet(table).head(1).assign(body="POISONED CACHE TEXT").to_parquet(table, index=False)
+    assert prepare(config)["funnel"]["parsed_files"] == 4

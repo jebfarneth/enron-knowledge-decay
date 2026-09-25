@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -41,16 +42,24 @@ def parsed_messages(config: dict) -> pd.DataFrame:
     """The parsed archive, re-parsed unless the cache was built from this archive by this parser.
 
     The archive is verified against its pinned size and SHA-256 on every run,
-    cached or not.
+    cached or not. The cache stamp records the archive checksum, the parser's
+    source, the Python and dependency versions (uv.lock) and the parsed
+    table's own checksum, which is checked before the cache is reused.
     """
     archive = ensure_corpus(config)
     raw_table = config["paths"]["interim"] / "messages_raw.parquet"
     stamp_path = raw_table.with_suffix(".json")
-    stamp = {"corpus_sha256": config["corpus"]["sha256"], "parser_sha256": code_hash("ingest.py")}
-    cached = raw_table.exists() and stamp_path.exists() and json.loads(stamp_path.read_text()) == stamp
+    lock = PACKAGE.parents[1] / "uv.lock"
+    inputs = {"corpus_sha256": config["corpus"]["sha256"], "parser_sha256": code_hash("ingest.py"),
+              "python": sys.version.split()[0], "uv_lock_sha256": sha256_of(lock) if lock.exists() else None}
+    stamp = json.loads(stamp_path.read_text()) if stamp_path.exists() else {}
+    cached = (raw_table.exists() and {k: stamp.get(k) for k in inputs} == inputs
+              and stamp.get("output_sha256") == sha256_of(raw_table))
     if not cached:
-        write_messages(iter_archive(archive), raw_table)
-        stamp_path.write_text(json.dumps(stamp, indent=2) + "\n")
+        partial = raw_table.with_suffix(".parquet.part")
+        write_messages(iter_archive(archive), partial)
+        partial.replace(raw_table)
+        stamp_path.write_text(json.dumps({**inputs, "output_sha256": sha256_of(raw_table)}, indent=2) + "\n")
     return pd.read_parquet(raw_table)
 
 

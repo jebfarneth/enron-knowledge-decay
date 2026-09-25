@@ -152,10 +152,10 @@ def sensitivity(config: dict, ranks: pd.DataFrame, measures: pd.DataFrame) -> pd
     domain = config["senders"]["internal_domain"]
     graphs = {f"messages with at most {n} recipients": build_edges(messages, resolve, domain, max_recipients=n)
               for n in config["evaluation"]["recipient_limits"]}
+    # People-only graph rebuilt from messages, so messages sent stays an exact count.
     people_only = set(measures.loc[measures["entity_type"] == "person", "person_key"])
-    edges, _ = build_edges(messages, resolve, domain)
-    keep = edges["source"].isin(people_only) & edges["target"].isin(people_only)
-    graphs["people-only graph"] = (edges[keep], None)
+    graphs["people-only graph"] = build_edges(messages[messages["sender_person"].isin(people_only)],
+                                              lambda a: r if (r := resolve(a)) in people_only else None, domain)
     for name, (graph_edges, sent) in graphs.items():
         variant = centrality(graph_edges, sent, betweenness=False)
         tables.append(evaluation_table(attach(labels["main"], variant), fast, reps, seed).assign(variant=name))
@@ -201,19 +201,19 @@ def main() -> None:
     ranked = attach(label_table(ranks), measures)
     table = evaluation_table(ranked, BASELINES, reps, seed)
     results.mkdir(parents=True, exist_ok=True)
-    table.to_csv(results / "baselines_formal_rank.csv", index=False, float_format="%.4f")
+    table.to_csv(results / "baselines_formal_rank.csv", index=False, float_format="%.10f")
     paired = paired_table(ranked, BASELINES, reps, seed)
-    paired.to_csv(results / "baselines_paired_differences.csv", index=False, float_format="%.4f")
+    paired.to_csv(results / "baselines_paired_differences.csv", index=False, float_format="%.10f")
     print(f"{len(ranked)} people, {different_level_pairs(ranked['level'].to_numpy()):,} different-level pairs")
     print(table.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
     print(paired.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
     gold = processed / "gold_pairs.parquet"
     if gold.exists():
         gold_results = gold_table(pd.read_parquet(gold), measures, BASELINES, reps, seed)
-        gold_results.to_csv(results / "baselines_gold_standard.csv", index=False, float_format="%.4f")
+        gold_results.to_csv(results / "baselines_gold_standard.csv", index=False, float_format="%.10f")
         print(gold_results.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
     runs = sensitivity(config, ranks, measures)
-    runs.to_csv(results / "baselines_sensitivity.csv", index=False, float_format="%.4f")
+    runs.to_csv(results / "baselines_sensitivity.csv", index=False, float_format="%.10f")
     print(runs.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 
 
