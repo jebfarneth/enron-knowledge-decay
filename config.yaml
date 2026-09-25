@@ -133,7 +133,10 @@ evaluation:
   recipient_limits: [10, 50]
 
 validation:
-  # Messages sampled (fixed seed) to cross-check quote removal against email_reply_parser.
+  # Messages sampled to cross-check quote removal against email_reply_parser.
+  # The seed differs from random_seed, whose sample was used while writing the
+  # cleaner's rules.
   sample_size: 5000
+  seed: 20260926
 
 random_seed: 42
