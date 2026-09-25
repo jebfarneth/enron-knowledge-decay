@@ -143,3 +143,25 @@ def test_day_first_from_line_is_cut():
 def test_underscore_separator_without_an_ad_is_kept():
     body = "Agenda\n____________________\n1. Budget\n2. Hiring"
     assert authored_text(body) == body
+
+
+# Negative controls from the 2026-09-25 audit: authored prose that resembles a header.
+def test_prose_starting_with_received_from_is_kept():
+    body = "Received: from supplier, 20 barrels.\nPlease book them against the March deal."
+    assert authored_text(body) == body
+
+
+def test_agenda_with_a_date_and_to_line_is_kept():
+    body = "Meeting agenda\n05/14/2001 09:00 AM\nTo: operations staff\nWe will review the outage plan and staffing."
+    assert authored_text(body) == body
+
+
+def test_spanish_original_message_separator_is_cut():
+    body = "De acuerdo, gracias.\n\n-----Mensaje original-----\nDe: Sara\nPara: Juan\nAsunto: contrato\n\nold"
+    assert authored_text(body) == "De acuerdo, gracias."
+
+
+def test_name_and_date_on_one_line_is_cut():
+    body = ("Just allocate the actuals at the end of each month.\n\nD\n\n\n"
+            "   Aimee Lannou                03/11/2000 09:49 AM\n\nTo: Daren J Farmer/HOU/ECT@ECT\ncc:\nSubject: Re: Allocation\n\nold\n")
+    assert authored_text(body) == "Just allocate the actuals at the end of each month.\n\nD"
