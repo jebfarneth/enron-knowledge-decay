@@ -18,7 +18,7 @@ import urllib.request
 import pandas as pd
 
 from .config import load_config
-from .identity import build_identities, normalize_name
+from .identity import normalize_name
 
 
 def fetch_title_list(config: dict):
@@ -34,14 +34,17 @@ def fetch_title_list(config: dict):
     return target
 
 
-def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, corrections: dict) -> pd.DataFrame:
+def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, corrections: dict,
+                 aliases: dict | None = None) -> pd.DataFrame:
     """Match title-list rows to identities and attach seniority levels.
 
     `titles` has name and title columns; returns one row per listed person with
     person_key (None if unmatched), level (None if the title is blank or
-    unknown) and how the match was made.
+    unknown) and how the match was made. `aliases` maps name keys to the
+    person key they were merged into by directory ID.
     """
-    known = set(identities["person_key"])
+    aliases = aliases or {}
+    known = set(identities["person_key"].dropna())
     rows = []
     for name, title in zip(titles["name"], titles["title"]):
         name = str(name).strip()
@@ -50,6 +53,8 @@ def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, c
             key, method = corrections[name], "reviewed correction"
         else:
             key, method = normalize_name(name), "normalized name"
+            if key in aliases:
+                key, method = aliases[key], "directory-ID alias"
         if key not in known:
             key, method = None, "unmatched"
         rows.append({"name": name, "title": title, "level": levels.get(title), "person_key": key, "match": method})
@@ -60,11 +65,11 @@ def main() -> None:
     config = load_config()
     spec = config["formal_rank"]
     titles = pd.read_excel(fetch_title_list(config), header=None, names=["name", "title", "note"])
-    messages = pd.read_parquet(config["paths"]["processed"] / "messages.parquet", columns=["sender", "x_from"])
-    identities = build_identities(messages, config["senders"]["internal_domain"])
-    ranks = formal_ranks(titles, identities, spec["levels"], spec["corrections"])
     out = config["paths"]["processed"]
-    identities.to_parquet(out / "identities.parquet", index=False)
+    identities = pd.read_parquet(out / "identities.parquet")
+    aliases = pd.read_parquet(out / "name_aliases.parquet")
+    ranks = formal_ranks(titles, identities, spec["levels"], spec["corrections"],
+                         dict(zip(aliases["name_key"], aliases["person_key"])))
     ranks.to_parquet(out / "formal_rank.parquet", index=False)
     usable = ranks.dropna(subset=["person_key", "level"])
     print(f"Listed {len(ranks)}; matched {ranks['person_key'].notna().sum()}; "

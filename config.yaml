@@ -39,6 +39,21 @@ senders:
   # kept in the communication network but excluded from text analysis.
   routine_repeats: 10
 
+identity:
+  # Synthetic addresses created by the CMU export (missing From) and the Lotus
+  # Notes gateway. Messages from them are attributed only by their own display
+  # name; mail to them is dropped. Addresses shared by several named senders,
+  # none covering half their messages, are added automatically.
+  placeholder_addresses:
+    - no.address@enron.com
+    - 40enron@enron.com
+  # A first/last name is split by middle initial when two initials each appear
+  # on at least this many messages (Mark A Taylor vs Mark E Taylor).
+  min_initial_support: 5
+  # A message without an initial takes the initial its directory ID or address
+  # uses on at least this share of its initialled messages.
+  initial_share: 0.6667
+
 threads:
   # A message replies to the latest earlier message with the same normalized
   # subject that was sent to its sender within this many days.
@@ -79,6 +94,9 @@ formal_rank:
     Daron Giron: darron giron
     John Giffith: john griffith
     Harpreet Arora: harry arora
+    # Homonym: the corpus separates Mark A Taylor and Mark E Taylor. The listed
+    # Mark Taylor is the taylor-m custodian, whose sent mail is Mark E Taylor.
+    Mark Taylor: mark e taylor
 
 evaluation:
   # Person-level bootstrap resamples for 95% intervals.
