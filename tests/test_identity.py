@@ -29,3 +29,15 @@ def test_alias_addresses_merge_into_one_person():
     assert table.loc["anon@enron.com", "person_key"] == "anon@enron.com"
     assert "outside@aol.com" not in table.index
     assert table.loc["f..calger@enron.com", "display_name"] == "Christopher Calger"
+
+
+def test_generational_suffixes_are_dropped():
+    assert normalize_name("Baughman Jr., Don </O=ENRON/OU=NA/CN=RECIPIENTS/CN=DBAUGHM>") == "don baughman"
+    assert normalize_name("Derrick Jr., James </O=ENRON/OU=NA/CN=RECIPIENTS/CN=JDERRIC>") == "james derrick"
+    assert normalize_name("John Smith III") == "john smith"
+
+
+def test_nicknames_resolve_to_one_person():
+    assert normalize_name("Tim Belden") == normalize_name("Timothy Belden") == "timothy belden"
+    assert normalize_name("Schwieger, Jim") == normalize_name("James Schwieger") == "james schwieger"
+    assert normalize_name("Mike Swerzbin") == "michael swerzbin"

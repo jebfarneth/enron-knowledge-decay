@@ -22,6 +22,23 @@ import pandas as pd
 _BRACKETED = re.compile(r"<[^>]*>|\([^)]*\)")
 _NON_LETTER = re.compile(r"[^a-z\s'-]")
 _SPACE = re.compile(r"\s+")
+_SUFFIXES = {"jr", "sr", "ii", "iii", "iv"}
+# Common English nicknames mapped to one canonical first name, so "Tim Belden"
+# and "Timothy Belden" resolve to the same person.
+NICKNAMES = {
+    "tim": "timothy", "mike": "michael", "chris": "christopher", "matt": "matthew",
+    "jeff": "jeffrey", "jeffery": "jeffrey", "geoff": "geoffrey", "geoffery": "geoffrey",
+    "larry": "lawrence", "doug": "douglas", "tom": "thomas", "brad": "bradley",
+    "jim": "james", "jimmy": "james", "bill": "william", "bob": "robert", "rob": "robert",
+    "dan": "daniel", "dave": "david", "steve": "steven", "stephen": "steven", "joe": "joseph",
+    "ken": "kenneth", "rick": "richard", "rich": "richard", "dick": "richard",
+    "andy": "andrew", "greg": "gregory", "ron": "ronald", "tony": "anthony",
+    "sam": "samuel", "ben": "benjamin", "nick": "nicholas", "pete": "peter",
+    "phil": "phillip", "philip": "phillip", "kate": "katherine", "kathy": "katherine",
+    "liz": "elizabeth", "beth": "elizabeth", "sue": "susan", "jenny": "jennifer",
+    "jen": "jennifer", "vince": "vincent", "ed": "edward", "ted": "edward",
+    "stan": "stanley", "fred": "frederick",
+}
 
 
 def normalize_name(display: str | None) -> str | None:
@@ -35,10 +52,11 @@ def normalize_name(display: str | None) -> str | None:
         last, _, first = text.partition(",")
         text = f"{first} {last}"
     words = [w.strip("'-") for w in _SPACE.split(_NON_LETTER.sub(" ", text.lower())) if w.strip("'-")]
-    words = [w for w in words if len(w) > 1]  # drop middle initials
+    words = [w for w in words if len(w) > 1 and w not in _SUFFIXES]  # drop initials and Jr./Sr./III
     if len(words) < 2:
         return None
-    return f"{words[0]} {words[-1]}"
+    first = NICKNAMES.get(words[0], words[0])
+    return f"{first} {words[-1]}"
 
 
 def build_identities(messages: pd.DataFrame, internal_domain: str) -> pd.DataFrame:
