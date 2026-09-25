@@ -50,7 +50,7 @@ def build(tmp_path):
                    "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()},
         "paths": {"raw": raw, "interim": tmp_path / "interim", "processed": tmp_path / "processed"},
         "ingest": {"start": "1998-01-01", "end": "2002-12-31"},
-        "senders": {"internal_domain": "enron.com", "min_messages": 50, "feed_share": 0.9, "top_templates": 3, "routine_repeats": 10},
+        "senders": {"internal_domain": "enron.com", "min_messages": 50, "feed_share": 0.9, "top_templates": 3, "routine_repeats": 10, "speech_act_words": 4},
         "threads": {"max_reply_days": 14},
     }
 

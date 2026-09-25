@@ -20,7 +20,7 @@ from .config import load_config
 from .dedupe import deduplicate, restrict_window
 from .download import ensure_corpus, sha256_of
 from .ingest import iter_archive, write_messages
-from .senders import routine_messages, sender_profiles
+from .senders import automated_messages, routine_messages, sender_profiles, speech_act, structured_record
 from .threads import link_replies
 
 
@@ -48,21 +48,28 @@ def prepare(config: dict) -> dict:
     senders_cfg = config["senders"]
     senders = sender_profiles(messages, senders_cfg["internal_domain"], senders_cfg["min_messages"],
                               senders_cfg["feed_share"], senders_cfg["top_templates"])
-    automated = set(senders.index[senders["automated"]])
-    messages["sender_automated"] = messages["sender"].isin(automated)
+    messages["sender_automated"] = messages["sender"].isin(senders.index[senders["automated"]])
     messages["sender_internal"] = messages["sender"].fillna("").str.endswith("@" + senders_cfg["internal_domain"])
     funnel["senders"] = len(senders)
-    funnel["senders_automated"] = int(senders["automated"].sum())
-    funnel["messages_from_automated_senders"] = int(messages["sender_automated"].sum())
-    messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["sender_automated"]
-    funnel["routine_messages_from_people"] = int(messages["routine"].sum())
+    funnel["senders_flagged"] = int(senders["automated"].sum())
+    funnel["messages_from_flagged_senders"] = int(messages["sender_automated"].sum())
+    messages["automated"] = automated_messages(messages, senders)
+    funnel["automated_messages"] = int(messages["automated"].sum())
+    messages["structured"] = messages["authored"].map(structured_record) & ~messages["automated"]
+    funnel["structured_records"] = int(messages["structured"].sum())
+    messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["automated"]
+    messages["routine_excluded"] = messages["routine"] & ~messages["authored"].map(
+        lambda t: speech_act(t, senders_cfg["speech_act_words"]))
+    funnel["routine_messages"] = int(messages["routine"].sum())
+    funnel["routine_messages_excluded_from_text"] = int(messages["routine_excluded"].sum())
 
     messages = link_replies(messages.reset_index(drop=True), config["threads"]["max_reply_days"])
     funnel["messages_linked_as_replies"] = int(messages["reply_to"].notna().sum())
     funnel["threads"] = int(messages["thread_id"].nunique())
 
-    analysis = (messages["sender_internal"] & ~messages["sender_automated"] & ~messages["routine"]
-                & (messages["authored"] != ""))
+    analysis = (messages["sender_internal"] & ~messages["automated"] & ~messages["structured"]
+                & ~messages["routine_excluded"] & (messages["authored"] != ""))
+    messages["analysis"] = analysis
     funnel["analysis_messages"] = int(analysis.sum())
     funnel["analysis_senders"] = int(messages.loc[analysis, "sender"].nunique())
 

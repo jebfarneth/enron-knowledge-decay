@@ -28,16 +28,20 @@ senders:
   internal_domain: enron.com
   # Templates are the first 80 characters of authored text with digits masked;
   # pure forwards (no authored text) are not counted.
-  # A sender is an automated feed when they have at least `min_messages`
+  # A sender is a feed account when they have at least `min_messages`
   # messages with text and at least `feed_share` of them fall into their
-  # `top_templates` most common templates. Feeds are excluded entirely.
+  # `top_templates` most common templates. From a feed account only messages
+  # whose template repeats are automated; one-off messages are kept.
   min_messages: 50
   top_templates: 3
   feed_share: 0.9
   # A message is routine (e.g. a weekly report blast) when its template repeats
   # at least `routine_repeats` times for the same sender. Routine messages are
-  # kept in the communication network but excluded from text analysis.
+  # kept in the communication network. They are excluded from text analysis
+  # only when their template is longer than `speech_act_words` words, so
+  # repeated short speech acts ("approved", "please print") are kept.
   routine_repeats: 10
+  speech_act_words: 4
 
 identity:
   # Synthetic addresses created by the CMU export (missing From) and the Lotus
