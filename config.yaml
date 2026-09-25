@@ -23,4 +23,12 @@ ingest:
   start: "1998-01-01"
   end: "2002-12-31"
 
+senders:
+  internal_domain: enron.com
+  # A sender is treated as automated when at least `min_messages` of their
+  # messages exist and at least `template_share` of them reduce to the same
+  # template once digits and times are masked (e.g. scheduling feeds).
+  min_messages: 50
+  template_share: 0.5
+
 random_seed: 42
