@@ -25,26 +25,33 @@ _SUBJECT_PREFIX = re.compile(r"^\s*((re|fw|fwd)\s*:\s*)+", re.IGNORECASE)
 _SPACE = re.compile(r"\s+")
 
 
-def normalize_subject(subject: str) -> str:
-    return _SPACE.sub(" ", _SUBJECT_PREFIX.sub("", subject or "")).strip().lower()
+def _text(value) -> str:
+    """Missing values arrive as None or NaN from parquet; treat both as empty."""
+    return value if isinstance(value, str) else ""
 
 
-def normalize_body(body: str) -> str:
-    return _SPACE.sub(" ", body or "").strip().lower()
+def normalize_subject(subject) -> str:
+    return _SPACE.sub(" ", _SUBJECT_PREFIX.sub("", _text(subject))).strip().lower()
 
 
-def content_key(row: pd.Series) -> str:
-    parts = [
-        row["sender"] or "",
-        row["date"].isoformat() if pd.notna(row["date"]) else "",
-        normalize_subject(row["subject"]),
-        normalize_body(row["body"]),
-    ]
-    return hashlib.sha1("\x1f".join(parts).encode("utf-8")).hexdigest()
+def normalize_body(body) -> str:
+    return _SPACE.sub(" ", _text(body)).strip().lower()
 
 
-def folder_rank(folder: str) -> int:
-    folder = (folder or "").lower()
+def content_keys(frame: pd.DataFrame) -> pd.Series:
+    """SHA-1 of sender, timestamp, normalized subject and normalized body, per row."""
+    senders = frame["sender"].map(_text)
+    dates = frame["date"].map(lambda d: d.isoformat() if pd.notna(d) else "")
+    subjects = frame["subject"].map(normalize_subject)
+    bodies = frame["body"].map(normalize_body)
+    return pd.Series(
+        [hashlib.sha1("\x1f".join(parts).encode("utf-8")).hexdigest() for parts in zip(senders, dates, subjects, bodies)],
+        index=frame.index,
+    )
+
+
+def folder_rank(folder) -> int:
+    folder = _text(folder).lower()
     return FOLDER_PRIORITY.index(folder) if folder in FOLDER_PRIORITY else len(FOLDER_PRIORITY)
 
 
@@ -61,7 +68,7 @@ def restrict_window(messages: pd.DataFrame, start: str, end: str) -> tuple[pd.Da
 def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     """Drop duplicate copies, keeping the most authoritative folder's copy."""
     frame = messages.copy()
-    frame["content_key"] = frame.apply(content_key, axis=1)
+    frame["content_key"] = content_keys(frame)
     frame["_rank"] = frame["folder"].map(folder_rank)
     frame = frame.sort_values(["_rank", "path"], kind="stable")
     by_content = frame.duplicated("content_key", keep="first")

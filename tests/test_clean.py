@@ -78,3 +78,39 @@ def test_plain_message_is_unchanged_and_not_flagged():
 def test_pure_forward_has_no_authored_text():
     body = "---------------------- Forwarded by A/HOU/ECT on 01/02/2001 10:00 AM ---------------------------\nold text"
     assert authored_text(body) == ""
+
+
+def test_missing_body_from_parquet_is_empty():
+    assert authored_text(float("nan")) == ""
+    assert not has_quoted_material(None)
+
+
+# Formats found in the corpus that the first version of the cleaner missed.
+FROM_ON = "That's a better idea.  df\n\nFrom:\tLouis Soldano/ENRON@enronXgate on 03/30/2001 07:45 AM\nTo:\tDrew Fossum/ET&S/Enron@ENRON\ncc:\nSubject: Re: filing\n\nold text\n"
+NAME_DATE = "How bout 1?  Thanks. DF\n\nDavid Foti\n02/02/2000 05:44 PM\nTo: Drew Fossum/ET&S/Enron@ENRON\ncc: James Centilli/ET&S/Enron@ENRON\nSubject: meeting\n\nold text\n"
+EXTERNAL_ON = "Lee,\n\nAny problem with that approach?\n\nKay\n\nlee.johnson@ss.ps.ge.com on 12/18/2000 07:02:45 AM\nTo: peterthompson@akllp.com, kay.mann@enron.com\ncc: lee.johnson@ss.ps.ge.com\nSubject: guarantee\n\nold text\n"
+
+
+def test_from_line_with_on_date_is_cut():
+    assert authored_text(FROM_ON) == "That's a better idea.  df"
+
+
+def test_name_line_then_date_line_is_cut():
+    assert authored_text(NAME_DATE) == "How bout 1?  Thanks. DF"
+
+
+def test_external_address_on_date_is_cut():
+    assert authored_text(EXTERNAL_ON) == "Lee,\n\nAny problem with that approach?\n\nKay"
+
+FROM_WITH_DATE = ("to take on more responsibility\n\n-e\n\n\tEnron North America Corp.\n\t\n"
+                  "\tFrom:  Shanna Husser @ EES                           01/26/2001 09:29 AM\n\n"
+                  "To: Eric Bass/HOU/ECT@ECT\ncc:  \nSubject: \n\nold text\n")
+BARE_HEADER = "fill me in.  how can i eavesdrop??\n\nTo: John Arnold/HOU/ECT@ECT\ncc:  \nSubject: Re: NG\n\nold text\n"
+
+
+def test_from_line_with_date_and_company_banner_is_cut():
+    assert authored_text(FROM_WITH_DATE) == "to take on more responsibility\n\n-e"
+
+
+def test_bare_to_cc_subject_block_is_cut():
+    assert authored_text(BARE_HEADER) == "fill me in.  how can i eavesdrop??"

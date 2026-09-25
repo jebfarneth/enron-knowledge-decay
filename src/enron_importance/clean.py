@@ -24,11 +24,26 @@ _MARKERS = [
     re.compile(r"^\s*-{3,}\s*Forwarded by .*$", re.IGNORECASE | re.MULTILINE),
     # Outlook-style header block quoted inline ("From: x" then "Sent:" within two lines).
     re.compile(r"^\s*From:\s.*\n(?:.*\n){0,2}?\s*Sent:\s", re.IGNORECASE | re.MULTILINE),
-    # Lotus Notes reply header: "Name@DOMAIN" or "Name/ORG/DEPT@DOMAIN" line, a date line, then To:.
+    # Lotus Notes reply header: a name or address line, a date line, then To:
+    # ("Kay Mann@ENRON" / "David Foti" then "05/22/2001 03:03 PM" then "To:").
     re.compile(
-        r"^[^\n@]{1,80}@[A-Za-z]+[^\n]*\n\s*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M\s*\n(?:.*\n){0,2}?\s*To:\s",
+        r"^[^\n]{1,80}\n\s*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M\s*\n(?:.*\n){0,2}?\s*To:\s",
         re.MULTILINE,
     ),
+    # Single-line variant: "Name/ENRON@enronXgate on 03/30/2001 07:45 AM" or
+    # "From: X on 12/18/2000 07:02:45 AM", then To:.
+    re.compile(
+        r"^[^\n]{1,160}\bon \d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M\s*\n(?:.*\n){0,1}?\s*To:\s",
+        re.MULTILINE,
+    ),
+    # "From:  Name @ EES      01/26/2001 09:29 AM" (date on the From line), then To:,
+    # optionally preceded by an indented company banner such as "Enron North America Corp.".
+    re.compile(
+        r"^(?:[ \t]+[A-Z][^\n]{0,60}(?:Corp\.|Inc\.|LLC|Ltd\.)[ \t]*\n(?:[ \t]*\n)*)?[ \t]*From:[^\n]*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M[ \t]*\n(?:[ \t]*\n)*[ \t]*To:\s",
+        re.MULTILINE,
+    ),
+    # Bare quoted header block with no name line: "To:" then "cc:" then "Subject:".
+    re.compile(r"^[ \t]*To:[^\n]*\n[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:", re.IGNORECASE | re.MULTILINE),
     # "On <date>, <name> wrote:"
     re.compile(r"^\s*On .{5,120}wrote:\s*$", re.IGNORECASE | re.MULTILINE),
 ]
@@ -54,9 +69,9 @@ def reply_start(body: str) -> int:
     return min(starts, default=len(body))
 
 
-def authored_text(body: str) -> str:
+def authored_text(body) -> str:
     """The part of `body` written by the sender of this message."""
-    body = (body or "").replace("\r\n", "\n").replace("\r", "\n")
+    body = (body if isinstance(body, str) else "").replace("\r\n", "\n").replace("\r", "\n")
     text = body[: reply_start(body)]
     for pattern in _DISCLAIMERS:
         text = pattern.sub("", text)
@@ -65,6 +80,6 @@ def authored_text(body: str) -> str:
     return text.strip()
 
 
-def has_quoted_material(body: str) -> bool:
-    body = body or ""
+def has_quoted_material(body) -> bool:
+    body = body if isinstance(body, str) else ""
     return reply_start(body) < len(body) or bool(_QUOTED_LINE.search(body))

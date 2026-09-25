@@ -18,7 +18,7 @@ STEPS = [
     ("in_window", "Dated 1998–2002"),
     ("unique_messages", "After removing duplicate copies"),
     ("with_authored_text", "With text written by the sender"),
-    ("analysis_messages", "From Enron staff, excluding automated senders"),
+    ("analysis_messages", "Enron staff, excl. automated feeds and routine reports"),
 ]
 
 
