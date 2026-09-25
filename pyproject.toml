@@ -12,6 +12,7 @@ dependencies = [
     "matplotlib>=3.9",
     "networkx>=3.3",
     "xlrd>=2.0",
+    "igraph>=0.11",
 ]
 
 [dependency-groups]
