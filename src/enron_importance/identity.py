@@ -48,6 +48,7 @@ Usage: uv run python -m enron_importance.identity
 
 from __future__ import annotations
 
+import json
 import re
 from collections import defaultdict
 
@@ -299,13 +300,23 @@ def main(config: dict | None = None) -> None:
     config = config or load_config()
     spec = config["identity"]
     processed = config["paths"]["processed"]
-    messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "sender", "x_from"])
+    messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "sender", "x_from", "analysis"])
     sender_person, table, aliases, types = resolve_people(
         messages, config["senders"]["internal_domain"], spec["placeholder_addresses"], spec["min_initial_support"],
         spec["initial_share"], spec["min_initialled"], spec["go_by_share"])
     table.to_parquet(processed / "identities.parquet", index=False)
-    pd.DataFrame({"path": messages["path"], "sender_person": sender_person}).to_parquet(
+    # Person text: analysis messages whose sender is attributed to a person
+    # (not a role, list, bare address, ambiguous key or unknown author).
+    person_text = messages["analysis"] & sender_person.map(types).eq("person")
+    pd.DataFrame({"path": messages["path"], "sender_person": sender_person, "person_text": person_text}).to_parquet(
         processed / "sender_people.parquet", index=False)
+    kinds = sender_person[messages["analysis"]].map(types).fillna("unknown").value_counts()
+    funnel = {"analysis_messages": int(messages["analysis"].sum()),
+              **{f"analysis_from_{kind}": int(n) for kind, n in kinds.items()},
+              "person_text_messages": int(person_text.sum()),
+              "person_text_people": int(sender_person[person_text].nunique())}
+    (processed / "person_text.json").write_text(json.dumps(funnel, indent=2) + "\n")
+    print(json.dumps(funnel, indent=2))
     pd.DataFrame(sorted(aliases.items()), columns=["name_key", "person_key"]).to_parquet(
         processed / "name_aliases.parquet", index=False)
     pd.DataFrame(sorted(types.items()), columns=["person_key", "entity_type"]).to_parquet(

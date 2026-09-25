@@ -87,6 +87,8 @@ def test_generated_corpus_reproduces_the_audited_cases(tmp_path):
     links = pd.read_parquet(processed / "links.parquet").set_index("path")
 
     assert pd.isna(people["maildir/x/inbox/1."])                                   # placeholder, no author
+    person_text = pd.read_parquet(processed / "sender_people.parquet").set_index("path")["person_text"]
+    assert not person_text["maildir/x/inbox/1."] and person_text["maildir/davis-p/sent/1."]
     assert {people[f"maildir/davis-d/sent/{i}."] for i in (1, 2, 3)} == {"dana davis"}  # go-by middle name
     assert messages.loc["maildir/x/inbox/2.", "structured"]                        # calendar entry without colon
     assert messages.loc["maildir/davis-p/inbox/5.", "automated"]                   # repeated alert
