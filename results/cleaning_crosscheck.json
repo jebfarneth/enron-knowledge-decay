@@ -1,0 +1,24 @@
+{
+  "messages": 5000,
+  "identical": 0.764,
+  "token_jaccard_median": 1.0,
+  "token_jaccard_ge_0_9": 0.7966,
+  "residue": {
+    "original_message": {
+      "ours": 0.0002,
+      "email_reply_parser": 0.0212
+    },
+    "forwarded_by": {
+      "ours": 0.0002,
+      "email_reply_parser": 0.0636
+    },
+    "quoted_header": {
+      "ours": 0.0108,
+      "email_reply_parser": 0.079
+    },
+    "angle_quote": {
+      "ours": 0.0,
+      "email_reply_parser": 0.001
+    }
+  }
+}

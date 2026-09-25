@@ -31,6 +31,7 @@ against what happened to a person's contacts after that person left.
 | Formal rank from the 2004 title list | `formal_rank.py` | `formal_rank.parquet` |
 | Person-level network and exact centrality | `network.py` | `edges.parquet`, `centrality.parquet` |
 | Pairwise accuracy against formal rank | `evaluate.py` | `results/baselines_formal_rank.csv` |
+| Cross-check of quote removal vs `email_reply_parser` | `validate_cleaning.py` | `results/cleaning_crosscheck.json` |
 
 Later stages (dialog acts, topics, network measures, models, evaluation
 figures) are added phase by phase.
@@ -44,8 +45,8 @@ figures) are added phase by phase.
 | Files in the corpus | 517,401 |
 | Dated 1998–2002 | 516,359 |
 | After removing duplicate copies | 253,877 |
-| With text written by the sender | 235,169 |
-| Enron staff, excluding 312 automated feeds and 11,879 routine report messages | 168,029 (6,349 senders) |
+| With text written by the sender | 234,078 |
+| Enron staff, excluding 312 automated feeds and 11,799 routine report messages | 167,905 (6,348 senders) |
 
 ## Phase 2 result: network baselines
 
@@ -59,6 +60,22 @@ network baseline (64.7%, 56.8–71.9%), consistent with Agarwal et al. (2012),
 whose degree baseline reached 79.3% on core-employee pairs of their
 reporting-line gold standard. Their gold standard is not currently available
 for download; results against it will be added when obtained.
+
+## Independent check of the cleaning
+
+Quote removal was compared with `email_reply_parser` (Zapier's Python port of
+GitHub's reply parser) on a fixed sample of 5,000 messages. The two agree
+exactly on 76% of messages (median word overlap 100%). Where they differ,
+this pipeline leaves far less quoted material in authored text:
+
+| Quoted material left in authored text | This pipeline | email_reply_parser |
+|---|---:|---:|
+| "Original Message" blocks | 0.02% | 2.1% |
+| "Forwarded by" banners | 0.02% | 6.4% |
+| Quoted header lines | 1.1% | 7.9% |
+
+Four patterns the other tool handled better (webmail ad footers, inline
+attachments, pasted mail headers, day-first dates) were added to the cleaner.
 
 Half of the corpus is duplicate copies of the same message stored in several
 folders; the first version of this project counted every copy.
