@@ -67,8 +67,9 @@ identity:
   initial_share: 0.6667
 
 threads:
-  # A message replies to the latest earlier message with the same normalized
-  # subject that was sent to its sender within this many days.
+  # A message is linked to the latest earlier message with the same normalized
+  # subject that was sent to its sender within this many days, when it is
+  # addressed back to that message's sender or quotes its opening text.
   max_reply_days: 14
 
 formal_rank:

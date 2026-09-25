@@ -68,7 +68,8 @@ def prepare(config: dict) -> dict:
     funnel["routine_messages"] = int(messages["routine"].sum())
     funnel["routine_messages_excluded_from_text"] = int(messages["routine_excluded"].sum())
 
-    messages = link_replies(messages.reset_index(drop=True), config["threads"]["max_reply_days"])
+    messages = messages.reset_index(drop=True)
+    messages = link_replies(messages, config["threads"]["max_reply_days"], ~messages["automated"] & ~messages["structured"])
     funnel["messages_linked_as_replies"] = int(messages["reply_to"].notna().sum())
     funnel["threads"] = int(messages["thread_id"].nunique())
 
