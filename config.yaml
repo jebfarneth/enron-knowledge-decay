@@ -1,0 +1,34 @@
+# Every parameter the pipeline uses lives here. Changing a value here and
+# re-running `make` regenerates every downstream table and figure.
+
+corpus:
+  # CMU CALO release of the Enron email corpus (May 7, 2015 version).
+  # https://www.cs.cmu.edu/~enron/
+  url: https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz
+  filename: enron_mail_20150507.tar.gz
+  # CMU does not publish a checksum. This SHA-256 was recorded on the first
+  # download (2026-09-25); any later download must match it byte for byte.
+  sha256: null
+  bytes: 443254787
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  figures: figures
+
+ingest:
+  # Analysis window (inclusive). Messages dated outside it are counted in the
+  # funnel and then excluded.
+  start: "1998-01-01"
+  end: "2002-12-31"
+
+senders:
+  internal_domain: enron.com
+  # A sender is treated as automated when at least `min_messages` of their
+  # messages exist and at least `template_share` of them reduce to the same
+  # template once digits and times are masked (e.g. scheduling feeds).
+  min_messages: 50
+  template_share: 0.5
+
+random_seed: 42
