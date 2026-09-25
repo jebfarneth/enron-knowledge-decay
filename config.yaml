@@ -31,4 +31,9 @@ senders:
   min_messages: 50
   template_share: 0.5
 
+threads:
+  # A message replies to the latest earlier message with the same normalized
+  # subject that was sent to its sender within this many days.
+  max_reply_days: 14
+
 random_seed: 42
