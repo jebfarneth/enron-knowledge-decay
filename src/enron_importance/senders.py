@@ -19,7 +19,9 @@ Two further message-level flags:
 
 * structured: machine records rather than prose, whoever sent them
   (calendar entries, task and report notifications, payroll receipts,
-  performance-review notices, mailbox synchronization logs).
+  performance-review notices, leave requests, self-declared automated
+  e-mails, mailbox synchronization logs). A fixed list of openings: it
+  misses formats not listed.
 * routine: the sender sends the same whole text (digits masked) at least
   `routine_repeats` times; a shared opening is not enough. Routine messages
   stay in the network. They leave the text analysis only when longer than
@@ -37,7 +39,7 @@ import re
 import pandas as pd
 
 _SYSTEM_LOCAL = re.compile(
-    r"(^|[._-])(no[._-]?reply|noreply|do[._-]?not[._-]?reply|mailer[._-]?daemon|postmaster|"
+    r"(^|[._-])(no[._-]?reply|noreply|do[._-]?not[._-]?reply|mailer[._-]?daemon|daemon|postmaster|"
     r"announce(ments)?|administrator|admin|bounce[s]?|newsletter|listserv|majordomo|"
     r"helpdesk|help[._-]desk|system|notification[s]?|alert[s]?|mailbox)([._-]|$)",
     re.IGNORECASE,
@@ -48,9 +50,14 @@ _SPACE = re.compile(r"\s+")
 # personalized notices differ only here.
 _SALUTATION = re.compile(r"^\s*(?:Dear [^\n]{1,40}|[A-Z][A-Z .,'-]{2,40})[,:][ \t]*\n")
 STRUCTURED = re.compile(
-    r"^\s*(?:CALENDAR ENTRY:|Task Assignment|The report named:|Employee ID:|Thank you for changing lives"
-    r"|\d{1,2}:\d{2}:\d{2} Synchronizing|You have been selected to participate in the .{0,40}Performance"
-    r"|Attached below you will find the final Evaluation forms|According to our system records, you have not yet logged)",
+    r"^\s*(?:[A-Z][a-z]{2} \d{1,2}, \d{4}\s*)?"  # optional date line before a notice
+    r"(?:CALENDAR ENTRY\b|Task Assignment|The report named:|Employee ID:|Thank you for changing lives"
+    r"|\d{1,2}:\d{2}:\d{2} Synchronizing|This (?:is|in) an automated (?:e-?mail|message|notification)"
+    r"|Requester:[^\n]*\n\s*Request Type:"
+    r"|You have been selected to participate in .{0,40}Performance|YEAR END \d{4} PERFORMANCE EVALUATION"
+    r"|NOTE:\s+YOU WILL RECEIVE THIS MESSAGE EACH TIME|Please note that your employees have suggested"
+    r"|PEP ACCESS|Attached below you will find the final Evaluation forms"
+    r"|According to our system records, you have not yet logged)",
     re.IGNORECASE,
 )
 
