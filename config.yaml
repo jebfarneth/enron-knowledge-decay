@@ -134,9 +134,9 @@ formal_rank:
 
 gold_standard:
   # Agarwal, Omuya, Harnly & Rambow (2012) Enron hierarchy gold standard,
-  # Columbia release shared by Owen Rambow on 2026-09-25 (Google Drive folder
-  # 1CmRUnj-To_0tb5GN4yA3IsHjNKJqeGMj; not publicly listed, request from the
-  # authors). Only the entities collection is used. Path is under paths.raw.
+  # Columbia release shared privately by Owen Rambow on 2026-09-25. It is not
+  # publicly listed: request it from the authors and place it under paths.raw.
+  # Only the entities collection is used.
   entities: agarwal2012_gold/gender-identified-enron-corpus/entities.bson
   sha256: a43fa4bfa4b09f23ceec03881f549d1725d28e912806ba0a6f27228d2fceea94
 
