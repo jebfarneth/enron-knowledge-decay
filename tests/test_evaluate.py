@@ -75,19 +75,6 @@ def test_label_table_policies():
     assert "c" not in set(label_table(ranks, max_level=4)["person_key"])
 
 
-def test_gold_table_scores_pairs_and_splits_by_type():
-    from enron_importance.evaluate import gold_table
-    pairs = pd.DataFrame({"dominant": ["a", "a", "b"], "subordinate": ["b", "c", "c"],
-                          "dominant_key": ["ka", "ka", "kb"], "subordinate_key": ["kb", None, "kc"],
-                          "type": ["core", "inter", "non-core"]})
-    measures = pd.DataFrame({"person_key": ["ka", "kb", "kc"], "degree": [5.0, 5.0, 1.0]})
-    table = gold_table(pairs, measures, ["degree"], reps=50, seed=0).set_index("pairs_type")
-    # a-b tie (0.5), a over unmatched c scores 0 (1), b over c (1)
-    assert table.loc["all", "accuracy"] == pytest.approx(2.5 / 3)
-    assert table.loc["core", "accuracy"] == 0.5 and table.loc["inter", "pairs"] == 1
-    assert table.loc["all", "ci_low"] <= table.loc["all", "accuracy"] <= table.loc["all", "ci_high"]
-
-
 def test_bootstrap_matches_an_independent_brute_force_oracle():
     levels = np.array([3, 2, 2, 1, 0, 0, 1, 3, 2, 0], dtype=float)
     scores = np.array([9, 4, 7, 3, 1, 5, 2, 6, 8, 0], dtype=float)

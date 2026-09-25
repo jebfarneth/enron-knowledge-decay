@@ -7,9 +7,9 @@ RUN = uv run python -m enron_importance
 
 # Stages depend on each other's files; never run them in parallel.
 .NOTPARALLEL:
-.PHONY: all setup test data identity threads rank network gold evaluate crosscheck threadcheck figures regress clean-generated
+.PHONY: all setup test data identity threads rank network gold goldeval evaluate crosscheck threadcheck figures regress clean-generated
 
-all: setup test data identity threads rank network gold evaluate crosscheck threadcheck figures regress
+all: setup test data identity threads rank network gold goldeval evaluate crosscheck threadcheck figures regress
 
 setup:
 	uv sync --group dev
@@ -38,11 +38,16 @@ rank:
 network:
 	$(RUN).network
 
-# Agarwal et al. (2012) dominance pairs, if the Columbia release is in data/raw (see config.yaml).
+# Agarwal et al. (2012) dominance pairs and their evaluation. The release is
+# not public (request it from the authors, see config.yaml); without it both
+# stages print that they were skipped and the rest of the pipeline runs.
 gold:
 	$(RUN).gold_standard
 
-# Baselines against the title proxy and the gold standard, paired differences and sensitivity runs.
+goldeval:
+	$(RUN).gold_evaluation
+
+# Baselines against the title proxy, paired differences and sensitivity runs.
 evaluate:
 	$(RUN).evaluate
 
