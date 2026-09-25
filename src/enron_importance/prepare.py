@@ -1,4 +1,4 @@
-"""Phase 1 pipeline: raw archive -> cleaned, deduplicated, threaded messages.
+"""Phase 1 pipeline: raw archive -> cleaned, deduplicated, flagged messages (threads are linked later).
 
 Writes
   data/processed/messages.parquet   one row per kept message
@@ -23,7 +23,6 @@ from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
 from .ingest import iter_archive, write_messages
 from .senders import automated_messages, routine_messages, sender_profiles, speech_act, structured_record
-from .threads import link_replies
 
 
 PACKAGE = Path(__file__).resolve().parent
@@ -96,9 +95,6 @@ def prepare(config: dict) -> dict:
     funnel["routine_messages_excluded_from_text"] = int(messages["routine_excluded"].sum())
 
     messages = messages.reset_index(drop=True)
-    messages = link_replies(messages, config["threads"]["max_reply_days"], ~messages["automated"] & ~messages["structured"])
-    funnel["messages_linked_as_replies"] = int(messages["reply_to"].notna().sum())
-    funnel["threads"] = int(messages["thread_id"].nunique())
 
     analysis = (messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]
                 & ~messages["routine_excluded"] & (messages["authored"] != ""))

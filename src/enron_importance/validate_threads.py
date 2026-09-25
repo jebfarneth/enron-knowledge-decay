@@ -25,11 +25,9 @@ from .config import ROOT, load_config
 LABELS = ROOT / "audits" / "labels" / "thread_links_sample60.json"
 
 
-def outcomes(labels: pd.DataFrame, messages: pd.DataFrame) -> pd.DataFrame:
-    """`messages` needs path, reply_to (row index), link_evidence and link_kind; index is the row index."""
-    parent_path = messages["reply_to"].map(lambda i: messages.at[int(i), "path"] if pd.notna(i) else None)
-    current = pd.DataFrame({"path": messages["path"], "new_parent": parent_path, "link_evidence": messages["link_evidence"],
-                            "link_kind": messages["link_kind"]})
+def outcomes(labels: pd.DataFrame, links: pd.DataFrame) -> pd.DataFrame:
+    """`links` needs path, parent_path, link_evidence and link_kind (links.parquet)."""
+    current = links.rename(columns={"parent_path": "new_parent"})[["path", "new_parent", "link_evidence", "link_kind"]]
     table = labels.merge(current, on="path", how="left")
     table["outcome"] = [
         "unlinked" if not isinstance(new, str) else "same parent" if new == old else "other parent"
@@ -41,8 +39,7 @@ def outcomes(labels: pd.DataFrame, messages: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     config = load_config()
     labels = pd.DataFrame(json.loads(LABELS.read_text())["labels"])
-    messages = pd.read_parquet(config["paths"]["processed"] / "messages.parquet", columns=["path", "reply_to", "link_evidence", "link_kind"])
-    table = outcomes(labels, messages)
+    table = outcomes(labels, pd.read_parquet(config["paths"]["processed"] / "links.parquet"))
     direct = table["classification"] == "direct_reply"
     kept = table["outcome"] == "same parent"
     shown = table["outcome"].where(~kept, "same parent (" + table["link_kind"].fillna("") + ")")

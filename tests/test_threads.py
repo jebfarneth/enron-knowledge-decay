@@ -73,7 +73,8 @@ def test_quotation_links_a_reply_sent_to_a_different_address():
              "body": "Attached.\n\n -----Original Message-----\nFrom: A\nSent: today\n\nCan you send me the west power curve by 3pm today?"}
     linked = link_replies(pd.DataFrame([parent, child]), 14)
     assert linked.loc[1, "reply_to"] == 0 and linked.loc[1, "link_evidence"] == "quoted"
-    assert linked.loc[1, "link_kind"] == "reply" and linked.loc[1, "response_seconds"] == 3600
+    # Not addressed back (the alias is external and unresolved): a relay, whatever the Re: prefix.
+    assert linked.loc[1, "link_kind"] == "forward" and pd.isna(linked.loc[1, "response_seconds"])
 
 
 def test_parent_that_already_quotes_the_child_is_rejected():
@@ -114,3 +115,11 @@ def test_the_message_quoted_first_is_the_parent_not_an_earlier_one():
          "body": f"Carrot it is.\n\n -----Original Message-----\nFrom: Dennis\nSent: x\n\n{second}\n\n{first}"},
     ]
     assert link_replies(pd.DataFrame(rows), 14).loc[2, "reply_to"] == 1
+
+
+def test_a_reply_that_repeats_the_parent_instruction_is_not_rejected_as_inverted():
+    ask = "Please send the signed turbine contract to legal by Friday so we can close the deal."
+    parent = {**msg("a@enron.com", ["b@enron.com"], "Contract", "2001-05-01 09:00"), "authored": ask, "body": ask}
+    child = {**msg("b@enron.com", ["a@enron.com"], "RE: Contract", "2001-05-01 10:00"), "authored": ask + " Done.",
+             "body": ask + " Done."}
+    assert link_replies(pd.DataFrame([parent, child]), 14).loc[1, "reply_to"] == 0

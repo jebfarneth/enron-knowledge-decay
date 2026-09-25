@@ -63,13 +63,10 @@ def test_end_to_end_funnel(tmp_path):
     assert funnel["dropped_outside_window"] == 1
     assert funnel["dropped_duplicate_content"] == 1
     assert funnel["unique_messages"] == 2
-    assert funnel["messages_linked_as_replies"] == 1
-    assert funnel["threads"] == 1
     assert funnel["analysis_messages"] == 2
     messages = pd.read_parquet(tmp_path / "processed" / "messages.parquet")
     reply = messages[messages["sender"] == "mark.taylor@enron.com"].iloc[0]
     assert reply["authored"] == "Section 4 is fine."
-    assert reply["response_seconds"] == 5400
     saved = json.loads((tmp_path / "processed" / "funnel.json").read_text())
     assert set(saved["outputs"]) == {"messages.parquet", "senders.parquet", "copies.parquet"}
 
