@@ -125,6 +125,14 @@ formal_rank:
     rod hayslett: "listed Vice President; list note says also Chief Financial Officer and Treasurer"
     vincent kaminski: "listed Manager; signature in kaminski-v/all_documents/11199. says Managing Director"
 
+gold_standard:
+  # Agarwal, Omuya, Harnly & Rambow (2012) Enron hierarchy gold standard,
+  # Columbia release shared by Owen Rambow on 2026-09-25 (Google Drive folder
+  # 1CmRUnj-To_0tb5GN4yA3IsHjNKJqeGMj; not publicly listed, request from the
+  # authors). Only the entities collection is used. Path is under paths.raw.
+  entities: agarwal2012_gold/gender-identified-enron-corpus/entities.bson
+  sha256: a43fa4bfa4b09f23ceec03881f549d1725d28e912806ba0a6f27228d2fceea94
+
 evaluation:
   # Person-level bootstrap resamples for 95% intervals.
   bootstrap_reps: 1000

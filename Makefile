@@ -4,9 +4,9 @@
 
 RUN = uv run python -m enron_importance
 
-.PHONY: all setup test data identity rank network evaluate crosscheck figures clean-generated
+.PHONY: all setup test data identity rank network gold evaluate crosscheck threadcheck figures clean-generated
 
-all: setup test data identity rank network evaluate crosscheck figures
+all: setup test data identity rank network gold evaluate crosscheck threadcheck figures
 
 setup:
 	uv sync --group dev
@@ -30,13 +30,21 @@ rank:
 network:
 	$(RUN).network
 
-# Baselines against the title proxy, paired differences and sensitivity runs.
+# Agarwal et al. (2012) dominance pairs, if the Columbia release is in data/raw (see config.yaml).
+gold:
+	$(RUN).gold_standard
+
+# Baselines against the title proxy and the gold standard, paired differences and sensitivity runs.
 evaluate:
 	$(RUN).evaluate
 
 # Quote removal compared with email_reply_parser.
 crosscheck:
 	$(RUN).validate_cleaning
+
+# Reply links re-checked against the audit's labelled sample.
+threadcheck:
+	$(RUN).validate_threads
 
 figures:
 	$(RUN).figures.funnel
