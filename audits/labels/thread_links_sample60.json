@@ -1,0 +1,438 @@
+{
+  "review_type": "Manual Codex audit; not human gold. Random linked-edge sample, no recall estimate.",
+  "sample_seed": 20260925,
+  "population_links": 47130,
+  "denominator": 60,
+  "class_counts": {
+    "direct_reply": 27,
+    "forward_or_relay_not_reply": 10,
+    "wrong_immediate_parent": 12,
+    "independent_broadcast_or_unrelated_topic": 4,
+    "same_author_related_update_not_reply": 1,
+    "uncertain_direct_parent": 6
+  },
+  "direct_reply_fraction": 0.45,
+  "direct_reply_fraction_if_all_uncertain_valid": 0.55,
+  "labels": [
+    {
+      "sample_id": 0,
+      "path": "maildir/fossum-d/notes_inbox/193.",
+      "parent_path": "maildir/fossum-d/notes_inbox/214.",
+      "classification": "direct_reply",
+      "evidence": "Child quotes Jerry/Lon parent exact topic/time."
+    },
+    {
+      "sample_id": 1,
+      "path": "maildir/ruscitti-k/inbox/211.",
+      "parent_path": "maildir/ruscitti-k/sent_items/67.",
+      "classification": "direct_reply",
+      "evidence": "Child quotes Conway/Ruscitti parent."
+    },
+    {
+      "sample_id": 2,
+      "path": "maildir/guzman-m/notes_inbox/581.",
+      "parent_path": "maildir/guzman-m/notes_inbox/582.",
+      "classification": "independent_broadcast_or_unrelated_topic",
+      "evidence": "Independent self-addressed Schedule Crawler hourly failures, hour19 linked to hour18."
+    },
+    {
+      "sample_id": 3,
+      "path": "maildir/kaminski-v/deleted_items/475.",
+      "parent_path": "maildir/kaminski-v/deleted_items/476.",
+      "classification": "direct_reply",
+      "evidence": "Quote of Williams/Kaminski parent."
+    },
+    {
+      "sample_id": 4,
+      "path": "maildir/taylor-m/sent/3406.",
+      "parent_path": "maildir/taylor-m/notes_inbox/2065.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Explicit forward to third party, not a reply to Carlos."
+    },
+    {
+      "sample_id": 5,
+      "path": "maildir/germany-c/sent_items/579.",
+      "parent_path": "maildir/germany-c/bankrupt/sempra/3.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Child forwards own 07:48 response; selected parent is McCall 07:44, a grandparent."
+    },
+    {
+      "sample_id": 6,
+      "path": "maildir/hyvl-d/sent/595.",
+      "parent_path": "maildir/hyvl-d/notes_inbox/36.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Child quotes clbywaters1@aep.com June7; selected parent is older Candace.enron May31 mineral-rights exchange."
+    },
+    {
+      "sample_id": 7,
+      "path": "maildir/jones-t/sent/6395.",
+      "parent_path": "maildir/jones-t/notes_inbox/4956.",
+      "classification": "direct_reply",
+      "evidence": "Quoted Fred parent."
+    },
+    {
+      "sample_id": 8,
+      "path": "maildir/mccarty-d/inbox/78.",
+      "parent_path": "maildir/mccarty-d/inbox/2001_prc_ets_mid_year/8.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Julie status update about receiving accomplishments; selected Joe accomplishment message possibly relevant but immediate reply unknown."
+    },
+    {
+      "sample_id": 9,
+      "path": "maildir/heard-m/sent_items/209.",
+      "parent_path": "maildir/heard-m/deleted_items/105.",
+      "classification": "direct_reply",
+      "evidence": "Quoted Roeline parent."
+    },
+    {
+      "sample_id": 10,
+      "path": "maildir/watson-k/inbox/200.",
+      "parent_path": "maildir/mcconnell-m/tw_projects/misc_tie_ins/6.",
+      "classification": "direct_reply",
+      "evidence": "Reply conveys requested planning answer to another participant, quoting selected Dennis request."
+    },
+    {
+      "sample_id": 11,
+      "path": "maildir/dasovich-j/sent/662.",
+      "parent_path": "maildir/dasovich-j/notes_inbox/959.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Answers Jacqueline Kelly 14:03 via external Jeff alias; selects Kimberly Kupiecki 10:16 instead."
+    },
+    {
+      "sample_id": 12,
+      "path": "maildir/dasovich-j/inbox/922.",
+      "parent_path": "maildir/steffes-j/sent_items/1396.",
+      "classification": "direct_reply",
+      "evidence": "Quoted Lamar/Steffes parent."
+    },
+    {
+      "sample_id": 13,
+      "path": "maildir/bass-e/sent/1335.",
+      "parent_path": "maildir/lenhart-m/sent/112.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Quotes Bryan Hull Dec21 14:01 response; selects Matthew Lenhart Dec20 instead under Happy Hour."
+    },
+    {
+      "sample_id": 14,
+      "path": "maildir/jones-t/sent_items/144.",
+      "parent_path": "maildir/jones-t/inbox/339.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Pure forward of Wendi parent."
+    },
+    {
+      "sample_id": 15,
+      "path": "maildir/germany-c/sent/737.",
+      "parent_path": "maildir/germany-c/all_documents/1178.",
+      "classification": "direct_reply",
+      "evidence": "Price-lock question responds to selected supplier-price details."
+    },
+    {
+      "sample_id": 16,
+      "path": "maildir/mann-k/all_documents/5131.",
+      "parent_path": "maildir/mann-k/sent/3878.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Child quotes original GE guarantee request at07:17/08:18; selected parent07:19 is a resend; conversation correct but exact parent ambiguous."
+    },
+    {
+      "sample_id": 17,
+      "path": "maildir/beck-s/sent_items/52.",
+      "parent_path": "maildir/buy-r/inbox/198.",
+      "classification": "direct_reply",
+      "evidence": "Quoted Lucy cancellation parent."
+    },
+    {
+      "sample_id": 18,
+      "path": "maildir/martin-t/sent_items/43.",
+      "parent_path": "maildir/martin-t/inbox/136.",
+      "classification": "direct_reply",
+      "evidence": "Quoted ONeal parent."
+    },
+    {
+      "sample_id": 19,
+      "path": "maildir/staab-t/sent_items/73.",
+      "parent_path": "maildir/staab-t/to_do_list/6.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Explicit forward of Robert to Valerie with current commentary; source matches but not a direct reply."
+    },
+    {
+      "sample_id": 20,
+      "path": "maildir/dasovich-j/sent/126.",
+      "parent_path": "maildir/dasovich-j/all_documents/1010.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Scheduling availability follows same-topic group email; no quoted parent, cannot establish immediate link."
+    },
+    {
+      "sample_id": 21,
+      "path": "maildir/dasovich-j/sent/12169.",
+      "parent_path": "maildir/dasovich-j/notes_inbox/11684.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Short remark to Susan Mara linked to Ginger five-day-old conference notice; insufficient immediate-reply evidence."
+    },
+    {
+      "sample_id": 22,
+      "path": "maildir/dasovich-j/notes_inbox/5701.",
+      "parent_path": "maildir/dasovich-j/sent/2914.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Jeff Jan18 parent."
+    },
+    {
+      "sample_id": 23,
+      "path": "maildir/dasovich-j/deleted_items/867.",
+      "parent_path": "maildir/dasovich-j/deleted_items/869.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Nancy Herring parent."
+    },
+    {
+      "sample_id": 24,
+      "path": "maildir/dasovich-j/notes_inbox/4677.",
+      "parent_path": "maildir/dasovich-j/notes_inbox/4723.",
+      "classification": "independent_broadcast_or_unrelated_topic",
+      "evidence": "Independent self-addressed Enron Mentions daily news digests March28 and March23."
+    },
+    {
+      "sample_id": 25,
+      "path": "maildir/mann-k/sent/4086.",
+      "parent_path": "maildir/mann-k/notes_inbox/623.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Forwards Bob Joyce May15 update; selected parent is May7 update."
+    },
+    {
+      "sample_id": 26,
+      "path": "maildir/steffes-j/inbox/442.",
+      "parent_path": "maildir/steffes-j/sent_items/1359.",
+      "classification": "direct_reply",
+      "evidence": "Direct follow-up about briefing, quoting selected Jim parent."
+    },
+    {
+      "sample_id": 27,
+      "path": "maildir/shackleton-s/sent/1402.",
+      "parent_path": "maildir/shackleton-s/notes_inbox/1819.",
+      "classification": "direct_reply",
+      "evidence": "Direct reminder to Frank, quoting selected parent."
+    },
+    {
+      "sample_id": 28,
+      "path": "maildir/sager-e/notes_inbox/448.",
+      "parent_path": "maildir/sager-e/notes_inbox/396.",
+      "classification": "direct_reply",
+      "evidence": "Quotes selected Andy Katz December5 17:35 parent."
+    },
+    {
+      "sample_id": 29,
+      "path": "maildir/watson-k/e_mail_bin/657.",
+      "parent_path": "maildir/schoolcraft-d/inbox/junk/333.",
+      "classification": "independent_broadcast_or_unrelated_topic",
+      "evidence": "Two self-addressed copies of travel-services broadcast minutes apart; not a conversational reply."
+    },
+    {
+      "sample_id": 30,
+      "path": "maildir/geaccone-t/deleted_items/236.",
+      "parent_path": "maildir/geaccone-t/sent_items/206.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Tracy international-number question."
+    },
+    {
+      "sample_id": 31,
+      "path": "maildir/mann-k/sent/4296.",
+      "parent_path": "maildir/mann-k/notes_inbox/267.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Kathleen invitation."
+    },
+    {
+      "sample_id": 32,
+      "path": "maildir/perlingiere-d/sent/877.",
+      "parent_path": "maildir/perlingiere-d/notes_inbox/13.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Child addresses medschul@cvtv.net while selected parent is jwong@bcgas.com; no quote, likely generic-subject collision but conservatively uncertain."
+    },
+    {
+      "sample_id": 33,
+      "path": "maildir/shackleton-s/sent/2133.",
+      "parent_path": "maildir/jones-t/sent/2018.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Pure forward of Tana parent."
+    },
+    {
+      "sample_id": 34,
+      "path": "maildir/dasovich-j/notes_inbox/4162.",
+      "parent_path": "maildir/dasovich-j/sent/4180.",
+      "classification": "uncertain_direct_parent",
+      "evidence": "Group rescheduling announcement after Jeff response; same event but not established immediate reply."
+    },
+    {
+      "sample_id": 35,
+      "path": "maildir/zipper-a/sent_items/200.",
+      "parent_path": "maildir/zipper-a/inbox/174.",
+      "classification": "direct_reply",
+      "evidence": "AGA and flying response answers parent questions."
+    },
+    {
+      "sample_id": 36,
+      "path": "maildir/mann-k/all_documents/4632.",
+      "parent_path": "maildir/mann-k/sent/3526.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Selected parent already quotes the whole child; duplicate/date rendering inverts causal order."
+    },
+    {
+      "sample_id": 37,
+      "path": "maildir/nemec-g/inbox/1153.",
+      "parent_path": "maildir/nemec-g/sent_items/479.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Gerald location question."
+    },
+    {
+      "sample_id": 38,
+      "path": "maildir/steffes-j/california_issues/559.",
+      "parent_path": "maildir/steffes-j/sent_items/2078.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Jim SCE meeting message."
+    },
+    {
+      "sample_id": 39,
+      "path": "maildir/hyatt-k/deleted_items/442.",
+      "parent_path": "maildir/hyatt-k/sent_items/164.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Forwards Kevin decision to Paula; same source, not reply to Kevin."
+    },
+    {
+      "sample_id": 40,
+      "path": "maildir/sanchez-m/sent_items/17.",
+      "parent_path": "maildir/sanchez-m/private_folders/other/7.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Child quotes Dennis07:42 cake advice; selected Dennis00:13 different recipe advice."
+    },
+    {
+      "sample_id": 41,
+      "path": "maildir/jones-t/sent/2307.",
+      "parent_path": "maildir/jones-t/notes_inbox/2405.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Answers Andrea13:25; selected parent Deborah11:57 seminar broadcast is a grandparent."
+    },
+    {
+      "sample_id": 42,
+      "path": "maildir/mann-k/sent/3925.",
+      "parent_path": "maildir/mann-k/all_documents/5051.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Answers Carolyn April30; selected Carolyn April24 documents are six days earlier."
+    },
+    {
+      "sample_id": 43,
+      "path": "maildir/jones-t/notes_inbox/1156.",
+      "parent_path": "maildir/jones-t/sent/1593.",
+      "classification": "direct_reply",
+      "evidence": "Quotes selected Tana assignment question."
+    },
+    {
+      "sample_id": 44,
+      "path": "maildir/hodge-j/deleted_items/466.",
+      "parent_path": "maildir/heard-m/inbox/255.",
+      "classification": "independent_broadcast_or_unrelated_topic",
+      "evidence": "Child asks about Carolina/Florida netting; selected parent asks about Dreyfuss/Richardson/Navajo/Unocal. Different counterparties, generic Netting Agreement."
+    },
+    {
+      "sample_id": 45,
+      "path": "maildir/watson-k/sent_items/722.",
+      "parent_path": "maildir/watson-k/e_mail_bin/320.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Kevin office-space response."
+    },
+    {
+      "sample_id": 46,
+      "path": "maildir/geaccone-t/sent_items/316.",
+      "parent_path": "maildir/geaccone-t/inbox/493.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Forwards Jim pipeline analysis to Steve."
+    },
+    {
+      "sample_id": 47,
+      "path": "maildir/bailey-s/deleted_items/169.",
+      "parent_path": "maildir/bailey-s/deleted_items/107.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Diane response."
+    },
+    {
+      "sample_id": 48,
+      "path": "maildir/stokley-c/chris_stokley/sent/111.",
+      "parent_path": "maildir/stokley-c/chris_stokley/projects/sqmd/19.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "FYI forward of Jeanette audit message."
+    },
+    {
+      "sample_id": 49,
+      "path": "maildir/delainey-d/sent/491.",
+      "parent_path": "maildir/delainey-d/sent/500.",
+      "classification": "same_author_related_update_not_reply",
+      "evidence": "Kay self-authored QBR date revision; related update, not reply to another person."
+    },
+    {
+      "sample_id": 50,
+      "path": "maildir/dasovich-j/sent/4726.",
+      "parent_path": "maildir/dasovich-j/notes_inbox/2998.",
+      "classification": "direct_reply",
+      "evidence": "Thanks responds to Scott press-conference documents message."
+    },
+    {
+      "sample_id": 51,
+      "path": "maildir/germany-c/all_documents/1257.",
+      "parent_path": "maildir/germany-c/all_documents/1263.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Quotes Chris10:11 as immediate source; selected Joan09:21 is grandparent."
+    },
+    {
+      "sample_id": 52,
+      "path": "maildir/kaminski-v/var/2.",
+      "parent_path": "maildir/kaminski-v/sent/8.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Selected Vince response already quotes the whole child; original message appears after reply by stored timestamp."
+    },
+    {
+      "sample_id": 53,
+      "path": "maildir/scott-s/sent_items/637.",
+      "parent_path": "maildir/scott-s/inbox/388.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Jacquelyn mistaken recipient message."
+    },
+    {
+      "sample_id": 54,
+      "path": "maildir/shackleton-s/sent/2238.",
+      "parent_path": "maildir/shackleton-s/notes_inbox/566.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "FYI forward of Jim Delani response."
+    },
+    {
+      "sample_id": 55,
+      "path": "maildir/scholtes-d/sent_items/63.",
+      "parent_path": "maildir/crandell-s/sent_items/42.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Pure forward of Sean forwarded Dave message."
+    },
+    {
+      "sample_id": 56,
+      "path": "maildir/haedicke-m/notes_inbox/224.",
+      "parent_path": "maildir/sanders-r/all_documents/893.",
+      "classification": "forward_or_relay_not_reply",
+      "evidence": "Forwards David Harvin legal analysis."
+    },
+    {
+      "sample_id": 57,
+      "path": "maildir/love-p/deleted_items/140.",
+      "parent_path": "maildir/love-p/sent_items/124.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Phillip response."
+    },
+    {
+      "sample_id": 58,
+      "path": "maildir/farmer-d/all_documents/1167.",
+      "parent_path": "maildir/farmer-d/all_documents/1168.",
+      "classification": "direct_reply",
+      "evidence": "Quotes Pat request."
+    },
+    {
+      "sample_id": 59,
+      "path": "maildir/taylor-m/sent/931.",
+      "parent_path": "maildir/taylor-m/notes_inbox/325.",
+      "classification": "wrong_immediate_parent",
+      "evidence": "Forwards Bob Shults request; selected parent is David Forster response, not quoted source."
+    }
+  ]
+}

@@ -73,6 +73,7 @@ def test_quotation_links_a_reply_sent_to_a_different_address():
              "body": "Attached.\n\n -----Original Message-----\nFrom: A\nSent: today\n\nCan you send me the west power curve by 3pm today?"}
     linked = link_replies(pd.DataFrame([parent, child]), 14)
     assert linked.loc[1, "reply_to"] == 0 and linked.loc[1, "link_evidence"] == "quoted"
+    assert linked.loc[1, "link_kind"] == "reply" and linked.loc[1, "response_seconds"] == 3600
 
 
 def test_parent_that_already_quotes_the_child_is_rejected():
@@ -91,3 +92,25 @@ def test_ineligible_messages_are_never_linked():
     ])
     linked = link_replies(frame, 14, eligible=pd.Series([False, True]))
     assert linked["reply_to"].isna().all()
+
+
+def test_relaying_a_message_to_someone_else_is_a_forward():
+    text = "Kevin approved the RDI access request for the whole scheduling group."
+    parent = {**msg("kevin@enron.com", ["b@enron.com"], "RDI access", "2001-05-01 09:00"), "authored": text, "body": text}
+    child = {**msg("b@enron.com", ["paula@enron.com"], "FW: RDI access", "2001-05-01 10:00"), "authored": "FYI",
+             "body": f"FYI\n\n -----Original Message-----\nFrom: Kevin\nSent: x\n\n{text}"}
+    linked = link_replies(pd.DataFrame([parent, child]), 14)
+    assert linked.loc[1, "reply_to"] == 0 and linked.loc[1, "link_kind"] == "forward"
+    assert pd.isna(linked.loc[1, "response_seconds"])
+
+
+def test_the_message_quoted_first_is_the_parent_not_an_earlier_one():
+    first = "Try the lemon cake recipe from the Houston paper, it keeps for days."
+    second = "Actually the carrot cake is easier and the kids will like it better."
+    rows = [
+        {**msg("dennis@enron.com", ["b@enron.com"], "cakes", "2001-05-01 00:13"), "authored": first, "body": first},
+        {**msg("dennis@enron.com", ["b@enron.com"], "Re: cakes", "2001-05-01 07:42"), "authored": second, "body": second},
+        {**msg("b@enron.com", ["dennis@enron.com"], "Re: cakes", "2001-05-01 08:00"), "authored": "Carrot it is.",
+         "body": f"Carrot it is.\n\n -----Original Message-----\nFrom: Dennis\nSent: x\n\n{second}\n\n{first}"},
+    ]
+    assert link_replies(pd.DataFrame(rows), 14).loc[2, "reply_to"] == 1
