@@ -25,11 +25,18 @@ ingest:
 
 senders:
   internal_domain: enron.com
-  # A sender is treated as automated when at least `min_messages` of their
-  # messages exist and at least `template_share` of them reduce to the same
-  # template once digits and times are masked (e.g. scheduling feeds).
+  # Templates are the first 80 characters of authored text with digits masked;
+  # pure forwards (no authored text) are not counted.
+  # A sender is an automated feed when they have at least `min_messages`
+  # messages with text and at least `feed_share` of them fall into their
+  # `top_templates` most common templates. Feeds are excluded entirely.
   min_messages: 50
-  template_share: 0.5
+  top_templates: 3
+  feed_share: 0.9
+  # A message is routine (e.g. a weekly report blast) when its template repeats
+  # at least `routine_repeats` times for the same sender. Routine messages are
+  # kept in the communication network but excluded from text analysis.
+  routine_repeats: 10
 
 threads:
   # A message replies to the latest earlier message with the same normalized
