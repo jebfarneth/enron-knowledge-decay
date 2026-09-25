@@ -54,9 +54,9 @@ def reply_start(body: str) -> int:
     return min(starts, default=len(body))
 
 
-def authored_text(body: str) -> str:
+def authored_text(body) -> str:
     """The part of `body` written by the sender of this message."""
-    body = (body or "").replace("\r\n", "\n").replace("\r", "\n")
+    body = (body if isinstance(body, str) else "").replace("\r\n", "\n").replace("\r", "\n")
     text = body[: reply_start(body)]
     for pattern in _DISCLAIMERS:
         text = pattern.sub("", text)
@@ -65,6 +65,6 @@ def authored_text(body: str) -> str:
     return text.strip()
 
 
-def has_quoted_material(body: str) -> bool:
-    body = body or ""
+def has_quoted_material(body) -> bool:
+    body = body if isinstance(body, str) else ""
     return reply_start(body) < len(body) or bool(_QUOTED_LINE.search(body))

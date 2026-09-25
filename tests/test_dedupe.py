@@ -56,3 +56,13 @@ def test_window_drops_undated_and_out_of_range_messages():
 
 def test_subject_prefixes_are_normalized():
     assert normalize_subject("RE: Fw: FWD:  West   desk") == "west desk"
+
+
+def test_missing_sender_and_body_from_parquet_are_handled():
+    # Values read back from parquet arrive as NaN, not None or "".
+    frame = pd.DataFrame([
+        message("maildir/a/inbox/1.", "inbox", body=float("nan"), sender=float("nan"), subject=float("nan")),
+        message("maildir/a/inbox/2.", "inbox", body=float("nan"), sender=float("nan"), subject=float("nan")),
+    ])
+    kept, stats = deduplicate(frame)
+    assert len(kept) == 1 and stats["duplicate_content"] == 1

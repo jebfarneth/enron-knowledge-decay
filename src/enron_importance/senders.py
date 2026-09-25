@@ -26,13 +26,14 @@ _DIGITS = re.compile(r"\d+")
 _SPACE = re.compile(r"\s+")
 
 
-def template_of(text: str) -> str:
+def template_of(text) -> str:
     """Mask numbers and collapse whitespace so templated messages compare equal."""
-    return _SPACE.sub(" ", _DIGITS.sub("#", (text or "").lower())).strip()[:500]
+    text = text if isinstance(text, str) else ""
+    return _SPACE.sub(" ", _DIGITS.sub("#", text.lower())).strip()[:500]
 
 
-def name_rule(address: str) -> bool:
-    local = (address or "").split("@")[0]
+def name_rule(address) -> bool:
+    local = (address if isinstance(address, str) else "").split("@")[0]
     return bool(_SYSTEM_LOCAL.search(local))
 
 

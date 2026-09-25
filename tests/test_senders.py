@@ -32,3 +32,8 @@ def test_low_volume_senders_are_never_flagged_by_behaviour():
     rows = [{"sender": "x@enron.com", "authored": "same"}] * 10
     profiles = sender_profiles(pd.DataFrame(rows), "enron.com", min_messages=50, template_share=0.5)
     assert not profiles.loc["x@enron.com", "templated"]
+
+
+def test_missing_values_do_not_fail():
+    assert template_of(float("nan")) == ""
+    assert not name_rule(float("nan"))

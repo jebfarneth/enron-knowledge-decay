@@ -78,3 +78,8 @@ def test_plain_message_is_unchanged_and_not_flagged():
 def test_pure_forward_has_no_authored_text():
     body = "---------------------- Forwarded by A/HOU/ECT on 01/02/2001 10:00 AM ---------------------------\nold text"
     assert authored_text(body) == ""
+
+
+def test_missing_body_from_parquet_is_empty():
+    assert authored_text(float("nan")) == ""
+    assert not has_quoted_material(None)
