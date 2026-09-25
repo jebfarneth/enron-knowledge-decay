@@ -84,4 +84,8 @@ evaluation:
   # Person-level bootstrap resamples for 95% intervals.
   bootstrap_reps: 1000
 
+validation:
+  # Messages sampled (fixed seed) to cross-check quote removal against email_reply_parser.
+  sample_size: 5000
+
 random_seed: 42

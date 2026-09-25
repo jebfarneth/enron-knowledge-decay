@@ -114,3 +114,32 @@ def test_from_line_with_date_and_company_banner_is_cut():
 
 def test_bare_to_cc_subject_block_is_cut():
     assert authored_text(BARE_HEADER) == "fill me in.  how can i eavesdrop??"
+
+
+# Cases where the independent email_reply_parser cross-check was right.
+YAHOO_FOOTER = ("Please reply to this test message.\n\nMany Thanks!\nLisa Scully\n\n"
+                "__________________________________________________\nDo You Yahoo!?\nGet personalized email addresses from Yahoo! Mail\n")
+INLINE_ATTACHMENT = "See the quotes below.\n\n--------- Inline attachment follows ---------\n\nFrom:  \nTo: vkaminski@aol.com\nSubject:  \n\nold\n"
+RAW_HEADERS = "fyi\n\nReturn-path: <info@winebid.com>\nReceived: from mta1.example.net by sims1\nContent-transfer-encoding: 7bit\n\nold\n"
+DAY_FIRST = "I will pick it up when I check your list.\n\nFrom: Tana Jones@ECT on 17-08-2000 09:10 CDT\nTo: Mark Taylor\nSubject: list\n\nold\n"
+
+
+def test_webmail_ad_footer_is_removed():
+    assert authored_text(YAHOO_FOOTER) == "Please reply to this test message.\n\nMany Thanks!\nLisa Scully"
+
+
+def test_inline_attachment_block_is_cut():
+    assert authored_text(INLINE_ATTACHMENT) == "See the quotes below."
+
+
+def test_raw_transport_headers_are_cut():
+    assert authored_text(RAW_HEADERS) == "fyi"
+
+
+def test_day_first_from_line_is_cut():
+    assert authored_text(DAY_FIRST) == "I will pick it up when I check your list."
+
+
+def test_underscore_separator_without_an_ad_is_kept():
+    body = "Agenda\n____________________\n1. Budget\n2. Hiring"
+    assert authored_text(body) == body
