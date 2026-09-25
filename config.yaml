@@ -78,9 +78,10 @@ formal_rank:
     In House Lawyer: 1
     Trader: 0
     Employee: 0
-  # Reviewed corrections: spelling errors in the 2004 list mapped to the
-  # person key found in the corpus. Every entry was checked against the
-  # person's own sent mail. Names not listed and not found stay unmatched
+  # Reviewed name corrections: misspellings and one alias (Harpreet -> Harry
+  # Arora) in the 2004 list mapped to the person key found in the corpus.
+  # Every target has sender evidence in the corpus (see the 2026-09-25 audit,
+  # "Title-source provenance"). Names not listed and not found stay unmatched
   # (e.g. "Jacob Thomas": the thomas-p mailbox belongs to Paul D. Thomas).
   corrections:
     Micheal Swerzzbin: michael swerzbin
@@ -97,10 +98,26 @@ formal_rank:
     # Homonym: the corpus separates Mark A Taylor and Mark E Taylor. The listed
     # Mark Taylor is the taylor-m custodian, whose sent mail is Mark E Taylor.
     Mark Taylor: mark e taylor
+  # Duplicate rows that give one person two titles. The Vice President rows
+  # are dropped and the Trader rows kept, as Diesner & Carley (2005, p. 5,
+  # fn. 3) did after checking FERC files.
+  dropped_rows:
+    - Micheal Swerzzbin
+    - James Schweiger
+  # Labels contradicted by the list's own note or by the person's signature.
+  # Kept in the main evaluation, flagged, and removed in a sensitivity run.
+  disputed:
+    sally beck: "listed Employee; list note says Chief Operating Officer"
+    richard buy: "listed Manager; list note says Chief Risk Management Officer; signature in buy-r/sent_items/208. says Executive Vice President"
+    rod hayslett: "listed Vice President; list note says also Chief Financial Officer and Treasurer"
+    vincent kaminski: "listed Manager; signature in kaminski-v/all_documents/11199. says Managing Director"
 
 evaluation:
   # Person-level bootstrap resamples for 95% intervals.
   bootstrap_reps: 1000
+  # Sensitivity runs rebuild the graph from messages with at most this many
+  # internal recipients, to show how much broadcasts drive each measure.
+  recipient_limits: [10, 50]
 
 validation:
   # Messages sampled (fixed seed) to cross-check quote removal against email_reply_parser.
