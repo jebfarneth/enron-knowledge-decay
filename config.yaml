@@ -62,9 +62,16 @@ identity:
   # A first/last name is split by middle initial when two initials each appear
   # on at least this many messages (Mark A Taylor vs Mark E Taylor).
   min_initial_support: 5
-  # A message without an initial takes the initial its directory ID or address
-  # uses on at least this share of its initialled messages.
+  # A message without an initial takes the initial its directory ID uses on at
+  # least this share of its initialled messages, or its address does when the
+  # address has at least min_initialled initialled messages (so a handful of
+  # initialled messages cannot assign dozens of unmarked ones).
   initial_share: 0.6667
+  min_initialled: 20
+  # A name key whose messages carry the same middle name at least this often,
+  # where that middle name plus the surname is an address's usual key
+  # ("Davis, Mark Dana" at the address of "Dana Davis"), is an alias of it.
+  go_by_share: 0.9
 
 threads:
   # A message is linked to the latest earlier message with the same normalized

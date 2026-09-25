@@ -11,6 +11,20 @@ def test_display_name_shapes_normalize_to_one_key():
     assert normalize_name("O'Neal, D'Arcy") == normalize_name("ONeal, DArcy") == "darcy oneal"
 
 
+def test_a_job_title_after_a_comma_is_not_a_first_name():
+    assert normalize_name("George Wasaff, Global Strategic Sourcing <George Wasaff, Global Strategic Sourcing@ENRON>") == "george wasaff"
+    assert normalize_name("Robert Knight, Director Voice Operations & Trading Technology") == "robert knight"
+    assert normalize_name("Davis, Mark Dana") == "mark davis"
+    assert normalize_name("Baughman Jr., Don") == "don baughman"
+
+
+def test_shared_mailboxes_and_rooms_are_roles():
+    room = normalize_name("Conf. Room ECN2760 </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MBX_CRECN2760>")
+    office = normalize_name("Legal - James Derrick Jr. </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MBX_ANNCLEGAL>")
+    assert entity_type(room) == entity_type(office) == "role"
+    assert entity_type(normalize_name("Conf. Room ECN2760")) == "role"
+
+
 def test_unusable_display_names_return_none():
     for value in [None, float("nan"), "", "jeff.dasovich@enron.com", "Enron", "J"]:
         assert normalize_name(value) is None, value
@@ -36,7 +50,8 @@ def test_numbered_role_mailboxes_stay_distinct():
 
 def resolve(rows, placeholders=()):
     messages = pd.DataFrame(rows, columns=["sender", "x_from"])
-    people, table, aliases = resolve_people(messages, "enron.com", list(placeholders), min_initial_support=2)
+    people, table, aliases, _ = resolve_people(messages, "enron.com", list(placeholders), min_initial_support=2,
+                                               min_initialled=2)
     return people, table.set_index("address"), aliases
 
 
@@ -142,3 +157,24 @@ def test_recipient_only_addresses_resolve_by_first_last_pattern_only():
     assert resolve_recipient("cliff.baxter@enron.com", {}, known) == "cliff.baxter@enron.com"
     assert entity_type("center.dl-portland@enron.com") == "list"
     assert entity_type("cliff.baxter@enron.com") == "address"
+
+
+def test_a_go_by_middle_name_joins_the_person_it_names():
+    people, _, aliases = resolve([
+        ("dana.davis@enron.com", "Dana Davis"),
+        ("dana.davis@enron.com", "Davis, Dana </O=ENRON/OU=NA/CN=RECIPIENTS/CN=DDAVIS>"),
+        ("dana.davis@enron.com", "Davis, Mark Dana </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MDAVIS>"),
+        ("mark.davis@enron.com", "Davis, Mark Dana"),
+        ("mark.davis@enron.com", "Davis, Mark Dana"),
+        ("other.davis@enron.com", "Mark Davis"),     # a different Mark Davis never uses the name Dana
+    ])
+    assert list(people.iloc[:5]) == ["dana davis"] * 5
+    assert people.iloc[5] == "mark davis" and "mark davis" not in aliases
+
+
+def test_a_few_initialled_messages_do_not_assign_many_unmarked_ones():
+    rows = ([(".palmer@enron.com", "Mark A Palmer")] * 3 + [("mark.palmer@enron.com", "Mark S Palmer")] * 3
+            + [("mark.palmer@enron.com", "Mark Palmer")] * 20)
+    messages = pd.DataFrame(rows, columns=["sender", "x_from"])
+    people, _, _, types = resolve_people(messages, "enron.com", [], min_initial_support=2, min_initialled=5)
+    assert set(people.iloc[6:]) == {"mark palmer"} and types["mark palmer"] == "ambiguous"
