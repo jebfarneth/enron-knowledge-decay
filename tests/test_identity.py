@@ -178,3 +178,15 @@ def test_a_few_initialled_messages_do_not_assign_many_unmarked_ones():
     messages = pd.DataFrame(rows, columns=["sender", "x_from"])
     people, _, _, types = resolve_people(messages, "enron.com", [], min_initial_support=2, min_initialled=5)
     assert set(people.iloc[6:]) == {"mark palmer"} and types["mark palmer"] == "ambiguous"
+
+
+def test_initial_inference_boundaries():
+    def assign(initialled_e, initialled_a, min_initialled):
+        rows = ([("m.t@enron.com", "Mark E Taylor")] * initialled_e + [("m.t@enron.com", "Mark A Taylor")] * initialled_a
+                + [("m.t@enron.com", "Mark Taylor")])
+        people, *_ = resolve_people(pd.DataFrame(rows, columns=["sender", "x_from"]), "enron.com", [],
+                                    min_initial_support=1, min_initialled=min_initialled)
+        return people.iloc[-1]
+    assert assign(2, 1, 3) == "mark e taylor"     # exactly two thirds, exactly the minimum
+    assert assign(2, 1, 4) == "mark taylor"       # one initialled message short
+    assert assign(3, 2, 5) == "mark taylor"       # 60% is under two thirds

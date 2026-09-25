@@ -295,8 +295,8 @@ def resolve_recipient(address: str, address_person: dict, people: set) -> str | 
     return address
 
 
-def main() -> None:
-    config = load_config()
+def main(config: dict | None = None) -> None:
+    config = config or load_config()
     spec = config["identity"]
     processed = config["paths"]["processed"]
     messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "sender", "x_from"])
