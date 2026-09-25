@@ -8,7 +8,7 @@ corpus:
   filename: enron_mail_20150507.tar.gz
   # CMU does not publish a checksum. This SHA-256 was recorded on the first
   # download (2026-09-25); any later download must match it byte for byte.
-  sha256: null
+  sha256: b3da1b3fe0369ec3140bb4fbce94702c33b7da810ec15d718b3fadf5cd748ca7
   bytes: 443254787
 
 paths:
