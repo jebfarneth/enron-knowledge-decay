@@ -44,6 +44,12 @@ _MARKERS = [
     ),
     # Bare quoted header block with no name line: "To:" then "cc:" then "Subject:".
     re.compile(r"^[ \t]*To:[^\n]*\n[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:", re.IGNORECASE | re.MULTILINE),
+    # Inline forwarded message: "--------- Inline attachment follows ---------".
+    re.compile(r"^[ \t]*-{3,}\s*Inline attachment follows\s*-{3,}", re.IGNORECASE | re.MULTILINE),
+    # Raw mail transport headers pasted into a body (a forwarded raw message).
+    re.compile(r"^(?:Received: from |Return-path: |Content-transfer-encoding: )", re.IGNORECASE | re.MULTILINE),
+    # "From: Name@ECT on 17-08-2000 09:10 CDT" (day-first date, 24-hour time, zone).
+    re.compile(r"^[ \t]*From:[^\n]*\bon \d{1,2}[-/.]\d{1,2}[-/.]\d{2,4} \d{1,2}:\d{2}(?::\d{2})?(?: ?[AP]M)?(?: [A-Z]{2,4})?[ \t]*$", re.MULTILINE),
     # "On <date>, <name> wrote:"
     re.compile(r"^\s*On .{5,120}wrote:\s*$", re.IGNORECASE | re.MULTILINE),
 ]
@@ -59,6 +65,11 @@ _DISCLAIMERS = [
         re.IGNORECASE | re.DOTALL,
     ),
 ]
+# Webmail advertising footers appended by the sender's mail provider.
+_PROVIDER_FOOTERS = re.compile(
+    r"\n[ \t]*_{10,}[ \t]*\n(?:[^\n]*\n){0,3}?[^\n]*(?:Do You Yahoo!\?|Get your FREE download of MSN|MSN Explorer|Hotmail\.com|Get Your Private, Free E-?mail|AOL Instant Messenger)[\s\S]*$",
+    re.IGNORECASE,
+)
 _QUOTED_LINE = re.compile(r"^\s*>.*$\n?", re.MULTILINE)
 _BLANK_RUNS = re.compile(r"\n\s*\n(\s*\n)+")
 
@@ -73,6 +84,7 @@ def authored_text(body) -> str:
     """The part of `body` written by the sender of this message."""
     body = (body if isinstance(body, str) else "").replace("\r\n", "\n").replace("\r", "\n")
     text = body[: reply_start(body)]
+    text = _PROVIDER_FOOTERS.sub("\n", text)
     for pattern in _DISCLAIMERS:
         text = pattern.sub("", text)
     text = _QUOTED_LINE.sub("", text)
