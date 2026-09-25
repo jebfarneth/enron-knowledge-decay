@@ -1,24 +1,38 @@
 {
   "messages": 5000,
-  "identical": 0.764,
-  "token_jaccard_median": 1.0,
-  "token_jaccard_ge_0_9": 0.7966,
+  "whitespace_normalized_agreement": 0.7748,
+  "token_set_jaccard_median": 1.0,
+  "token_set_jaccard_ge_0_9": 0.805,
+  "empty_output": {
+    "ours": 0.0732,
+    "email_reply_parser": 0.0354,
+    "empty_cleaner": 1.0
+  },
+  "median_share_of_text_kept": {
+    "ours": 1.0,
+    "email_reply_parser": 1.0,
+    "empty_cleaner": 0.0
+  },
   "residue": {
     "original_message": {
-      "ours": 0.0002,
-      "email_reply_parser": 0.0212
+      "ours": 0.0008,
+      "email_reply_parser": 0.02,
+      "empty_cleaner": 0.0
     },
     "forwarded_by": {
-      "ours": 0.0002,
-      "email_reply_parser": 0.0636
+      "ours": 0.0004,
+      "email_reply_parser": 0.0598,
+      "empty_cleaner": 0.0
     },
     "quoted_header": {
-      "ours": 0.0108,
-      "email_reply_parser": 0.079
+      "ours": 0.017,
+      "email_reply_parser": 0.0782,
+      "empty_cleaner": 0.0
     },
     "angle_quote": {
       "ours": 0.0,
-      "email_reply_parser": 0.001
+      "email_reply_parser": 0.0006,
+      "empty_cleaner": 0.0
     }
   }
 }
