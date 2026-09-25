@@ -20,11 +20,12 @@ Two further message-level flags:
 * structured: machine records rather than prose, whoever sent them
   (calendar entries, task and report notifications, payroll receipts,
   performance-review notices, mailbox synchronization logs).
-* routine: the sender repeats the same template at least `routine_repeats`
-  times. Routine messages stay in the network. They leave the text analysis
-  only when longer than `speech_act_words` words (reports, signature-only
-  forwards); short repeated utterances such as "approved", "please print" or
-  "will do" are speech acts and are kept.
+* routine: the sender sends the same whole text (digits masked) at least
+  `routine_repeats` times; a shared opening is not enough. Routine messages
+  stay in the network. They leave the text analysis only when longer than
+  `speech_act_words` words, counted over the whole message after dropping an
+  addressee line and a short sign-off; short repeated utterances such as
+  "approved", "please print" or "will do" are speech acts and are kept.
 
 These are heuristic flags, not a validated classifier.
 """
@@ -95,9 +96,16 @@ def sender_profiles(messages: pd.DataFrame, internal_domain: str, min_messages: 
     return profiles.sort_values("n_messages", ascending=False)
 
 
-def _repeats(messages: pd.DataFrame) -> tuple[pd.Series, pd.Series]:
+def full_template(text) -> str:
+    """Like `template_of` but over the whole message, not only its opening."""
+    text = text if isinstance(text, str) else ""
+    text = _SALUTATION.sub("", text, count=1)
+    return _SPACE.sub(" ", _DIGITS.sub("#", text.lower())).strip()
+
+
+def _repeats(messages: pd.DataFrame, template=template_of) -> tuple[pd.Series, pd.Series]:
     """Each message's template and how often its sender uses that template."""
-    templates = messages["authored"].map(template_of)
+    templates = messages["authored"].map(template)
     keyed = messages["sender"].map(lambda s: s if isinstance(s, str) else "") + "\x1f" + templates
     return templates, keyed.map(keyed.value_counts())
 
@@ -111,11 +119,21 @@ def automated_messages(messages: pd.DataFrame, profiles: pd.DataFrame) -> pd.Ser
 
 
 def routine_messages(messages: pd.DataFrame, min_repeats: int) -> pd.Series:
-    """True for messages whose template the same sender sends at least `min_repeats` times."""
-    templates, repeats = _repeats(messages)
+    """True for messages whose whole text the same sender sends at least `min_repeats` times."""
+    templates, repeats = _repeats(messages, full_template)
     return (templates != "") & (repeats >= min_repeats)
+
+
+def utterance_words(text) -> int:
+    """Words in a message after dropping an addressee line and a short sign-off ("Thanks, / DF")."""
+    lines = [line for line in _SALUTATION.sub("", text if isinstance(text, str) else "", count=1).splitlines()
+             if line.strip()]
+    for _ in range(3):  # sign-off lines of at most three words at the end
+        if len(lines) > 1 and len(lines[-1].split()) <= 3:
+            lines.pop()
+    return len(" ".join(lines).split())
 
 
 def speech_act(text, max_words: int) -> bool:
     """Short utterances ("approved", "please print") that stay in text analysis even when repeated."""
-    return 0 < len(template_of(text).split()) <= max_words
+    return 0 < utterance_words(text) <= max_words
