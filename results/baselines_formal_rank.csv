@@ -1,0 +1,6 @@
+measure,accuracy,ci_low,ci_high
+degree,0.6475,0.5680,0.7193
+in_strength,0.6035,0.5251,0.6743
+out_strength,0.5172,0.4389,0.5947
+pagerank,0.6140,0.5333,0.6846
+betweenness,0.5674,0.4831,0.6385

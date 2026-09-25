@@ -16,6 +16,7 @@ paths:
   interim: data/interim
   processed: data/processed
   figures: figures
+  results: results
 
 ingest:
   # Analysis window (inclusive). Messages dated outside it are counted in the
@@ -78,5 +79,9 @@ formal_rank:
     Daron Giron: darron giron
     John Giffith: john griffith
     Harpreet Arora: harry arora
+
+evaluation:
+  # Person-level bootstrap resamples for 95% intervals.
+  bootstrap_reps: 1000
 
 random_seed: 42
