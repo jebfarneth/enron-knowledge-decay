@@ -1,7 +1,8 @@
 """Communication network and standard centrality measures per entity.
 
 Graph: a directed edge u -> v exists when u emailed v (To or Cc) from an
-internal message that is neither automated nor a structured record. Senders are the per-message attribution
+internal message that is neither automated, a structured record nor a
+probable time-shifted copy. Senders are the per-message attribution
 from `identity.py`; recipients are resolved through the address table, and
 recipients never seen as senders stay as unresolved address nodes. Every node
 carries an entity type (person, role, list, address), so analyses can report
@@ -94,10 +95,10 @@ def centrality(edges: pd.DataFrame, sent: pd.Series | None = None, betweenness: 
 def network_messages(config: dict) -> pd.DataFrame:
     """Internal messages that are neither automated nor structured records, with their sender person."""
     processed = config["paths"]["processed"]
-    columns = ["path", "to", "cc", "sender_internal", "automated", "structured"]
+    columns = ["path", "to", "cc", "sender_internal", "automated", "structured", "probable_copy"]
     messages = pd.read_parquet(processed / "messages.parquet", columns=columns)
     messages = messages.merge(pd.read_parquet(processed / "sender_people.parquet"), on="path", how="left")
-    return messages[messages["sender_internal"] & ~messages["automated"] & ~messages["structured"]]
+    return messages[messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]]
 
 
 def recipient_resolver(config: dict) -> Callable[[str], str | None]:

@@ -1,13 +1,14 @@
 import pandas as pd
 
-from enron_importance.dedupe import deduplicate, normalize_subject, restrict_window
+from enron_importance.dedupe import deduplicate, flag_shifted_copies, normalize_subject, restrict_window
 
 
-def message(path, folder, body="Forecast attached.", message_id=None, date="2001-05-14 23:39", sender="a@enron.com", subject="West desk"):
+def message(path, folder, body="Forecast attached.", message_id=None, date="2001-05-14 23:39", sender="a@enron.com",
+            subject="West desk", to=("b@enron.com",), cc=()):
     return {
         "path": path, "folder": folder, "message_id": message_id,
         "date": pd.Timestamp(date, tz="UTC"), "sender": sender,
-        "subject": subject, "body": body,
+        "subject": subject, "body": body, "to": list(to), "cc": list(cc),
     }
 
 
@@ -17,9 +18,10 @@ def test_copies_in_several_folders_collapse_to_the_sent_copy():
         message("maildir/a/sent/7.", "sent", message_id="<2>", body="Forecast   attached.\n"),
         message("maildir/a/discussion_threads/3.", "discussion_threads", message_id="<3>", subject="RE: West desk"),
     ])
-    kept, stats = deduplicate(frame)
+    kept, stats, copies = deduplicate(frame)
     assert list(kept["folder"]) == ["sent"]
-    assert stats == {"duplicate_content": 2, "duplicate_message_id": 0}
+    assert stats == {"duplicate_content": 2, "duplicate_message_id": 0, "separate_sends_of_same_text": 0}
+    assert set(copies["kept_path"]) == {"maildir/a/sent/7."} and len(copies) == 2
 
 
 def test_same_message_id_is_a_duplicate_even_if_text_differs():
@@ -27,7 +29,7 @@ def test_same_message_id_is_a_duplicate_even_if_text_differs():
         message("maildir/a/inbox/1.", "inbox", message_id="<same>"),
         message("maildir/b/inbox/1.", "inbox", message_id="<same>", body="different rendering"),
     ])
-    kept, stats = deduplicate(frame)
+    kept, stats, _ = deduplicate(frame)
     assert len(kept) == 1 and stats["duplicate_message_id"] == 1
 
 
@@ -37,7 +39,7 @@ def test_different_messages_are_kept():
         message("maildir/a/sent/2.", "sent", body="second"),
         message("maildir/a/sent/3.", "sent", body="first", date="2001-05-15 09:00"),
     ])
-    kept, stats = deduplicate(frame)
+    kept, stats, _ = deduplicate(frame)
     assert len(kept) == 3 and stats["duplicate_content"] == 0
 
 
@@ -64,5 +66,33 @@ def test_missing_sender_and_body_from_parquet_are_handled():
         message("maildir/a/inbox/1.", "inbox", body=float("nan"), sender=float("nan"), subject=float("nan")),
         message("maildir/a/inbox/2.", "inbox", body=float("nan"), sender=float("nan"), subject=float("nan")),
     ])
-    kept, stats = deduplicate(frame)
+    kept, stats, _ = deduplicate(frame)
     assert len(kept) == 1 and stats["duplicate_content"] == 1
+
+
+def test_same_text_to_disjoint_distributions_is_two_sends():
+    frame = pd.DataFrame([
+        message("maildir/bass-e/sent/69.", "sent", body="http://short.url", to=["jim.schwieger@enron.com"]),
+        message("maildir/bass-e/sent/70.", "sent", body="http://short.url", to=["x@enron.com", "y@enron.com"]),
+        message("maildir/bass-e/_sent_mail/5.", "_sent_mail", body="http://short.url", to=["x@enron.com", "y@enron.com"]),
+        message("maildir/x/inbox/1.", "inbox", body="http://short.url", to=[]),
+    ])
+    kept, stats, copies = deduplicate(frame)
+    assert sorted(kept["path"]) == ["maildir/bass-e/sent/69.", "maildir/bass-e/sent/70."]
+    assert stats["separate_sends_of_same_text"] == 1
+    assert copies.set_index("path").loc["maildir/bass-e/_sent_mail/5.", "kept_path"] == "maildir/bass-e/sent/70."
+
+
+def test_whole_hour_shifted_copies_are_flagged_not_removed():
+    body = "Please review the attached turbine contract before Friday's call with the lenders. " * 2
+    frame = pd.DataFrame([
+        message("maildir/salisbury-h/inbox/1079.", "inbox", body=body, date="2001-06-11 23:23:06"),
+        message("maildir/williams-w3/sent_items/512.", "sent_items", body=body, date="2001-06-12 02:23:06"),
+        message("maildir/a/sent/9.", "sent", body=body, date="2001-06-12 02:23:07"),     # not whole hours
+        message("maildir/a/sent/10.", "sent", body=body, date="2001-06-13 02:23:06"),    # a day later
+        message("maildir/a/sent/11.", "sent", body="short", date="2001-06-11 01:00"),
+        message("maildir/a/sent/12.", "sent", body="short", date="2001-06-11 04:00"),   # too short to judge
+    ])
+    flags = flag_shifted_copies(frame, max_hours=8, min_chars=100)
+    assert flags.iloc[1] == "maildir/salisbury-h/inbox/1079."
+    assert flags.drop(index=1).isna().all()

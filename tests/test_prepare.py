@@ -50,6 +50,7 @@ def build(tmp_path):
                    "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()},
         "paths": {"raw": raw, "interim": tmp_path / "interim", "processed": tmp_path / "processed"},
         "ingest": {"start": "1998-01-01", "end": "2002-12-31"},
+        "dedupe": {"max_shift_hours": 8, "min_body_chars": 100},
         "senders": {"internal_domain": "enron.com", "min_messages": 50, "feed_share": 0.9, "top_templates": 3, "routine_repeats": 10, "speech_act_words": 4},
         "threads": {"max_reply_days": 14},
     }
@@ -70,4 +71,4 @@ def test_end_to_end_funnel(tmp_path):
     assert reply["authored"] == "Section 4 is fine."
     assert reply["response_seconds"] == 5400
     saved = json.loads((tmp_path / "processed" / "funnel.json").read_text())
-    assert set(saved["outputs"]) == {"messages.parquet", "senders.parquet"}
+    assert set(saved["outputs"]) == {"messages.parquet", "senders.parquet", "copies.parquet"}

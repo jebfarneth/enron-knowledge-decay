@@ -24,6 +24,14 @@ ingest:
   start: "1998-01-01"
   end: "2002-12-31"
 
+dedupe:
+  # A message is flagged as a probable time-shifted copy of an earlier one
+  # with the same sender, subject, recipients and body (over min_body_chars
+  # characters) sent exactly 1 to max_shift_hours whole hours before it.
+  # Flagged copies stay in the data but leave the network and text analysis.
+  max_shift_hours: 8
+  min_body_chars: 100
+
 senders:
   internal_domain: enron.com
   # Templates are the first 80 characters of authored text with digits masked;
