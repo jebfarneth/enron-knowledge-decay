@@ -1,0 +1,30 @@
+{
+  "employees": 2200,
+  "employees_with_email": 1518,
+  "match_status": {
+    "name+address": 933,
+    "address node": 424,
+    "name": 70,
+    "ambiguous": 56,
+    "absent": 35
+  },
+  "employees_with_mixed_positions": 8,
+  "pairs": {
+    "main": 13241,
+    "positions closed before mapping": 8916,
+    "cycle arcs removed before closure": 12606
+  },
+  "main_pairs_by_type": {
+    "non-core": 7121,
+    "inter": 5633,
+    "core": 487
+  },
+  "main_pairs_both_mapped_unmixed": 11372,
+  "paper": {
+    "immediate_relations": 2155,
+    "pairs": 13724,
+    "core": 440,
+    "inter": 6436,
+    "non_core": 6847
+  }
+}

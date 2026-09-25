@@ -1,23 +1,36 @@
-"""Real-corpus cases from the 2026-09-25 audit, checked against the generated data.
+"""Real-corpus cases from the 2026-09-25 audits, checked against the generated data.
 
-Skipped when data/processed has not been built. Each case is a message or
-address the audit showed the earlier pipeline got wrong.
+Run after the pipeline (`make regress`). Skipped when data/processed has not
+been built; fails when it was built by different code than the current
+source, so old outputs cannot certify new code. Each case is a message or
+address the audits showed an earlier pipeline got wrong, and every case must
+be present.
 """
+
+import json
 
 import pandas as pd
 import pytest
 
 from enron_importance.config import load_config
+from enron_importance.prepare import code_hash
 
 PROCESSED = load_config()["paths"]["processed"]
-pytestmark = pytest.mark.skipif(not (PROCESSED / "sender_people.parquet").exists(), reason="generated data not built")
+pytestmark = [pytest.mark.corpus,
+              pytest.mark.skipif(not (PROCESSED / "links.parquet").exists(), reason="generated data not built")]
+
+
+def test_generated_data_comes_from_the_current_code():
+    manifest = json.loads((PROCESSED / "funnel.json").read_text())
+    assert manifest["code_sha256"] == code_hash(), "data/processed was built by other code: rerun the pipeline"
 
 
 @pytest.fixture(scope="module")
 def messages():
-    columns = ["path", "sender", "automated", "structured", "analysis", "reply_to"]
+    columns = ["path", "sender", "automated", "structured", "routine", "analysis"]
     frame = pd.read_parquet(PROCESSED / "messages.parquet", columns=columns)
-    return frame.merge(pd.read_parquet(PROCESSED / "sender_people.parquet"), on="path").set_index("path", drop=False)
+    frame = frame.merge(pd.read_parquet(PROCESSED / "sender_people.parquet"), on="path")
+    return frame.merge(pd.read_parquet(PROCESSED / "links.parquet"), on="path").set_index("path", drop=False)
 
 
 @pytest.fixture(scope="module")
@@ -45,18 +58,34 @@ def test_albert_and_bert_meyers_are_one_person(identities):
     assert identities.loc["albert.meyers@enron.com", "person_key"] == identities.loc["bert.meyers@enron.com", "person_key"]
 
 
+def test_mark_dana_davis_is_dana_davis(messages):
+    assert messages.loc["maildir/benson-r/deleted_items/89.", "sender_person"] == "dana davis"
+
+
+def test_title_suffixes_and_rooms_do_not_become_people(messages):
+    assert messages.loc["maildir/salisbury-h/read/297.", "sender_person"] == "george wasaff"
+    assert messages.loc["maildir/salisbury-h/read/314.", "sender_person"] == "robert knight"
+    types = pd.read_parquet(PROCESSED / "person_types.parquet").set_index("person_key")["entity_type"]
+    assert types[messages.loc["maildir/may-l/calendar/1.", "sender_person"]] == "role"
+
+
 def test_pete_davis_bug_reports_are_kept(messages):
     for path in ["maildir/guzman-m/notes_inbox/1236.", "maildir/guzman-m/notes_inbox/1255."]:
-        if path in messages.index:
-            assert not messages.loc[path, "automated"], path
+        assert not messages.loc[path, "automated"], path
 
 
 def test_calendar_entries_are_structured_records(messages):
-    assert messages.loc["maildir/blair-l/meetings/100.", "structured"]
+    for path in ["maildir/blair-l/meetings/100.", "maildir/nemec-g/notes_inbox/2242."]:
+        assert messages.loc[path, "structured"], path
 
 
 def test_repeated_approvals_stay_in_text_analysis(messages):
     assert messages.loc["maildir/donoho-l/deleted_items/101.", "analysis"]
+
+
+def test_long_messages_do_not_pass_as_speech_acts(messages):
+    for path in ["maildir/baughman-d/inbox/304.", "maildir/benson-r/inbox/116.", "maildir/causholli-m/deleted_items/106."]:
+        assert not (messages.loc[path, "routine"] and messages.loc[path, "analysis"]), path
 
 
 def test_separate_sends_of_one_text_are_both_kept(messages):
@@ -64,11 +93,6 @@ def test_separate_sends_of_one_text_are_both_kept(messages):
 
 
 def test_audited_wrong_parents_are_not_linked(messages):
-    rows = messages.reset_index(drop=True)
-    parent = rows["reply_to"].map(lambda i: rows.at[int(i), "path"] if pd.notna(i) else None)
-    parent.index = rows["path"]
     for child, wrong in [("maildir/hodge-j/deleted_items/466.", "maildir/heard-m/inbox/255."),
-                         ("maildir/kaminski-v/var/2.", "maildir/kaminski-v/sent/8."),
-                         ("maildir/guzman-m/notes_inbox/581.", "maildir/guzman-m/notes_inbox/582.")]:
-        if child in parent.index:
-            assert parent[child] != wrong, child
+                         ("maildir/kaminski-v/var/2.", "maildir/kaminski-v/sent/8.")]:
+        assert messages.loc[child, "parent_path"] != wrong, child

@@ -120,10 +120,10 @@ def main() -> None:
     processed = config["paths"]["processed"]
     edges, sent = build_edges(network_messages(config), recipient_resolver(config), config["senders"]["internal_domain"])
     edges.to_parquet(processed / "edges.parquet", index=False)
-    identities = pd.read_parquet(processed / "identities.parquet")
-    ambiguous = set(identities.loc[identities["entity_type"] == "ambiguous", "person_key"])
+    types = pd.read_parquet(processed / "person_types.parquet")
+    types = dict(zip(types["person_key"], types["entity_type"]))
     measures = centrality(edges, sent)
-    measures["entity_type"] = measures["person_key"].map(lambda k: entity_type(k, ambiguous))
+    measures["entity_type"] = measures["person_key"].map(lambda k: types.get(k) or entity_type(k))
     measures.to_parquet(processed / "centrality.parquet", index=False)
     print(f"{len(measures):,} nodes, {len(edges):,} directed edges")
     print(measures["entity_type"].value_counts().to_string())

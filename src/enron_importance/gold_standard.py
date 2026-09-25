@@ -1,31 +1,60 @@
 """Dominance pairs from the Agarwal et al. (2012) Enron hierarchy gold standard.
 
-The Columbia release (shared by Owen Rambow, 2026-09-25) is a MongoDB dump;
-its `entities` collection holds org-chart positions transcribed from Enron
-org charts, as position nodes joined by "contains", "manages" and
-"supervises" edges through organizational units. Following the paper, an
-employee immediately dominates another when a path leads from one's
-position to the other's through units only, and the dominance pairs are the
-transitive closure of those immediate relations, restricted to the 1,518
-employees with email addresses. Pairs recorded in both directions (a cycle
-in the transcription) are dropped.
+The Columbia release (shared privately by Owen Rambow, 2026-09-25) is a
+MongoDB dump; its `entities` collection holds org-chart positions
+transcribed from Enron org charts, as position nodes joined by "contains",
+"manages" and "supervises" edges through organizational units. Edges are
+read from both the position nodes and the top level of each record. An
+employee immediately dominates another when a path leads from one of their
+positions to one of the other's through units only; the dominance pairs are
+the transitive closure of those immediate relations, restricted to the 1,518
+employees with email addresses. Positions sharing an employee record are
+merged before the closure, and a pair recorded in both directions is dropped.
+The 682 records without email (including vacant and "?" positions) stay in
+the closure as intermediaries.
 
-The paper reports 13,724 pairs; this release yields slightly fewer (see
-`main`'s output), so results are compared with the paper's as related, not
-identical, benchmarks.
+This does not reproduce the paper's counts (2,155 immediate relations and
+13,724 pairs), and the release does not say which construction the paper
+used, so two alternatives are also written for sensitivity runs:
+positions closed before mapping to employees, and arcs inside any
+contradictory cycle removed before the closure (the one cycle joins Greg
+Whalley and Mark Frevert through different positions).
 
-Employees are matched to graph nodes through their email addresses, using
-the same address table and recipient resolution as the network (see
-`match_people` for how several candidate nodes are resolved).
-Custodians (people whose mailboxes are in the corpus, the paper's "core")
-are marked so accuracy can be split into core, inter and non-core pairs.
+Matching employees to graph nodes. For executives the release's address
+list often holds their assistants' addresses (Phillip Allen's record lists
+Ina Rangel's, John Lavorato's Angela McCulloch's), so employees are matched
+by their principal name, not by address:
+
+1. The principal name is the release name whose surname and first initial
+   match the employee's mailbox (Allen-P), or else the name the release
+   gives most often. A tie leaves the employee ambiguous.
+2. The name is normalized and aliased as in `identity.py`. A graph person
+   with that key is the match ("name+address" when one of the release's
+   addresses also resolves to it, otherwise "name"); a `first.last@`
+   address node spelled from one of the release's own names is the match
+   when no person node exists ("address node"; among several, the one
+   spelled exactly as the normalized name). A key the identity stage marks
+   ambiguous, or several address nodes none spelled that way, leaves the
+   employee "ambiguous"; no candidate in the graph is "absent".
+
+No tie is broken by spelling order and no measure's value is read, though
+any matching rule still affects measures unequally (see the sensitivity
+runs). Records whose known positions combine a support position (a title
+ending in Assistant, Asst or Secretary) with a different one (Sally Beck,
+Steven Kean, Mike McConnell) are flagged `mixed_positions`: the release
+merged two people's positions, or one person's positions over time, which
+matching cannot undo. Custodians
+(records with mailboxes in the corpus, the paper's "core") are marked so
+accuracy can be split into core, inter and non-core pairs.
 
 Usage: uv run python -m enron_importance.gold_standard
 """
 
 from __future__ import annotations
 
-import sys
+import json
+import re
+from collections import Counter
 
 import bson
 import networkx as nx
@@ -33,7 +62,23 @@ import pandas as pd
 
 from .config import load_config
 from .download import sha256_of
-from .identity import resolve_recipient
+from .identity import normalize_name, resolve_recipient
+
+MAPPED = {"name+address", "name", "address node"}
+# A support position: the title ends in Assistant, Asst or Secretary ("Sr Admin Asst",
+# "Executive Secretary"), not "Asst General Counsel" or the officer "Corporate Secretary".
+_ASSISTANT = re.compile(r"\b(assistant|asst|secretary)(\s+i+)?\s*$", re.IGNORECASE)
+_UNKNOWN_TITLE = re.compile(r"^\W*\?")
+
+
+def is_assistant(title: str) -> bool:
+    return bool(_ASSISTANT.search(title)) and not title.strip().lower().startswith("corporate secretary")
+
+
+def mixed_positions(titles: list[str]) -> bool:
+    """True when a record holds an assistant position and a different, known position."""
+    known = [t for t in titles if t.strip() and not _UNKNOWN_TITLE.match(t)]
+    return any(map(is_assistant, known)) and not all(map(is_assistant, known))
 
 
 def read_entities(path) -> list[dict]:
@@ -41,8 +86,29 @@ def read_entities(path) -> list[dict]:
         return list(bson.decode_file_iter(handle))
 
 
-def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Employees table and (dominant, subordinate) pairs among employees with email."""
+def _walk_to_employees(graph: nx.DiGraph, start: str, owner: dict) -> set[str]:
+    """Employee-owned positions reached from `start` through units only."""
+    found, stack, seen = set(), list(graph.successors(start)) if start in graph else [], set()
+    while stack:
+        current = stack.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        if current in owner:
+            found.add(current)
+        else:
+            stack.extend(graph.successors(current))
+    return found
+
+
+def _asymmetric_closure(immediate: set, keep: set) -> list[tuple[str, str]]:
+    closure = nx.DiGraph(immediate)
+    pairs = {(a, b) for a in closure for b in nx.descendants(closure, a) if a in keep and b in keep and a != b}
+    return sorted((a, b) for a, b in pairs if (b, a) not in pairs)
+
+
+def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, pd.DataFrame]]:
+    """Employees, the main (dominant, subordinate) pairs, and alternative constructions."""
     edges = set()
     owner: dict[str, str] = {}
     rows = []
@@ -55,80 +121,139 @@ def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
         if "position" in doc:
             person = str(doc.get("uid", doc["_id"]))
             owner.update({node["uid"]: person for node in doc["position_nodes"]})
-            rows.append({"gold_id": person, "has_email": "uid" in doc, "position": doc["position"],
-                         "addresses": [a.lower() for a in doc.get("email_addresses") or [] if "@" in a],
-                         "names": list(doc.get("email_names") or []), "custodian": bool(doc.get("mailboxes"))})
+            titles = [str(node.get("position") or "") for node in doc["position_nodes"]]
+            rows.append({
+                "gold_id": person, "has_email": "uid" in doc, "position": doc["position"],
+                "addresses": [a.lower() for a in doc.get("email_addresses") or [] if "@" in a],
+                "names": [n for n in doc.get("email_names") or [] if isinstance(n, str)],
+                "mailboxes": [m for m in doc.get("mailboxes") or [] if isinstance(m, str)],
+                "custodian": bool(doc.get("mailboxes")),
+                "mixed_positions": mixed_positions(titles),
+            })
     graph = nx.DiGraph(edges)
-    immediate = set()
-    for node, person in owner.items():
-        stack, seen = list(graph.successors(node)) if node in graph else [], set()
-        while stack:  # walk down through units until the next employees
-            current = stack.pop()
-            if current in seen:
-                continue
-            seen.add(current)
-            if current in owner:
-                if owner[current] != person:
-                    immediate.add((person, owner[current]))
-            else:
-                stack.extend(graph.successors(current))
-    closure = nx.DiGraph(immediate)
     employees = pd.DataFrame(rows)
     emailers = set(employees.loc[employees["has_email"], "gold_id"])
-    pairs = {(a, b) for a in closure for b in nx.descendants(closure, a) if a in emailers and b in emailers}
-    pairs = sorted((a, b) for a, b in pairs if (b, a) not in pairs)
-    return employees, pd.DataFrame(pairs, columns=["dominant", "subordinate"])
+
+    position_immediate = {(node, target) for node in owner for target in _walk_to_employees(graph, node, owner)}
+    immediate = {(owner[a], owner[b]) for a, b in position_immediate if owner[a] != owner[b]}
+    main = _asymmetric_closure(immediate, emailers)
+
+    cyclic = set()
+    for component in nx.strongly_connected_components(nx.DiGraph(immediate)):
+        if len(component) > 1:
+            cyclic |= {(a, b) for a, b in immediate if a in component and b in component}
+    position_pairs = {(owner[a], owner[b]) for a, b in _asymmetric_closure(position_immediate, set(owner))
+                      if owner[a] != owner[b] and owner[a] in emailers and owner[b] in emailers}
+    alternatives = {
+        "positions closed before mapping": sorted(p for p in position_pairs if (p[1], p[0]) not in position_pairs),
+        "cycle arcs removed before closure": _asymmetric_closure(immediate - cyclic, emailers),
+    }
+    frame = lambda pairs: pd.DataFrame(pairs, columns=["dominant", "subordinate"])  # noqa: E731
+    return employees, frame(main), {name: frame(pairs) for name, pairs in alternatives.items()}
 
 
-def match_people(employees: pd.DataFrame, identities: pd.DataFrame, nodes=frozenset()) -> pd.Series:
-    """Corpus node for each gold employee, or None.
+def principal_name(names: list[str], mailboxes: list[str]) -> str | None:
+    """The normalized name the record belongs to: mailbox-matched, else most frequent, else None on a tie."""
+    keys = [k for k in map(normalize_name, names) if k and "@" not in k]
+    counts = Counter(keys)
+    for mailbox in mailboxes:
+        surname, _, initial = mailbox.lower().partition("-")
+        matching = {k for k in counts if k.split()[-1] == surname and (not initial or k.split()[0].startswith(initial[0]))}
+        if len(matching) == 1:
+            return matching.pop()
+    if not counts:
+        return None
+    ranked = counts.most_common()
+    if len(ranked) > 1 and ranked[0][1] == ranked[1][1]:
+        return None
+    return ranked[0][0]
 
-    An employee's addresses can resolve to several nodes. Resolved people
-    are preferred to bare address nodes, then nodes present in the graph
-    (`nodes`), then the node most of their addresses resolve to, then the
-    alphabetically first. No measure's value is used, so the choice cannot
-    favour one measure.
-    """
+
+def match_people(employees: pd.DataFrame, identities: pd.DataFrame, nodes=frozenset(), aliases=None,
+                 types=None) -> pd.DataFrame:
+    """Graph node (`person_key`) and `match_status` for each gold employee; see the module docstring."""
+    aliases, types = aliases or {}, types or {}
     address_person = dict(zip(identities["address"], identities["person_key"]))
     people = set(identities.loc[identities["entity_type"] == "person", "person_key"])
 
-    def match(addresses):
-        keys = [resolve_recipient(a, address_person, people) for a in addresses if a.endswith("@enron.com")]
-        counts = pd.Series([k for k in keys if isinstance(k, str)]).value_counts()
-        if counts.empty:
-            return None
-        return min(counts.index, key=lambda k: (k not in people, k not in nodes, -counts[k], k))
+    def match(names, addresses, mailboxes):
+        key = principal_name(names, mailboxes)
+        if key is None:
+            return None, "ambiguous" if names else "absent"
+        key = aliases.get(key, key)
+        if types.get(key) == "ambiguous":
+            return None, "ambiguous"
+        if key in nodes and types.get(key, "person") == "person":
+            resolved = {resolve_recipient(a, address_person, people) for a in addresses if a.endswith("@enron.com")}
+            return key, "name+address" if key in resolved else "name"
+        spelled = set()
+        for name in names:
+            if normalize_name(name) is not None and aliases.get(normalize_name(name), normalize_name(name)) == key:
+                words = [w for w in re.sub(r"[^a-z\s]", " ", name.lower()).split() if len(w) > 1]
+                if len(words) >= 2:
+                    spelled.add(f"{words[0]}.{words[-1]}@enron.com")
+        present = sorted(a for a in spelled if a in nodes)
+        canonical = f"{key.split()[0]}.{key.split()[-1]}@enron.com"
+        if len(present) > 1 and canonical in present:
+            present = [canonical]  # "thomas.white@" over "tom.white@" for the key "thomas white"
+        if len(present) == 1:
+            return present[0], "address node"
+        return None, "ambiguous" if len(present) > 1 else "absent"
 
-    return employees["addresses"].map(match)
+    matched = [match(n, a, m) for n, a, m in zip(employees["names"], employees["addresses"], employees["mailboxes"])]
+    return pd.DataFrame(matched, columns=["person_key", "match_status"], index=employees.index)
 
 
-def main() -> None:
-    config = load_config()
+def label_pairs(pairs: pd.DataFrame, employees: pd.DataFrame) -> pd.DataFrame:
+    """Attach graph keys, match statuses and core/inter/non-core type to (dominant, subordinate) pairs."""
+    table = employees.set_index("gold_id")
+    out = pairs.copy()
+    for role in ["dominant", "subordinate"]:
+        out[f"{role}_key"] = out[role].map(table["person_key"])
+        out[f"{role}_status"] = out[role].map(table["match_status"])
+        out[f"{role}_mixed"] = out[role].map(table["mixed_positions"]).astype(bool)
+    core = out["dominant"].map(table["custodian"]).astype(int) + out["subordinate"].map(table["custodian"]).astype(int)
+    out["type"] = core.map({2: "core", 1: "inter", 0: "non-core"})
+    return out
+
+
+def main(config: dict | None = None) -> None:
+    config = config or load_config()
     spec = config["gold_standard"]
     source = config["paths"]["raw"] / spec["entities"]
     if not source.exists():
-        sys.exit(f"{source} missing: download the Columbia release (see config.yaml gold_standard)")
+        print(f"Skipped: {source} not found. The release is not public; request it from the authors (config.yaml).")
+        return
     if sha256_of(source) != spec["sha256"]:
-        sys.exit(f"{source.name}: SHA-256 mismatch")
-    employees, pairs = dominance_pairs(read_entities(source))
+        raise SystemExit(f"{source.name}: SHA-256 mismatch")
+    employees, pairs, alternatives = dominance_pairs(read_entities(source))
     processed = config["paths"]["processed"]
     nodes = set(pd.read_parquet(processed / "centrality.parquet", columns=["person_key"])["person_key"])
-    employees["person_key"] = match_people(employees, pd.read_parquet(processed / "identities.parquet"), nodes)
-    key = dict(zip(employees["gold_id"], employees["person_key"]))
-    custodian = dict(zip(employees["gold_id"], employees["custodian"]))
-    pairs["dominant_key"] = pairs["dominant"].map(key)
-    pairs["subordinate_key"] = pairs["subordinate"].map(key)
-    core = pairs["dominant"].map(custodian).astype(int) + pairs["subordinate"].map(custodian).astype(int)
-    pairs["type"] = core.map({2: "core", 1: "inter", 0: "non-core"})
+    aliases = pd.read_parquet(processed / "name_aliases.parquet")
+    types = pd.read_parquet(processed / "person_types.parquet")
+    employees = employees.join(match_people(employees, pd.read_parquet(processed / "identities.parquet"), nodes,
+                                            dict(zip(aliases["name_key"], aliases["person_key"])),
+                                            dict(zip(types["person_key"], types["entity_type"]))))
     employees.to_parquet(processed / "gold_employees.parquet", index=False)
-    pairs.to_parquet(processed / "gold_pairs.parquet", index=False)
+    labelled = pd.concat([label_pairs(pairs, employees).assign(construction="main")]
+                         + [label_pairs(p, employees).assign(construction=name) for name, p in alternatives.items()])
+    labelled.to_parquet(processed / "gold_pairs.parquet", index=False)
+
     emailers = employees[employees["has_email"]]
-    print(f"{len(employees):,} org-chart employees, {len(emailers):,} with email; {len(pairs):,} dominance pairs "
-          f"(paper: 13,724)")
-    print(pairs["type"].value_counts().to_string())
-    matched = pairs["dominant_key"].notna() & pairs["subordinate_key"].notna()
-    print(f"employees with email matched to a graph node: {emailers['person_key'].notna().sum():,}; "
-          f"pairs with both matched: {matched.sum():,}")
+    main_pairs = labelled[labelled["construction"] == "main"]
+    usable = (main_pairs["dominant_status"].isin(MAPPED) & main_pairs["subordinate_status"].isin(MAPPED)
+              & ~main_pairs["dominant_mixed"] & ~main_pairs["subordinate_mixed"])
+    coverage = {
+        "employees": len(employees), "employees_with_email": len(emailers),
+        "match_status": {k: int(v) for k, v in emailers["match_status"].value_counts().items()},
+        "employees_with_mixed_positions": int(emailers["mixed_positions"].sum()),
+        "pairs": {name: int((labelled["construction"] == name).sum()) for name in labelled["construction"].unique()},
+        "main_pairs_by_type": {k: int(v) for k, v in main_pairs["type"].value_counts().items()},
+        "main_pairs_both_mapped_unmixed": int(usable.sum()),
+        "paper": {"immediate_relations": 2155, "pairs": 13724, "core": 440, "inter": 6436, "non_core": 6847},
+    }
+    (processed / "gold_coverage.json").write_text(json.dumps(coverage, indent=2) + "\n")
+    print(json.dumps(coverage, indent=2))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 measure,versus,difference,ci_low,ci_high
-degree,in_strength,0.0424,0.0001,0.0863
-degree,out_strength,0.1326,0.0771,0.1951
-degree,pagerank,0.0374,-0.0056,0.0782
-degree,betweenness,0.0811,0.0355,0.1264
+degree,in_strength,0.0429029671,0.0021989015,0.0870669119
+degree,out_strength,0.1368083400,0.0847625007,0.1973356794
+degree,pagerank,0.0369687249,-0.0077288401,0.0812903642
+degree,betweenness,0.0827586207,0.0388599330,0.1301120651

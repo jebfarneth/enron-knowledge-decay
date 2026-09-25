@@ -28,11 +28,12 @@ _MARKERS = [
     re.compile(r"^\s*-{3,}\s*Forwarded by .*$", re.IGNORECASE | re.MULTILINE),
     # Outlook-style header block quoted inline ("From: x" then "Sent:" within two lines).
     re.compile(r"^\s*From:\s.*\n(?:.*\n){0,2}?\s*Sent:\s", re.IGNORECASE | re.MULTILINE),
-    # Lotus Notes reply header: a name or address line, a date line, To:, then
-    # cc: or Subject: ("Kay Mann@ENRON" / "05/22/2001 03:03 PM" / "To:" / "cc:").
+    # Lotus Notes reply header: a name or address line (optionally "Sent by:"),
+    # a date line, To:, then cc: or Subject:, allowing a To list that wraps
+    # over many lines ("Kay Mann@ENRON" / "05/22/2001 03:03 PM" / "To:" / "cc:").
     re.compile(
-        r"^[^\n]{1,80}\n\s*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M\s*\n(?:.*\n){0,2}?\s*To:[^\n]*\n"
-        r"(?:.*\n){0,2}?\s*(?:cc|Subject):",
+        r"^[^\n]{1,80}\n(?:[ \t]*Sent by:[^\n]*\n)?\s*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M\s*\n"
+        r"(?:.*\n){0,2}?\s*To:[^\n]*\n(?:.*\n){0,30}?\s*(?:cc|Subject):",
         re.MULTILINE,
     ),
     # Single-line variant: "Name/ENRON@enronXgate on 03/30/2001 07:45 AM" or
@@ -52,8 +53,9 @@ _MARKERS = [
         r"^[ \t]*[A-Za-z][^\n]{0,80}?[ \t]{2,}\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})? ?[AP]M[ \t]*\n(?:[ \t]*\n)*[ \t]*To:\s",
         re.MULTILINE,
     ),
-    # Bare quoted header block with no name line: "To:" then "cc:" then "Subject:".
-    re.compile(r"^[ \t]*To:[^\n]*\n[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:", re.IGNORECASE | re.MULTILINE),
+    # Bare quoted header block with no name line: "To:" (possibly wrapped), "cc:", "Subject:".
+    re.compile(r"^[ \t]*To:[^\n]*\n(?:[^\n:]*\n){0,30}?[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:",
+               re.IGNORECASE | re.MULTILINE),
     # Inline forwarded message: "--------- Inline attachment follows ---------".
     re.compile(r"^[ \t]*-{3,}\s*Inline attachment follows\s*-{3,}", re.IGNORECASE | re.MULTILINE),
     # Raw mail transport headers pasted into a body (a forwarded raw message).

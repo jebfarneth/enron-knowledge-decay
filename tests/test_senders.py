@@ -104,6 +104,12 @@ def test_structured_records_are_not_prose():
     assert structured_record("ARNOLD, JOHN D:\n \nAttached below you will find the final Evaluation forms for your direct reports")
     assert structured_record("Thank you for changing lives.\n\nEmployee ID:  90009776")
     assert not structured_record("Can you check the calendar entry for Friday?")
+    for text in ["Calendar Entry\n\nBrief description:\nDate:", "This in an automated e-mail sent out from the Commissioner.COM",
+                 "Requester: Ian Cooke\nRequest Type: Vacation", "Feb 02, 2001\n\nYEAR END 2000 PERFORMANCE EVALUATION FORMS ARE DUE",
+                 "MAY,  LARRY ,\n \nYou have been selected to participate in Enron's Mid Year 2001 Performance Management process",
+                 "NOTE:  YOU WILL RECEIVE THIS MESSAGE EACH TIME YOU ARE SELECTED AS A REVIEWER."]:
+        assert structured_record(text), text
+    assert name_rule("daemon.extra@enron.com")
 
 
 def test_repeated_short_speech_acts_stay_in_text_analysis():
@@ -111,3 +117,20 @@ def test_repeated_short_speech_acts_stay_in_text_analysis():
         assert speech_act(text, 4), text
     assert not speech_act("Attached is the credit watch listing for this week.", 4)
     assert not speech_act("", 4)
+    assert speech_act("Please see attached.\n\nThanks,\nWendi LeBrocq\nx3-3835", 4)
+
+
+def test_length_counts_the_whole_message_not_its_opening():
+    divider = "=" * 90
+    digest = f"{divider}\n" + "The committee met today and approved the new budget for the west desk. " * 20
+    assert not speech_act(digest, 4)
+    assert not speech_act("http://www.example.com/" + "a" * 80 + " Enron shares fell again today as traders sold.", 4)
+
+
+def test_routine_needs_the_whole_text_repeated_not_just_the_opening():
+    notice = "PRIVILEGED AND CONFIDENTIAL - ATTORNEY WORK PRODUCT. "
+    rows = [{"sender": "britt.davis@enron.com", "authored": notice + f"Analysis of claim {c}: the {c} indemnity fails."}
+            for c in "abcdefghijkl"]
+    frame = pd.DataFrame(rows)
+    assert not routine_messages(frame, min_repeats=10).any()
+    assert routine_messages(pd.DataFrame([{"sender": "a@enron.com", "authored": notice}] * 10), 10).all()

@@ -17,12 +17,20 @@ Three rules refine the key, each backed by evidence in the headers:
 * Homonyms: when one first/last key carries two different middle initials,
   each on at least `min_initial_support` messages ("Mark A Taylor" and
   "Mark E Taylor"), the key is split by initial. A message without an
-  initial takes the initial its directory ID or address uses on at least
-  `initial_share` of its initialled messages; otherwise it stays on the
-  ambiguous first/last key.
+  initial takes the initial its directory ID uses on at least
+  `initial_share` of its initialled messages, or its address does when the
+  address has at least `min_initialled` initialled messages; otherwise it
+  stays on the ambiguous first/last key.
+* Go-by names: a message signed with a middle name the address usually goes
+  by ("Davis, Mark Dana" at the address of "Dana Davis") belongs to that
+  person, and a key whose messages nearly all carry that middle name is an
+  alias of it.
 * Roles: names containing role words or numbers ("Legal Temp 3",
-  "Office of the Chairman") are role mailboxes, typed `role` and never merged
-  with each other or with a person.
+  "Office of the Chairman", "Conf. Room ECN2760"), and anything sent through
+  a shared Exchange mailbox (CN=MBX_...), are typed `role` and never merged
+  with each other or with a person. A comma followed by a job title
+  ("George Wasaff, Global Strategic Sourcing") is read as name then title,
+  not surname first.
 
 Placeholder addresses (the CMU export's `no.address@enron.com`, the Notes
 gateway's `40enron@enron.com`, and any address shared by several named
@@ -40,6 +48,7 @@ Usage: uv run python -m enron_importance.identity
 
 from __future__ import annotations
 
+import json
 import re
 from collections import defaultdict
 
@@ -56,6 +65,12 @@ ROLE_WORDS = {
     "office", "chairman", "temp", "team", "desk", "crawler", "notification", "notifications",
     "announcement", "announcements", "mailbox", "services", "department", "center", "committee",
     "communications", "resources", "administrator", "support", "group", "operations", "enron",
+    "conf", "room",
+}
+# Words that mark the part after a comma as a job title, not a first name.
+TITLE_WORDS = {
+    "director", "manager", "president", "vp", "vice", "officer", "ceo", "coo", "cfo", "chairman",
+    "counsel", "analyst", "specialist", "head", "lead", "senior", "sr", "associate", "executive",
 }
 _LIST_LOCAL = re.compile(r"(^|[._-])(dl|list|all|everyone|team|group)([._-]|$)")
 # Common English nicknames mapped to one canonical first name, so "Tim Belden"
@@ -84,25 +99,43 @@ def _words(display) -> list[str] | None:
     if "@" in text or "/" in text:
         return None
     if "," in text:
-        last, _, first = text.partition(",")
-        text = f"{first} {last}"
+        before, _, after = text.partition(",")
+        if _is_name_then_title(before, after):
+            text = before  # "George Wasaff, Global Strategic Sourcing"
+        else:
+            text = f"{after} {before}"  # "Calger, Christopher F."
     text = _NON_NAME.sub(" ", text.lower().replace("'", ""))
     return [w.strip("-") for w in _SPACE.split(text) if w.strip("-")]
 
 
+def _is_name_then_title(before: str, after: str) -> bool:
+    """True for "First Last, Title ..." rather than surname-first "Last, First M"."""
+    name = [w for w in _NON_NAME.sub(" ", before.lower()).split() if w.strip("-") and w not in _SUFFIXES]
+    rest = [w.strip(".").lower() for w in after.split()]
+    return len(name) >= 2 and (len(rest) >= 3 or any(w in TITLE_WORDS for w in rest))
+
+
+def _has_role_word(words) -> bool:
+    return any(w in ROLE_WORDS or any(c.isdigit() for c in w) for w in words)
+
+
 def is_role_key(key) -> bool:
-    return isinstance(key, str) and "@" not in key and any(w in ROLE_WORDS or w.isdigit() for w in key.split())
+    return isinstance(key, str) and "@" not in key and _has_role_word(key.split())
 
 
 def normalize_name(display) -> str | None:
     """'Calger, Christopher F. </O=...>' -> 'christopher calger'; None if unusable.
 
-    Role mailbox names keep every word, including numbers ('legal temp 3').
+    Role mailbox names keep every word, including numbers ('legal temp 3');
+    names sent through a shared Exchange mailbox (CN=MBX_...) become
+    'mailbox ...' role keys.
     """
     words = _words(display)
     if words is None:
         return None
-    if any(w in ROLE_WORDS or any(c.isdigit() for c in w) for w in words):
+    if (directory_id(display) or "").startswith("MBX_"):
+        return "mailbox " + " ".join(words) if words else None  # shared mailbox, never a person
+    if _has_role_word(words):
         return " ".join(words) if len(words) >= 2 else None
     words = [w for w in words if len(w) > 1 and w not in _SUFFIXES]  # drop initials and Jr./Sr./III
     if len(words) < 2:
@@ -118,6 +151,12 @@ def middle_initial(display) -> str | None:
         return None
     initials = [w for w in words[1:-1] if len(w) == 1 and w.isalpha()]
     return initials[0] if initials else None
+
+
+def middle_names(display) -> list[str]:
+    """Full middle names ('Davis, Mark Dana' -> ['dana']); initials are excluded."""
+    words = _words(display)
+    return [w for w in words[1:-1] if len(w) > 1 and w not in _SUFFIXES] if words and len(words) >= 3 else []
 
 
 def directory_id(display) -> str | None:
@@ -147,14 +186,14 @@ def entity_type(key, ambiguous=frozenset()) -> str:
 
 
 def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=(),
-                   min_initial_support: int = 5, initial_share: float = 2 / 3
-                   ) -> tuple[pd.Series, pd.DataFrame, dict[str, str]]:
+                   min_initial_support: int = 5, initial_share: float = 2 / 3, min_initialled: int = 20,
+                   go_by_share: float = 0.9) -> tuple[pd.Series, pd.DataFrame, dict[str, str], dict[str, str]]:
     """Attribute each message to a sender person and map addresses to people.
 
     `messages` needs `sender` and `x_from`. Returns `sender_person` (aligned to
     `messages`; None when unknown or external), one row per internal sender
-    address with person_key, entity_type, n_messages and resolved_by, and the
-    directory-ID aliases applied to name keys.
+    address with person_key, entity_type, n_messages and resolved_by, the
+    aliases applied to name keys, and the entity type of every key used.
     """
     suffix = "@" + internal_domain
     frame = messages.loc[messages["sender"].fillna("").str.endswith(suffix), ["sender", "x_from"]].copy()
@@ -177,6 +216,24 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
             alias.update({k: target for k in group if k != target})
     frame["key"] = frame["key"].map(lambda k: alias.get(k, k))
 
+    # Go-by middle names: "Davis, Mark Dana" at the address Dana Davis uses is Dana Davis.
+    frame["go_by"] = [
+        f"{middles[0]} {key.split()[-1]}" if isinstance(key, str) and middles else None
+        for key, middles in zip(frame["key"], frame["x_from"].map(middle_names))
+    ]
+    modal_key = frame[named].groupby("sender")["key"].agg(lambda k: k.value_counts().index[0])
+    at_address = (frame["go_by"].notna() & (frame["go_by"] != frame["key"])
+                  & (frame["go_by"] == frame["sender"].map(modal_key)))
+    for key, group in frame[frame["key"].isin(set(frame.loc[at_address, "key"]))].groupby("key"):
+        # The whole key is an alias when nearly all its messages carry that go-by name.
+        target = frame.loc[at_address & (frame["key"] == key), "go_by"].iloc[0]
+        if target != key and (group["go_by"] == target).mean() >= go_by_share:
+            alias[key] = target
+    # Every message with the same full name ("Mark Dana Davis") follows, at any address.
+    validated = set(zip(frame.loc[at_address, "key"], frame.loc[at_address, "go_by"]))
+    follows = pd.Series([pair in validated for pair in zip(frame["key"], frame["go_by"])], index=frame.index)
+    frame["key"] = frame["go_by"].where(follows, frame["key"].map(lambda k: alias.get(k, k)))
+
     # Homonyms: two well-supported middle initials under one key.
     counts = frame[named & frame["initial"].notna()].groupby(["key", "initial"]).size()
     counts = counts[counts >= min_initial_support]
@@ -184,7 +241,8 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
     supported = set(counts.index)
     initialled = frame[frame["key"].isin(split) & frame["initial"].notna()]
     by_cn = initialled.dropna(subset=["cn"]).groupby(["key", "cn"])["initial"].agg(lambda s: _dominant(s, initial_share))
-    by_address = initialled.groupby(["key", "sender"])["initial"].agg(lambda s: _dominant(s, initial_share))
+    by_address = initialled.groupby(["key", "sender"])["initial"].agg(
+        lambda s: _dominant(s, initial_share) if len(s) >= min_initialled else None)
 
     def person_of(sender, key, initial, cn):
         if not isinstance(key, str) or key not in split:
@@ -220,7 +278,9 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
 
     address_person = dict(zip(table["address"], table["person_key"]))
     sender_person = frame["person"].where(frame["person"].notna(), frame["sender"].map(address_person))
-    return sender_person.reindex(messages.index), table.sort_values("address").reset_index(drop=True), alias
+    keys = set(sender_person.dropna()) | set(table["person_key"].dropna())
+    types = {key: entity_type(key, split) for key in sorted(keys)}
+    return sender_person.reindex(messages.index), table.sort_values("address").reset_index(drop=True), alias, types
 
 
 def resolve_recipient(address: str, address_person: dict, people: set) -> str | None:
@@ -236,20 +296,33 @@ def resolve_recipient(address: str, address_person: dict, people: set) -> str | 
     return address
 
 
-def main() -> None:
-    config = load_config()
+def main(config: dict | None = None) -> None:
+    config = config or load_config()
     spec = config["identity"]
     processed = config["paths"]["processed"]
-    messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "sender", "x_from"])
-    sender_person, table, aliases = resolve_people(messages, config["senders"]["internal_domain"], spec["placeholder_addresses"],
-                                          spec["min_initial_support"], spec["initial_share"])
+    messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "sender", "x_from", "analysis"])
+    sender_person, table, aliases, types = resolve_people(
+        messages, config["senders"]["internal_domain"], spec["placeholder_addresses"], spec["min_initial_support"],
+        spec["initial_share"], spec["min_initialled"], spec["go_by_share"])
     table.to_parquet(processed / "identities.parquet", index=False)
-    pd.DataFrame({"path": messages["path"], "sender_person": sender_person}).to_parquet(
+    # Person text: analysis messages whose sender is attributed to a person
+    # (not a role, list, bare address, ambiguous key or unknown author).
+    person_text = messages["analysis"] & sender_person.map(types).eq("person")
+    pd.DataFrame({"path": messages["path"], "sender_person": sender_person, "person_text": person_text}).to_parquet(
         processed / "sender_people.parquet", index=False)
+    kinds = sender_person[messages["analysis"]].map(types).fillna("unknown").value_counts()
+    funnel = {"analysis_messages": int(messages["analysis"].sum()),
+              **{f"analysis_from_{kind}": int(n) for kind, n in kinds.items()},
+              "person_text_messages": int(person_text.sum()),
+              "person_text_people": int(sender_person[person_text].nunique())}
+    (processed / "person_text.json").write_text(json.dumps(funnel, indent=2) + "\n")
+    print(json.dumps(funnel, indent=2))
     pd.DataFrame(sorted(aliases.items()), columns=["name_key", "person_key"]).to_parquet(
         processed / "name_aliases.parquet", index=False)
+    pd.DataFrame(sorted(types.items()), columns=["person_key", "entity_type"]).to_parquet(
+        processed / "person_types.parquet", index=False)
     keyed = table.dropna(subset=["person_key"]).drop_duplicates("person_key")
-    print(f"{len(table):,} internal sender addresses -> {len(keyed):,} keys; {len(aliases)} directory-ID aliases")
+    print(f"{len(table):,} internal sender addresses -> {len(keyed):,} keys; {len(aliases)} name aliases")
     print(keyed["entity_type"].value_counts().to_string())
     print("placeholder addresses:", sorted(table.loc[table["resolved_by"] == "placeholder", "address"]))
 
