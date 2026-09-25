@@ -20,7 +20,8 @@ def test_copies_in_several_folders_collapse_to_the_sent_copy():
     ])
     kept, stats, copies = deduplicate(frame)
     assert list(kept["folder"]) == ["sent"]
-    assert stats == {"duplicate_content": 2, "duplicate_message_id": 0, "separate_sends_of_same_text": 0}
+    assert stats == {"duplicate_content": 2, "duplicate_message_id": 0, "candidate_separate_sends": 0,
+                     "recipient_addresses_added_from_copies": 0}
     assert set(copies["kept_path"]) == {"maildir/a/sent/7."} and len(copies) == 2
 
 
@@ -79,7 +80,7 @@ def test_same_text_to_disjoint_distributions_is_two_sends():
     ])
     kept, stats, copies = deduplicate(frame)
     assert sorted(kept["path"]) == ["maildir/bass-e/sent/69.", "maildir/bass-e/sent/70."]
-    assert stats["separate_sends_of_same_text"] == 1
+    assert stats["candidate_separate_sends"] == 1
     assert copies.set_index("path").loc["maildir/bass-e/_sent_mail/5.", "kept_path"] == "maildir/bass-e/sent/70."
 
 
@@ -96,3 +97,13 @@ def test_whole_hour_shifted_copies_are_flagged_not_removed():
     flags = flag_shifted_copies(frame, max_hours=8, min_chars=100)
     assert flags.iloc[1] == "maildir/salisbury-h/inbox/1079."
     assert flags.drop(index=1).isna().all()
+
+
+def test_kept_message_lists_recipients_from_every_copy_of_the_send():
+    frame = pd.DataFrame([
+        message("maildir/haedicke-m/california/3.", "california", to=["f..carla@enron.com", "ray@enron.com"]),
+        message("maildir/williams-w3/bill_williams_iii/874.", "bill_williams_iii", to=["f..calger@enron.com", "ray@enron.com"]),
+    ])
+    kept, stats, _ = deduplicate(frame)
+    assert len(kept) == 1 and set(kept.iloc[0]["to"]) == {"f..carla@enron.com", "ray@enron.com", "f..calger@enron.com"}
+    assert stats["recipient_addresses_added_from_copies"] == 1

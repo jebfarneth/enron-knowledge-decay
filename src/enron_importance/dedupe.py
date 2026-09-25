@@ -6,9 +6,13 @@ copies usually carry different Message-IDs because each folder was exported
 separately. A message is therefore a duplicate when it has the same sender,
 timestamp, normalized subject and normalized body as another message, or the
 same Message-ID. Copies whose recipient lists are both non-empty and share
-no address are separate sends of the same text (one note mailed to two
-distributions) and are all kept. The copy kept is the one from the most
-authoritative folder; every discarded copy is recorded against it.
+no address are treated as candidate separate sends of the same text (one
+note mailed to two distributions) and are all kept; address strings alone
+cannot prove two sends, since one person can appear under two spellings.
+The copy kept is the one from the most authoritative folder; every discarded
+copy is recorded against it, and the kept message lists every recipient
+address that any copy of the same send lists. Aliases of one person then
+collapse when recipients are resolved to people.
 
 Some copies of one message carry timestamps shifted by whole hours (the same
 numeric time zone, different wall-clock times, from different mailbox
@@ -120,9 +124,21 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     removed = by_content | by_id
     copies = pd.DataFrame({"path": frame.loc[removed, "path"], "kept_path": kept_path[removed]}).sort_values("path")
     separate = frame.drop_duplicates("_send").duplicated("content_key").sum()
+    added = 0
+    if "to" in frame:
+        # Copies of one send can list recipients differently (one copy has
+        # f..calger@, another only f..carla@); keep every address any copy lists.
+        for column in ["to", "cc"]:
+            union = (frame[["_send", column]].explode(column).dropna().drop_duplicates()
+                     .groupby("_send", sort=False)[column].agg(list))
+            merged = frame["_send"].map(union)
+            before = frame[column].map(len)
+            frame[column] = [list(dict.fromkeys(list(own) + (extra if isinstance(extra, list) else [])))
+                             for own, extra in zip(frame[column], merged)]
+            added += int((frame.loc[~removed, column].map(len) - before[~removed]).sum())
     kept = frame[~removed].drop(columns=["_rank", "_send"]).sort_values("path", kind="stable")
     stats = {"duplicate_content": int(by_content.sum()), "duplicate_message_id": int(by_id.sum()),
-             "separate_sends_of_same_text": int(separate)}
+             "candidate_separate_sends": int(separate), "recipient_addresses_added_from_copies": added}
     return kept.reset_index(drop=True), stats, copies.reset_index(drop=True)
 
 
