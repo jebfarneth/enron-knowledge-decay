@@ -27,6 +27,10 @@ against what happened to a person's contacts after that person left.
 | Automated and system mailbox flags | `senders.py` | sender profiles |
 
 | Reply links, response times, threads | `threads.py` | `reply_to`, `response_seconds`, `thread_id` |
+| Addresses resolved to people | `identity.py` | `identities.parquet` |
+| Formal rank from the 2004 title list | `formal_rank.py` | `formal_rank.parquet` |
+| Person-level network and exact centrality | `network.py` | `edges.parquet`, `centrality.parquet` |
+| Pairwise accuracy against formal rank | `evaluate.py` | `results/baselines_formal_rank.csv` |
 
 Later stages (dialog acts, topics, network measures, models, evaluation
 figures) are added phase by phase.
@@ -42,6 +46,19 @@ figures) are added phase by phase.
 | After removing duplicate copies | 253,877 |
 | With text written by the sender | 235,169 |
 | Enron staff, excluding 312 automated feeds and 11,879 routine report messages | 168,029 (6,349 senders) |
+
+## Phase 2 result: network baselines
+
+![Which network measure recovers formal rank?](figures/fig06_baselines_formal_rank.png)
+
+Ground truth: seniority levels (CEO 6 … trader/employee 0) for 129 people in
+the Shetty & Adibi (2004) title list, matched to corpus identities. Accuracy is
+the share of the 6,285 different-level pairs a measure orders correctly (chance
+= 50%), with 95% person-level bootstrap intervals. Degree is the strongest
+network baseline (64.7%, 56.8–71.9%), consistent with Agarwal et al. (2012),
+whose degree baseline reached 79.3% on core-employee pairs of their
+reporting-line gold standard. Their gold standard is not currently available
+for download; results against it will be added when obtained.
 
 Half of the corpus is duplicate copies of the same message stored in several
 folders; the first version of this project counted every copy.
