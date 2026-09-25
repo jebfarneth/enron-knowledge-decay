@@ -5,16 +5,20 @@ from enron_importance.network import build_edges, centrality
 
 
 def msg(sender, to, cc=()):
-    return {"sender": sender, "to": list(to), "cc": list(cc)}
+    return {"sender_person": sender, "to": list(to), "cc": list(cc)}
+
+
+PEOPLE = {"a@enron.com": "a", "a2@enron.com": "a", "b@enron.com": "b", "c@enron.com": "c", "d@enron.com": "d",
+          "no.address@enron.com": None}
 
 
 def test_broadcasts_are_split_and_aliases_merge():
     messages = pd.DataFrame([
-        msg("a@enron.com", ["b@enron.com", "c@enron.com", "d@enron.com", "x@aol.com"]),
-        msg("a2@enron.com", ["b@enron.com"]),   # alias of a
-        msg("b@enron.com", ["a@enron.com"], cc=["b@enron.com"]),  # self-copy ignored
+        msg("a", ["b@enron.com", "c@enron.com", "d@enron.com", "x@aol.com"]),
+        msg("a", ["b@enron.com", "a2@enron.com"]),   # a2 is a's alias: a self-copy
+        msg("b", ["a@enron.com"], cc=["b@enron.com"]),  # self-copy ignored
     ])
-    edges = build_edges(messages, {"a@enron.com": "a", "a2@enron.com": "a", "b@enron.com": "b", "c@enron.com": "c", "d@enron.com": "d"}, "enron.com")
+    edges, sent = build_edges(messages, lambda r: PEOPLE.get(r, r), "enron.com")
     table = edges.set_index(["source", "target"])
     assert table.loc[("a", "b"), "weight"] == pytest.approx(1 / 3 + 1)
     assert table.loc[("a", "b"), "messages"] == 2
@@ -40,3 +44,31 @@ def test_heavier_ties_are_shorter_paths():
                          columns=["source", "target", "weight", "messages"])
     measures = centrality(edges).set_index("person_key")
     assert measures.loc["b", "betweenness"] == pytest.approx(1)
+
+
+def test_placeholders_and_unknown_senders_are_dropped_and_counts_are_integers():
+    messages = pd.DataFrame([
+        msg("a", ["no.address@enron.com"]),        # only recipient is a placeholder
+        msg(None, ["a@enron.com"]),                # sender unknown
+        msg("a", ["b@enron.com", "c@enron.com", "d@enron.com"]),
+        msg("a", ["e@enron.com"]),                 # unresolved recipient address stays a node
+    ])
+    edges, sent = build_edges(messages, lambda r: PEOPLE.get(r, r), "enron.com")
+    assert sent.to_dict() == {"a": 2}
+    assert set(edges["target"]) == {"b", "c", "d", "e@enron.com"}
+    measures = centrality(edges, sent).set_index("person_key")
+    assert measures.loc["a", "out_strength"] == 2 and measures.loc["b", "out_strength"] == 0
+
+
+def test_recipient_limit_skips_broadcasts():
+    messages = pd.DataFrame([msg("a", ["b@enron.com", "c@enron.com", "d@enron.com"]), msg("a", ["b@enron.com"])])
+    edges, sent = build_edges(messages, lambda r: PEOPLE.get(r, r), "enron.com", max_recipients=2)
+    assert list(zip(edges["source"], edges["target"])) == [("a", "b")] and sent["a"] == 1
+
+
+def test_edges_come_out_sorted_whatever_the_input_order():
+    rows = [msg("b", ["a@enron.com"]), msg("a", ["d@enron.com", "c@enron.com"])]
+    first, _ = build_edges(pd.DataFrame(rows), lambda r: PEOPLE.get(r, r), "enron.com")
+    second, _ = build_edges(pd.DataFrame(rows[::-1]), lambda r: PEOPLE.get(r, r), "enron.com")
+    assert first.equals(second)
+    assert list(zip(first["source"], first["target"])) == [("a", "c"), ("a", "d"), ("b", "a")]
