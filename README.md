@@ -26,8 +26,25 @@ against what happened to a person's contacts after that person left.
 | Authored text (quotes, forwards, disclaimers removed) | `clean.py` | `authored` column |
 | Automated and system mailbox flags | `senders.py` | sender profiles |
 
-Later stages (threads, dialog acts, topics, network measures, models,
-evaluation figures) are added phase by phase.
+| Reply links, response times, threads | `threads.py` | `reply_to`, `response_seconds`, `thread_id` |
+
+Later stages (dialog acts, topics, network measures, models, evaluation
+figures) are added phase by phase.
+
+## Phase 1 result
+
+![From raw corpus to analysis set](figures/fig01_data_funnel.png)
+
+| Step | Messages |
+|---|---:|
+| Files in the corpus | 517,401 |
+| Dated 1998–2002 | 516,359 |
+| After removing duplicate copies | 253,877 |
+| With text written by the sender | 235,169 |
+| Enron staff, excluding 312 automated feeds and 11,879 routine report messages | 168,029 (6,349 senders) |
+
+Half of the corpus is duplicate copies of the same message stored in several
+folders; the first version of this project counted every copy.
 
 ## Reproduce
 
