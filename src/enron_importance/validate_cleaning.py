@@ -2,9 +2,16 @@
 
 Compares `clean.authored_text` with `email_reply_parser` (Zapier's Python port
 of GitHub's reply parser) on a fixed random sample of messages from the
-deduplicated corpus. Reports how often the two agree and, where they differ,
-which kinds of quoted material each leaves behind. Neither tool is ground
-truth; disagreements are listed so they can be read.
+deduplicated corpus. Reports how often the two agree after whitespace
+normalization, how much of each message each tool keeps, and which quotation
+markers each leaves behind. Neither tool is ground truth, and marker counts
+alone reward deleting text: an empty cleaner leaves no markers at all, so it
+is reported as a control next to both tools, together with how often each
+tool returns nothing.
+
+The sample seed (`validation.seed`) differs from the seed of the sample used
+while the cleaner's rules were written, but the rules were still developed on
+this corpus, so this is a consistency check, not a held-out accuracy estimate.
 
 Usage: uv run python -m enron_importance.validate_cleaning
 """
@@ -42,30 +49,36 @@ def token_jaccard(a: str, b: str) -> float:
 
 
 def compare(bodies: pd.Series) -> pd.DataFrame:
-    ours = bodies.map(authored_text)
-    theirs = bodies.map(lambda b: EmailReplyParser.parse_reply(b if isinstance(b, str) else ""))
-    frame = pd.DataFrame({"ours": ours, "theirs": theirs})
-    frame["identical"] = frame["ours"].map(normalized) == frame["theirs"].map(normalized)
+    raw = bodies.map(lambda b: b if isinstance(b, str) else "")
+    frame = pd.DataFrame({"raw": raw, "ours": raw.map(authored_text), "theirs": raw.map(EmailReplyParser.parse_reply)})
+    frame["agree"] = frame["ours"].map(normalized) == frame["theirs"].map(normalized)
     frame["jaccard"] = [token_jaccard(a, b) for a, b in zip(frame["ours"], frame["theirs"])]
-    for name, pattern in RESIDUE.items():
-        frame[f"ours_{name}"] = frame["ours"].map(lambda t: bool(pattern.search(t)))
-        frame[f"theirs_{name}"] = frame["theirs"].map(lambda t: bool(pattern.search(t)))
+    raw_chars = frame["raw"].map(lambda t: len(normalized(t))).replace(0, 1)
+    for tool in ["ours", "theirs"]:
+        frame[f"{tool}_kept"] = frame[tool].map(lambda t: len(normalized(t))) / raw_chars
+        frame[f"{tool}_empty"] = frame[tool].map(normalized) == ""
+        for name, pattern in RESIDUE.items():
+            frame[f"{tool}_{name}"] = frame[tool].map(lambda t: bool(pattern.search(t)))
     return frame
 
 
 def summary(frame: pd.DataFrame) -> dict:
+    share = lambda column: round(float(frame[column].mean()), 4)  # noqa: E731
+    nonempty_raw = frame["raw"].map(normalized) != ""
     out = {
         "messages": len(frame),
-        "identical": round(float(frame["identical"].mean()), 4),
-        "token_jaccard_median": round(float(frame["jaccard"].median()), 4),
-        "token_jaccard_ge_0_9": round(float((frame["jaccard"] >= 0.9).mean()), 4),
+        "whitespace_normalized_agreement": share("agree"),
+        "token_set_jaccard_median": round(float(frame["jaccard"].median()), 4),
+        "token_set_jaccard_ge_0_9": round(float((frame["jaccard"] >= 0.9).mean()), 4),
+        "empty_output": {"ours": share("ours_empty"), "email_reply_parser": share("theirs_empty"), "empty_cleaner": 1.0},
+        "median_share_of_text_kept": {"ours": round(float(frame.loc[nonempty_raw, "ours_kept"].median()), 4),
+                                      "email_reply_parser": round(float(frame.loc[nonempty_raw, "theirs_kept"].median()), 4),
+                                      "empty_cleaner": 0.0},
         "residue": {},
     }
     for name in RESIDUE:
-        out["residue"][name] = {
-            "ours": round(float(frame[f"ours_{name}"].mean()), 4),
-            "email_reply_parser": round(float(frame[f"theirs_{name}"].mean()), 4),
-        }
+        out["residue"][name] = {"ours": share(f"ours_{name}"), "email_reply_parser": share(f"theirs_{name}"),
+                                "empty_cleaner": 0.0}
     return out
 
 
@@ -74,13 +87,13 @@ def main() -> None:
     spec = config["validation"]
     raw = pd.read_parquet(config["paths"]["interim"] / "messages_raw.parquet", columns=["path", "body"])
     kept = pd.read_parquet(config["paths"]["processed"] / "messages.parquet", columns=["path"])
-    sample = raw[raw["path"].isin(set(kept["path"]))].sample(spec["sample_size"], random_state=config["random_seed"])
+    sample = raw[raw["path"].isin(set(kept["path"]))].sample(spec["sample_size"], random_state=spec["seed"])
     frame = compare(sample["body"].reset_index(drop=True))
     result = summary(frame)
     results = config["paths"]["results"]
     results.mkdir(parents=True, exist_ok=True)
     (results / "cleaning_crosscheck.json").write_text(json.dumps(result, indent=2) + "\n")
-    frame.assign(path=sample["path"].to_numpy())[~frame["identical"]].nsmallest(40, "jaccard")[
+    frame.assign(path=sample["path"].to_numpy())[~frame["agree"]].nsmallest(40, "jaccard")[
         ["path", "jaccard", "ours", "theirs"]
     ].to_csv(results / "cleaning_crosscheck_disagreements.csv", index=False)
     print(json.dumps(result, indent=2))

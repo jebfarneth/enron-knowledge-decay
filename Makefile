@@ -1,9 +1,12 @@
-# One command per pipeline stage; `make all` runs everything in order.
+# One target per pipeline stage; `make all` runs every stage in order and
+# regenerates every table and figure reported in the README.
 # Requires uv (https://docs.astral.sh/uv/). Dependencies are pinned in uv.lock.
 
-.PHONY: all setup test data clean-generated
+RUN = uv run python -m enron_importance
 
-all: setup test data
+.PHONY: all setup test data identity rank network evaluate crosscheck figures clean-generated
+
+all: setup test data identity rank network evaluate crosscheck figures
 
 setup:
 	uv sync --group dev
@@ -11,9 +14,33 @@ setup:
 test:
 	uv run pytest -q
 
-# Download (checksum-verified), parse, window, deduplicate, clean, flag senders, thread.
+# Download (checksum-verified on every run), parse, window, deduplicate, clean, flag, thread.
 data:
-	uv run python -m enron_importance.prepare
+	$(RUN).prepare
+
+# Per-message sender attribution and the address table.
+identity:
+	$(RUN).identity
+
+# Title-list labels matched to identities.
+rank:
+	$(RUN).formal_rank
+
+# Communication graph and centrality measures (exact betweenness takes several minutes).
+network:
+	$(RUN).network
+
+# Baselines against the title proxy, paired differences and sensitivity runs.
+evaluate:
+	$(RUN).evaluate
+
+# Quote removal compared with email_reply_parser.
+crosscheck:
+	$(RUN).validate_cleaning
+
+figures:
+	$(RUN).figures.funnel
+	$(RUN).figures.baselines
 
 # Remove generated data (keeps the downloaded corpus in data/raw).
 clean-generated:

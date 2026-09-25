@@ -18,7 +18,7 @@ LABELS = {
     "pagerank": "PageRank",
     "in_strength": "Email received (weighted)",
     "betweenness": "Betweenness (exact)",
-    "out_strength": "Email sent (weighted)",
+    "out_strength": "Email sent (messages)",
 }
 
 

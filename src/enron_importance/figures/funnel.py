@@ -17,8 +17,8 @@ STEPS = [
     ("parsed_files", "Files in the corpus"),
     ("in_window", "Dated 1998–2002"),
     ("unique_messages", "After removing duplicate copies"),
-    ("with_authored_text", "With text written by the sender"),
-    ("analysis_messages", "Enron staff, excl. automated feeds and routine reports"),
+    ("with_authored_text", "With estimated authored text"),
+    ("analysis_messages", "Staff prose, excl. automated, records, reports"),
 ]
 
 

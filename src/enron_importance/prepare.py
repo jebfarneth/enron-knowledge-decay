@@ -3,6 +3,7 @@
 Writes
   data/processed/messages.parquet   one row per kept message
   data/processed/senders.parquet    one row per sender with automation flags
+  data/processed/copies.parquet     every discarded duplicate and the message kept for it
   data/processed/funnel.json        counts at every step + output checksums
 
 Usage: uv run python -m enron_importance.prepare
@@ -10,6 +11,7 @@ Usage: uv run python -m enron_importance.prepare
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -17,28 +19,58 @@ import pandas as pd
 
 from .clean import authored_text, has_quoted_material
 from .config import load_config
-from .dedupe import deduplicate, restrict_window
+from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
 from .ingest import iter_archive, write_messages
-from .senders import routine_messages, sender_profiles
+from .senders import automated_messages, routine_messages, sender_profiles, speech_act, structured_record
 from .threads import link_replies
+
+
+PACKAGE = Path(__file__).resolve().parent
+
+
+def code_hash(*names: str) -> str:
+    """SHA-256 over the named source files of this package (all of them if none given)."""
+    files = [PACKAGE / name for name in names] if names else sorted(PACKAGE.rglob("*.py"))
+    digest = hashlib.sha256()
+    for path in files:
+        digest.update(path.relative_to(PACKAGE).as_posix().encode() + b"\0" + path.read_bytes())
+    return digest.hexdigest()
+
+
+def parsed_messages(config: dict) -> pd.DataFrame:
+    """The parsed archive, re-parsed unless the cache was built from this archive by this parser.
+
+    The archive is verified against its pinned size and SHA-256 on every run,
+    cached or not.
+    """
+    archive = ensure_corpus(config)
+    raw_table = config["paths"]["interim"] / "messages_raw.parquet"
+    stamp_path = raw_table.with_suffix(".json")
+    stamp = {"corpus_sha256": config["corpus"]["sha256"], "parser_sha256": code_hash("ingest.py")}
+    cached = raw_table.exists() and stamp_path.exists() and json.loads(stamp_path.read_text()) == stamp
+    if not cached:
+        write_messages(iter_archive(archive), raw_table)
+        stamp_path.write_text(json.dumps(stamp, indent=2) + "\n")
+    return pd.read_parquet(raw_table)
 
 
 def prepare(config: dict) -> dict:
     paths = config["paths"]
-    raw_table = paths["interim"] / "messages_raw.parquet"
-    if not raw_table.exists():
-        write_messages(iter_archive(ensure_corpus(config)), raw_table)
-    messages = pd.read_parquet(raw_table)
+    messages = parsed_messages(config)
     funnel: dict[str, int] = {"parsed_files": len(messages)}
 
     messages, dropped = restrict_window(messages, config["ingest"]["start"], config["ingest"]["end"])
     funnel.update({f"dropped_{key}": value for key, value in dropped.items()})
     funnel["in_window"] = len(messages)
 
-    messages, removed = deduplicate(messages)
-    funnel.update({f"dropped_{key}": value for key, value in removed.items()})
+    messages, removed, copies = deduplicate(messages)
+    funnel.update({f"dropped_{key}" if key.startswith("duplicate") else key: value for key, value in removed.items()})
     funnel["unique_messages"] = len(messages)
+    shifted = config["dedupe"]
+    messages["probable_copy_of"] = flag_shifted_copies(messages, shifted["max_shift_hours"], shifted["min_body_chars"])
+    messages["probable_copy"] = messages["probable_copy_of"].notna()
+    funnel["probable_time_shifted_copies"] = int(messages["probable_copy"].sum())
 
     messages["authored"] = messages["body"].map(authored_text)
     messages["has_quoted"] = messages["body"].map(has_quoted_material)
@@ -48,21 +80,29 @@ def prepare(config: dict) -> dict:
     senders_cfg = config["senders"]
     senders = sender_profiles(messages, senders_cfg["internal_domain"], senders_cfg["min_messages"],
                               senders_cfg["feed_share"], senders_cfg["top_templates"])
-    automated = set(senders.index[senders["automated"]])
-    messages["sender_automated"] = messages["sender"].isin(automated)
+    messages["sender_automated"] = messages["sender"].isin(senders.index[senders["automated"]])
     messages["sender_internal"] = messages["sender"].fillna("").str.endswith("@" + senders_cfg["internal_domain"])
     funnel["senders"] = len(senders)
-    funnel["senders_automated"] = int(senders["automated"].sum())
-    funnel["messages_from_automated_senders"] = int(messages["sender_automated"].sum())
-    messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["sender_automated"]
-    funnel["routine_messages_from_people"] = int(messages["routine"].sum())
+    funnel["senders_flagged"] = int(senders["automated"].sum())
+    funnel["messages_from_flagged_senders"] = int(messages["sender_automated"].sum())
+    messages["automated"] = automated_messages(messages, senders)
+    funnel["automated_messages"] = int(messages["automated"].sum())
+    messages["structured"] = messages["authored"].map(structured_record) & ~messages["automated"]
+    funnel["structured_records"] = int(messages["structured"].sum())
+    messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["automated"]
+    messages["routine_excluded"] = messages["routine"] & ~messages["authored"].map(
+        lambda t: speech_act(t, senders_cfg["speech_act_words"]))
+    funnel["routine_messages"] = int(messages["routine"].sum())
+    funnel["routine_messages_excluded_from_text"] = int(messages["routine_excluded"].sum())
 
-    messages = link_replies(messages.reset_index(drop=True), config["threads"]["max_reply_days"])
+    messages = messages.reset_index(drop=True)
+    messages = link_replies(messages, config["threads"]["max_reply_days"], ~messages["automated"] & ~messages["structured"])
     funnel["messages_linked_as_replies"] = int(messages["reply_to"].notna().sum())
     funnel["threads"] = int(messages["thread_id"].nunique())
 
-    analysis = (messages["sender_internal"] & ~messages["sender_automated"] & ~messages["routine"]
-                & (messages["authored"] != ""))
+    analysis = (messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]
+                & ~messages["routine_excluded"] & (messages["authored"] != ""))
+    messages["analysis"] = analysis
     funnel["analysis_messages"] = int(analysis.sum())
     funnel["analysis_senders"] = int(messages.loc[analysis, "sender"].nunique())
 
@@ -70,11 +110,14 @@ def prepare(config: dict) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     messages.drop(columns=["body"]).to_parquet(out / "messages.parquet", index=False)
     senders.rename_axis("sender").reset_index().to_parquet(out / "senders.parquet", index=False)
+    copies.to_parquet(out / "copies.parquet", index=False)
     manifest = {
         "corpus": config["corpus"]["filename"],
-        "corpus_sha256": config["corpus"]["sha256"],
+        "corpus_sha256_verified": config["corpus"]["sha256"],
+        "code_sha256": code_hash(),
+        "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest(),
         "funnel": funnel,
-        "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet"]},
+        "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet", "copies.parquet"]},
     }
     (out / "funnel.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest

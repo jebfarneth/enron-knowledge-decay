@@ -28,3 +28,21 @@ def test_unmatched_and_untitled_rows_are_kept_but_marked():
     ranks = formal_ranks(titles, identities("phillip allen"), LEVELS, {}).set_index("name")
     assert pd.isna(ranks.loc["Jacob Thomas", "person_key"]) and ranks.loc["Jacob Thomas", "match"] == "unmatched"
     assert ranks.loc["Philip Allen", "person_key"] == "phillip allen" and pd.isna(ranks.loc["Philip Allen", "level"])
+
+
+def test_names_merged_by_directory_id_match_through_the_alias():
+    titles = pd.DataFrame({"name": ["Bert Meyers"], "title": ["Employee"]})
+    ranks = formal_ranks(titles, identities("albert meyers"), LEVELS, {}, {"bert meyers": "albert meyers"})
+    assert ranks.loc[0, "person_key"] == "albert meyers" and ranks.loc[0, "match"] == "directory-ID alias"
+
+
+def test_dropped_conflicting_rows_and_disputed_labels_are_marked():
+    titles = pd.DataFrame({"name": ["Micheal Swerzzbin", "Mike Swerzbin", "Sally Beck"],
+                           "title": ["Vice President", "Employee", "Employee"],
+                           "note": [None, None, "Chief Operating Officer"]})
+    ranks = formal_ranks(titles, identities("michael swerzbin", "sally beck"), LEVELS,
+                         {"Micheal Swerzzbin": "michael swerzbin"}, dropped_rows=["Micheal Swerzzbin"],
+                         disputed={"sally beck": "note says COO"}).set_index("name")
+    assert pd.isna(ranks.loc["Micheal Swerzzbin", "level"]) and ranks.loc["Micheal Swerzzbin", "match"] == "dropped conflicting row"
+    assert ranks.loc["Mike Swerzbin", "level"] == 0
+    assert ranks.loc["Sally Beck", "disputed"] and ranks.loc["Sally Beck", "note"] == "Chief Operating Officer"

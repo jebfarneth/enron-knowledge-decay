@@ -1,6 +1,7 @@
 import pandas as pd
 
-from enron_importance.senders import name_rule, routine_messages, sender_profiles, template_of
+from enron_importance.senders import (automated_messages, name_rule, routine_messages, sender_profiles, speech_act,
+                                     structured_record, template_of)
 
 
 def test_template_masks_changing_numbers():
@@ -71,3 +72,42 @@ def test_person_with_weekly_report_keeps_their_other_messages():
     assert not profiles.loc["analyst@enron.com", "automated"]
     routine = routine_messages(frame, min_repeats=10)
     assert routine.sum() == 12 and not routine.iloc[12:].any()
+
+
+def test_feed_account_keeps_the_messages_its_owner_wrote():
+    alerts = [{"sender": "pete.davis@enron.com", "authored": f"Start Date: 4/{d}/01; HourAhead hour: {h}; schedule awarded."}
+              for d in range(1, 11) for h in range(1, 7)]
+    human = [{"sender": "pete.davis@enron.com", "authored": "I reproduced the bug: Schedule Crawler posted false finals. Please watch the next import."},
+             {"sender": "pete.davis@enron.com", "authored": "Done."}]
+    frame = pd.DataFrame(alerts + human)
+    profiles = sender_profiles(frame, "enron.com", min_messages=50, feed_share=0.9)
+    assert profiles.loc["pete.davis@enron.com", "feed"]
+    automated = automated_messages(frame, profiles)
+    assert automated.iloc[:60].all() and not automated.iloc[60:].any()
+
+
+def test_name_rule_accounts_are_automated_message_by_message():
+    frame = pd.DataFrame([{"sender": "no.reply@enron.com", "authored": "unique text"}])
+    profiles = sender_profiles(frame, "enron.com", min_messages=50, feed_share=0.9)
+    assert automated_messages(frame, profiles).all()
+
+
+def test_personalized_notices_share_one_template():
+    a = "ALLEN, PHILLIP K,\n?\nYou have been selected to participate in the Mid Year 2001 Performance Management process."
+    b = "ARNOLD, JOHN D,\n?\nYou have been selected to participate in the Mid Year 2001 Performance Management process."
+    assert template_of(a) == template_of(b)
+    assert template_of("FYI\nsee below") == "fyi see below"
+
+
+def test_structured_records_are_not_prose():
+    assert structured_record("CALENDAR ENTRY:\tAPPOINTMENT\n\nDescription:\n\tStaff mtg.")
+    assert structured_record("ARNOLD, JOHN D:\n \nAttached below you will find the final Evaluation forms for your direct reports")
+    assert structured_record("Thank you for changing lives.\n\nEmployee ID:  90009776")
+    assert not structured_record("Can you check the calendar entry for Friday?")
+
+
+def test_repeated_short_speech_acts_stay_in_text_analysis():
+    for text in ["Approved", "please print", "Will do.", "Looks good to me.", "pls print. thanks df"]:
+        assert speech_act(text, 4), text
+    assert not speech_act("Attached is the credit watch listing for this week.", 4)
+    assert not speech_act("", 4)

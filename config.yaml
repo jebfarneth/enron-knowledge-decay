@@ -24,24 +24,52 @@ ingest:
   start: "1998-01-01"
   end: "2002-12-31"
 
+dedupe:
+  # A message is flagged as a probable time-shifted copy of an earlier one
+  # with the same sender, subject, recipients and body (over min_body_chars
+  # characters) sent exactly 1 to max_shift_hours whole hours before it.
+  # Flagged copies stay in the data but leave the network and text analysis.
+  max_shift_hours: 8
+  min_body_chars: 100
+
 senders:
   internal_domain: enron.com
   # Templates are the first 80 characters of authored text with digits masked;
   # pure forwards (no authored text) are not counted.
-  # A sender is an automated feed when they have at least `min_messages`
+  # A sender is a feed account when they have at least `min_messages`
   # messages with text and at least `feed_share` of them fall into their
-  # `top_templates` most common templates. Feeds are excluded entirely.
+  # `top_templates` most common templates. From a feed account only messages
+  # whose template repeats are automated; one-off messages are kept.
   min_messages: 50
   top_templates: 3
   feed_share: 0.9
   # A message is routine (e.g. a weekly report blast) when its template repeats
   # at least `routine_repeats` times for the same sender. Routine messages are
-  # kept in the communication network but excluded from text analysis.
+  # kept in the communication network. They are excluded from text analysis
+  # only when their template is longer than `speech_act_words` words, so
+  # repeated short speech acts ("approved", "please print") are kept.
   routine_repeats: 10
+  speech_act_words: 4
+
+identity:
+  # Synthetic addresses created by the CMU export (missing From) and the Lotus
+  # Notes gateway. Messages from them are attributed only by their own display
+  # name; mail to them is dropped. Addresses shared by several named senders,
+  # none covering half their messages, are added automatically.
+  placeholder_addresses:
+    - no.address@enron.com
+    - 40enron@enron.com
+  # A first/last name is split by middle initial when two initials each appear
+  # on at least this many messages (Mark A Taylor vs Mark E Taylor).
+  min_initial_support: 5
+  # A message without an initial takes the initial its directory ID or address
+  # uses on at least this share of its initialled messages.
+  initial_share: 0.6667
 
 threads:
-  # A message replies to the latest earlier message with the same normalized
-  # subject that was sent to its sender within this many days.
+  # A message is linked to the latest earlier message with the same normalized
+  # subject that was sent to its sender within this many days, when it is
+  # addressed back to that message's sender or quotes its opening text.
   max_reply_days: 14
 
 formal_rank:
@@ -63,9 +91,10 @@ formal_rank:
     In House Lawyer: 1
     Trader: 0
     Employee: 0
-  # Reviewed corrections: spelling errors in the 2004 list mapped to the
-  # person key found in the corpus. Every entry was checked against the
-  # person's own sent mail. Names not listed and not found stay unmatched
+  # Reviewed name corrections: misspellings and one alias (Harpreet -> Harry
+  # Arora) in the 2004 list mapped to the person key found in the corpus.
+  # Every target has sender evidence in the corpus (see the 2026-09-25 audit,
+  # "Title-source provenance"). Names not listed and not found stay unmatched
   # (e.g. "Jacob Thomas": the thomas-p mailbox belongs to Paul D. Thomas).
   corrections:
     Micheal Swerzzbin: michael swerzbin
@@ -79,13 +108,35 @@ formal_rank:
     Daron Giron: darron giron
     John Giffith: john griffith
     Harpreet Arora: harry arora
+    # Homonym: the corpus separates Mark A Taylor and Mark E Taylor. The listed
+    # Mark Taylor is the taylor-m custodian, whose sent mail is Mark E Taylor.
+    Mark Taylor: mark e taylor
+  # Duplicate rows that give one person two titles. The Vice President rows
+  # are dropped and the Trader rows kept, as Diesner & Carley (2005, p. 5,
+  # fn. 3) did after checking FERC files.
+  dropped_rows:
+    - Micheal Swerzzbin
+    - James Schweiger
+  # Labels contradicted by the list's own note or by the person's signature.
+  # Kept in the main evaluation, flagged, and removed in a sensitivity run.
+  disputed:
+    sally beck: "listed Employee; list note says Chief Operating Officer"
+    richard buy: "listed Manager; list note says Chief Risk Management Officer; signature in buy-r/sent_items/208. says Executive Vice President"
+    rod hayslett: "listed Vice President; list note says also Chief Financial Officer and Treasurer"
+    vincent kaminski: "listed Manager; signature in kaminski-v/all_documents/11199. says Managing Director"
 
 evaluation:
   # Person-level bootstrap resamples for 95% intervals.
   bootstrap_reps: 1000
+  # Sensitivity runs rebuild the graph from messages with at most this many
+  # internal recipients, to show how much broadcasts drive each measure.
+  recipient_limits: [10, 50]
 
 validation:
-  # Messages sampled (fixed seed) to cross-check quote removal against email_reply_parser.
+  # Messages sampled to cross-check quote removal against email_reply_parser.
+  # The seed differs from random_seed, whose sample was used while writing the
+  # cleaner's rules.
   sample_size: 5000
+  seed: 20260926
 
 random_seed: 42
