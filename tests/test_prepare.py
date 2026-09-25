@@ -72,3 +72,23 @@ def test_end_to_end_funnel(tmp_path):
     assert reply["response_seconds"] == 5400
     saved = json.loads((tmp_path / "processed" / "funnel.json").read_text())
     assert set(saved["outputs"]) == {"messages.parquet", "senders.parquet", "copies.parquet"}
+
+
+def test_cached_parse_still_verifies_the_archive(tmp_path):
+    import pytest
+    config = build(tmp_path)
+    prepare(config)
+    archive = tmp_path / "raw" / "corpus.tar.gz"
+    archive.write_bytes(b"truncated archive")
+    with pytest.raises(SystemExit):
+        prepare(config)
+
+
+def test_cache_is_rebuilt_when_its_stamp_does_not_match(tmp_path):
+    config = build(tmp_path)
+    prepare(config)
+    stamp = tmp_path / "interim" / "messages_raw.json"
+    stamp.write_text('{"corpus_sha256": "other", "parser_sha256": "other"}')
+    manifest = prepare(config)
+    assert manifest["funnel"]["parsed_files"] == 4
+    assert json.loads(stamp.read_text())["corpus_sha256"] == config["corpus"]["sha256"]

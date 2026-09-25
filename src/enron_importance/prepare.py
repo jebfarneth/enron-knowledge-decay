@@ -11,6 +11,7 @@ Usage: uv run python -m enron_importance.prepare
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -25,12 +26,38 @@ from .senders import automated_messages, routine_messages, sender_profiles, spee
 from .threads import link_replies
 
 
+PACKAGE = Path(__file__).resolve().parent
+
+
+def code_hash(*names: str) -> str:
+    """SHA-256 over the named source files of this package (all of them if none given)."""
+    files = [PACKAGE / name for name in names] if names else sorted(PACKAGE.rglob("*.py"))
+    digest = hashlib.sha256()
+    for path in files:
+        digest.update(path.relative_to(PACKAGE).as_posix().encode() + b"\0" + path.read_bytes())
+    return digest.hexdigest()
+
+
+def parsed_messages(config: dict) -> pd.DataFrame:
+    """The parsed archive, re-parsed unless the cache was built from this archive by this parser.
+
+    The archive is verified against its pinned size and SHA-256 on every run,
+    cached or not.
+    """
+    archive = ensure_corpus(config)
+    raw_table = config["paths"]["interim"] / "messages_raw.parquet"
+    stamp_path = raw_table.with_suffix(".json")
+    stamp = {"corpus_sha256": config["corpus"]["sha256"], "parser_sha256": code_hash("ingest.py")}
+    cached = raw_table.exists() and stamp_path.exists() and json.loads(stamp_path.read_text()) == stamp
+    if not cached:
+        write_messages(iter_archive(archive), raw_table)
+        stamp_path.write_text(json.dumps(stamp, indent=2) + "\n")
+    return pd.read_parquet(raw_table)
+
+
 def prepare(config: dict) -> dict:
     paths = config["paths"]
-    raw_table = paths["interim"] / "messages_raw.parquet"
-    if not raw_table.exists():
-        write_messages(iter_archive(ensure_corpus(config)), raw_table)
-    messages = pd.read_parquet(raw_table)
+    messages = parsed_messages(config)
     funnel: dict[str, int] = {"parsed_files": len(messages)}
 
     messages, dropped = restrict_window(messages, config["ingest"]["start"], config["ingest"]["end"])
@@ -86,7 +113,9 @@ def prepare(config: dict) -> dict:
     copies.to_parquet(out / "copies.parquet", index=False)
     manifest = {
         "corpus": config["corpus"]["filename"],
-        "corpus_sha256": config["corpus"]["sha256"],
+        "corpus_sha256_verified": config["corpus"]["sha256"],
+        "code_sha256": code_hash(),
+        "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest(),
         "funnel": funnel,
         "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet", "copies.parquet"]},
     }
