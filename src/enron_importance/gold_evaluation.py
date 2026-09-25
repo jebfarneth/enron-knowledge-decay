@@ -43,11 +43,11 @@ import numpy as np
 import pandas as pd
 
 from .config import load_config
-from .evaluate import BASELINES, RTOL, _near
+from .evaluate import BASELINES, RTOL, _near, load_measures
 from .gold_standard import MAPPED
 
 GROUPS = ["all", "core", "inter", "non-core"]
-MEASURES = BASELINES + ["custodian"]
+MEASURES = BASELINES + ["custodian"]  # plus mention-network measures when available
 
 
 def pair_credit(dominant: np.ndarray, subordinate: np.ndarray) -> np.ndarray:
@@ -56,12 +56,12 @@ def pair_credit(dominant: np.ndarray, subordinate: np.ndarray) -> np.ndarray:
     return np.where(tie, 0.5, (dominant > subordinate).astype(float))
 
 
-def gold_scores(employees: pd.DataFrame, measures: pd.DataFrame) -> pd.DataFrame:
+def gold_scores(employees: pd.DataFrame, measures: pd.DataFrame, names: list[str] = BASELINES) -> pd.DataFrame:
     """One row per gold employee: each measure for matched employees (NaN otherwise), and `custodian`."""
     by_key = measures.set_index("person_key")
     matched = employees["match_status"].isin(MAPPED)
     scores = pd.DataFrame(index=employees["gold_id"].to_numpy())
-    for name in BASELINES:
+    for name in names:
         scores[name] = employees["person_key"].map(by_key[name]).where(matched).to_numpy()
     scores["custodian"] = employees["custodian"].astype(float).to_numpy()
     return scores
@@ -159,13 +159,15 @@ def main(config: dict | None = None) -> None:
     reps, seed = config["evaluation"]["bootstrap_reps"], config["random_seed"]
     employees = pd.read_parquet(processed / "gold_employees.parquet")
     pairs = pd.read_parquet(processed / "gold_pairs.parquet")
-    scores = gold_scores(employees, pd.read_parquet(processed / "centrality.parquet"))
+    measures, names = load_measures(processed)
+    scores = gold_scores(employees, measures, names)
+    all_measures = names + ["custodian"]
 
     mapped = pairs["dominant_status"].isin(MAPPED) & pairs["subordinate_status"].isin(MAPPED)
     unmixed = ~pairs["dominant_mixed"] & ~pairs["subordinate_mixed"]
     main_construction = pairs["construction"] == "main"
     population = pairs[main_construction & mapped & unmixed]
-    table = gold_table(population, scores, MEASURES, reps, seed)
+    table = gold_table(population, scores, all_measures, reps, seed)
     results.mkdir(parents=True, exist_ok=True)
     table.to_csv(results / "baselines_gold_standard.csv", index=False, float_format="%.10f")
 
@@ -180,7 +182,7 @@ def main(config: dict | None = None) -> None:
     }
     for construction in sorted(set(pairs["construction"]) - {"main"}):
         variants[construction] = (pairs[(pairs["construction"] == construction) & mapped & unmixed], None)
-    runs = [gold_table(subset, scores, MEASURES, reps, seed, fill).assign(variant=name)
+    runs = [gold_table(subset, scores, all_measures, reps, seed, fill).assign(variant=name)
             for name, (subset, fill) in variants.items()]
     raw = pd.DataFrame({"raw_address_degree": raw_address_degree(
         pd.read_parquet(processed / "messages.parquet", columns=["sender", "to", "cc", "bcc"]), employees)})
@@ -188,13 +190,13 @@ def main(config: dict | None = None) -> None:
                 .assign(variant="all pairs, raw-address degree over all mail, max over release addresses"))
     macro = pd.DataFrame([{"variant": "macro average over dominant employees", "measure": name, "pairs_type": "all",
                            "pairs": len(population), "accuracy": macro_accuracy(population, scores, name)}
-                          for name in MEASURES])
+                          for name in all_measures])
     sensitivity = pd.concat(runs + [macro], ignore_index=True)
     sensitivity = sensitivity[["variant", "measure", "pairs_type", "pairs", "accuracy", "ci_low", "ci_high", "draws"]]
     sensitivity.to_csv(results / "gold_standard_sensitivity.csv", index=False, float_format="%.10f")
 
     paired = pd.concat([paired_gold(population, scores, other, "degree", reps, seed)
-                        for other in MEASURES if other != "degree"], ignore_index=True)
+                        for other in all_measures if other != "degree"], ignore_index=True)
     paired.to_csv(results / "gold_standard_paired.csv", index=False, float_format="%.10f")
     shutil.copyfile(processed / "gold_coverage.json", results / "gold_standard_coverage.json")
 

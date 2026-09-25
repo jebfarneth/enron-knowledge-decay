@@ -31,6 +31,19 @@ from .config import load_config
 from .network import build_edges, centrality, network_messages, recipient_resolver
 
 BASELINES = ["degree", "in_strength", "out_strength", "pagerank", "betweenness"]
+# From the mention network (mentions.py), when that stage has been run.
+MENTION_MEASURES = ["mention_degree", "mentioned_to", "third_party_mentioned_to"]
+
+
+def load_measures(processed) -> tuple[pd.DataFrame, list[str]]:
+    """Network measures per node, joined with mention-network measures when available (0 for no mention links)."""
+    measures = pd.read_parquet(processed / "centrality.parquet")
+    mentions = processed / "mention_centrality.parquet"
+    if not mentions.exists():
+        return measures, list(BASELINES)
+    measures = measures.merge(pd.read_parquet(mentions), on="person_key", how="left")
+    measures[MENTION_MEASURES] = measures[MENTION_MEASURES].fillna(0.0)
+    return measures, BASELINES + MENTION_MEASURES
 RTOL = 1e-9
 
 
@@ -125,7 +138,7 @@ def label_table(ranks: pd.DataFrame, levels: dict | None = None, exclude_dispute
 
 def attach(people: pd.DataFrame, measures: pd.DataFrame) -> pd.DataFrame:
     table = people.merge(measures, on="person_key", how="left")
-    return table.fillna({m: 0.0 for m in BASELINES if m in table})
+    return table.fillna({m: 0.0 for m in BASELINES + MENTION_MEASURES if m in table})
 
 
 def sensitivity(config: dict, ranks: pd.DataFrame, measures: pd.DataFrame) -> pd.DataFrame:
@@ -138,7 +151,8 @@ def sensitivity(config: dict, ranks: pd.DataFrame, measures: pd.DataFrame) -> pd
         "conflicting rows kept at higher title": label_table(ranks, levels=levels),
         "CEO and President removed": label_table(ranks, max_level=levels["President"] - 1),
     }
-    tables = [evaluation_table(attach(people, measures), BASELINES, reps, seed).assign(variant=name)
+    names = [m for m in BASELINES + MENTION_MEASURES if m in measures]
+    tables = [evaluation_table(attach(people, measures), names, reps, seed).assign(variant=name)
               for name, people in labels.items()]
 
     # Graph variants. Betweenness is omitted: it needs minutes per graph.
@@ -163,12 +177,12 @@ def main() -> None:
     processed, results = config["paths"]["processed"], config["paths"]["results"]
     reps, seed = config["evaluation"]["bootstrap_reps"], config["random_seed"]
     ranks = pd.read_parquet(processed / "formal_rank.parquet")
-    measures = pd.read_parquet(processed / "centrality.parquet")
+    measures, names = load_measures(processed)
     ranked = attach(label_table(ranks), measures)
-    table = evaluation_table(ranked, BASELINES, reps, seed)
+    table = evaluation_table(ranked, names, reps, seed)
     results.mkdir(parents=True, exist_ok=True)
     table.to_csv(results / "baselines_formal_rank.csv", index=False, float_format="%.10f")
-    paired = paired_table(ranked, BASELINES, reps, seed)
+    paired = paired_table(ranked, names, reps, seed)
     paired.to_csv(results / "baselines_paired_differences.csv", index=False, float_format="%.10f")
     print(f"{len(ranked)} people, {different_level_pairs(ranked['level'].to_numpy()):,} different-level pairs")
     print(table.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
