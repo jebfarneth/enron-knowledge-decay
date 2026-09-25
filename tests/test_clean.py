@@ -165,3 +165,17 @@ def test_name_and_date_on_one_line_is_cut():
     body = ("Just allocate the actuals at the end of each month.\n\nD\n\n\n"
             "   Aimee Lannou                03/11/2000 09:49 AM\n\nTo: Daren J Farmer/HOU/ECT@ECT\ncc:\nSubject: Re: Allocation\n\nold\n")
     assert authored_text(body) == "Just allocate the actuals at the end of each month.\n\nD"
+
+
+def test_wrapped_to_list_before_cc_and_subject_is_cut():
+    body = ("Who the heck is Mirant Corp????\n\nJulie\n\n\nJohn Hodge@ENRON\n02/06/2001 11:58 AM\n"
+            "To: Ruth Concannon/HOU/ECT@ECT, Frank W Vickers/NA/Enron@Enron, Gil \nMuhl/Corp/Enron@ENRON, Phil DeMoes/Corp/Enron@ENRON, David \n"
+            "Jones/NA/Enron@ENRON, Robin Barbe/HOU/ECT@ECT\ncc:  \nSubject: Iroquois\n\nold text\n")
+    assert authored_text(body) == "Who the heck is Mirant Corp????\n\nJulie"
+
+
+def test_sent_by_line_and_wrapped_recipients_are_cut():
+    body = ("I do not have an EZ tag.\n\n\n\tParking & Transportation@ENRON\n\tSent by: DeShonda Hamilton@ENRON\n"
+            "\t04/03/2001 09:31 AM\n\t\t \n\t\t To: John Letvin/Enron@EnronXGate, Becky \nYoung/NA/Enron@Enron, Bob \n"
+            "Hillier/Enron@enronXgate\n\t\t cc: Louis Allen/EPSC/HOU/ECT@ECT\n\t\t Subject: EZ Tags\n\nold text\n")
+    assert authored_text(body) == "I do not have an EZ tag."
