@@ -134,3 +134,24 @@ def test_routine_needs_the_whole_text_repeated_not_just_the_opening():
     frame = pd.DataFrame(rows)
     assert not routine_messages(frame, min_repeats=10).any()
     assert routine_messages(pd.DataFrame([{"sender": "a@enron.com", "authored": notice}] * 10), 10).all()
+
+
+def test_signature_blocks_are_not_speech_acts():
+    from enron_importance.senders import signature_only
+    assert signature_only("Ginger Dernehl\nAdministrative Coordinator\nGlobal Government Affairs\nPhone# 713-853-7751\nFax# 713-646-8160")
+    assert signature_only("Sara Shackleton\nEnron North America Corp.\n1400 Smith Street, EB 3801a\nHouston, Texas 77002\n713-853-5620 (phone)")
+    for text in ["Thanks,\nJeff", "Approved", "Please print\n\nDF", "The meeting moved to Friday.\nKay Mann\nEnron Corp"]:
+        assert not signature_only(text), text
+
+
+def test_newsletters_are_structured_and_pep_prose_is_not():
+    assert structured_record("<http://x/199.gif>\n\nNewsBeat:Daily News\n\nThis email is a daily service of Forestweb's NewsBeat.")
+    assert structured_record("Great article below.\n\nTo unsubscribe, reply with REMOVE.")
+    assert not structured_record("PEP ACCESS (LOGIN/PASSWORD)\n\nYou will be receiving your PEP Access information by Monday. Amy will hold sessions.")
+
+
+def test_whole_text_routine_differs_from_the_old_80_character_prefix_rule():
+    # Same first 80 characters, different endings: the old prefix rule called these routine; whole-text does not.
+    opening = "Attached please find the weekly west desk position report and the curve summary for review "
+    rows = [{"sender": "a@enron.com", "authored": opening + f"with the {word} notes."} for word in WORDS[:12]]
+    assert not routine_messages(pd.DataFrame(rows), min_repeats=10).any()

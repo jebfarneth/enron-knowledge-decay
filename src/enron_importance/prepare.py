@@ -23,7 +23,7 @@ from .config import load_config
 from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
 from .ingest import iter_archive, write_messages
-from .senders import automated_messages, routine_messages, sender_profiles, speech_act, structured_record
+from .senders import automated_messages, routine_messages, sender_profiles, signature_only, speech_act, structured_record
 
 
 PACKAGE = Path(__file__).resolve().parent
@@ -97,6 +97,8 @@ def prepare(config: dict) -> dict:
     funnel["automated_messages"] = int(messages["automated"].sum())
     messages["structured"] = messages["authored"].map(structured_record) & ~messages["automated"]
     funnel["structured_records"] = int(messages["structured"].sum())
+    messages["signature_only"] = messages["authored"].map(signature_only) & ~messages["automated"] & ~messages["structured"]
+    funnel["signature_only_messages"] = int(messages["signature_only"].sum())
     messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["automated"]
     messages["routine_excluded"] = messages["routine"] & ~messages["authored"].map(
         lambda t: speech_act(t, senders_cfg["speech_act_words"]))
@@ -106,6 +108,7 @@ def prepare(config: dict) -> dict:
     messages = messages.reset_index(drop=True)
 
     analysis = (messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]
+                & ~messages["signature_only"]
                 & ~messages["routine_excluded"] & (messages["authored"] != ""))
     messages["analysis"] = analysis
     funnel["analysis_messages"] = int(analysis.sum())

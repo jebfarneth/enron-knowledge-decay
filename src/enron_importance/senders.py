@@ -20,8 +20,11 @@ Two further message-level flags:
 * structured: machine records rather than prose, whoever sent them
   (calendar entries, task and report notifications, payroll receipts,
   performance-review notices, leave requests, self-declared automated
-  e-mails, mailbox synchronization logs). A fixed list of openings: it
+  e-mails, mailbox synchronization logs), and copied newsletters (their
+  "daily service of" and unsubscribe markers). A fixed list of formats: it
   misses formats not listed.
+* signature only: the authored text is nothing but a signature block
+  (name, title, department, company, address, phone lines).
 * routine: the sender sends the same whole text (digits masked) at least
   `routine_repeats` times; a shared opening is not enough. Routine messages
   stay in the network. They leave the text analysis only when longer than
@@ -56,7 +59,7 @@ STRUCTURED = re.compile(
     r"|Requester:[^\n]*\n\s*Request Type:"
     r"|You have been selected to participate in .{0,40}Performance|YEAR END \d{4} PERFORMANCE EVALUATION"
     r"|NOTE:\s+YOU WILL RECEIVE THIS MESSAGE EACH TIME|Please note that your employees have suggested"
-    r"|PEP ACCESS|Attached below you will find the final Evaluation forms"
+    r"|Attached below you will find the final Evaluation forms"
     r"|According to our system records, you have not yet logged)",
     re.IGNORECASE,
 )
@@ -69,9 +72,47 @@ def template_of(text) -> str:
     return _SPACE.sub(" ", _DIGITS.sub("#", text.lower())).strip()[:80]
 
 
+# Copied newsletters and mailing-list digests, wherever the markers appear.
+NEWSLETTER = re.compile(
+    r"this e-?mail is a (daily|weekly) service of|to unsubscribe|unsubscribe from this|"
+    r"was forwarded to you by a colleague|you are receiving this (e-?mail|newsletter|message) because",
+    re.IGNORECASE,
+)
+
+
 def structured_record(text) -> bool:
-    """True for machine-generated records (calendar entries, notices) rather than prose."""
-    return isinstance(text, str) and bool(STRUCTURED.search(_SALUTATION.sub("", text, count=1)))
+    """True for machine-generated records (calendar entries, notices) and copied newsletters rather than prose."""
+    if not isinstance(text, str):
+        return False
+    return bool(STRUCTURED.search(_SALUTATION.sub("", text, count=1)) or NEWSLETTER.search(text))
+
+
+_PHONE = re.compile(r"\(?\d{3}\)?[\s.-]*\d{3}[\s.-]\d{4}|\b(phone|fax|tel|cell|mobile|pager|direct)\b", re.IGNORECASE)
+_SIGNATURE_WORDS = {
+    "coordinator", "director", "manager", "assistant", "analyst", "specialist", "counsel", "attorney",
+    "president", "vp", "vice", "associate", "senior", "sr", "executive", "officer", "affairs", "government",
+    "department", "legal", "corp", "corporation", "inc", "enron", "suite", "street", "houston", "texas",
+    "floor", "administrative", "services", "group", "global", "north", "america", "americas", "llc",
+}
+
+
+def signature_only(text) -> bool:
+    """True when every line looks like a signature block: short capitalized name, title,
+    department, company, address or phone lines, with at least one phone, address or title line."""
+    lines = [line.strip() for line in (text if isinstance(text, str) else "").splitlines() if line.strip()]
+    if len(lines) < 2:
+        return False
+    evidence = False
+    for line in lines:
+        words = re.findall(r"\b[A-Za-z][A-Za-z.&'-]*", line)
+        if _PHONE.search(line) or "@" in line:
+            evidence = True
+            continue
+        if len(words) > 6 or not all(w[0].isupper() for w in words):
+            return False
+        if {w.lower().strip(".") for w in words} & _SIGNATURE_WORDS or re.search(r"\d+\s+\w+", line):
+            evidence = True
+    return evidence
 
 
 def name_rule(address) -> bool:
