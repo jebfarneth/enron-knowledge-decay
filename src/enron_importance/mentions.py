@@ -4,8 +4,9 @@
 predicted by how many different people are mentioned to them in email.
 
 1. Mentions: spaCy's English named-entity recognizer (en_core_web_sm; the
-   paper used NYU's AceJet) finds PERSON mentions in the sender's own text of
-   every analysis message, so quoted earlier messages are not counted again.
+   paper used NYU's AceJet) finds PERSON mentions in the estimated authored
+   text of every analysis message (quoted earlier messages are removed where
+   the cleaner recognizes them; residual quotations remain).
 2. Resolution, as in the paper: a mention is compatible with a person when it
    matches their full name, first name (nicknames included), last name or
    initials ("J.S."). For each recipient r of a message from sender s, the
@@ -26,7 +27,7 @@ The main measures count only person-text messages (the sender is attributed
 to a person, not a role, list, bare address or ambiguous key) and leave out
 mentions that resolve to the sender (signatures and contact lines), follow an
 office title ("Governor Davis"), precede a company word ("Williams
-pipeline") or are an abbreviation ("Ste."). `mention_degree_unfiltered` and
+pipeline", on the same line) or are an abbreviation ("Ste."). `mention_degree_unfiltered` and
 `mentioned_to_unfiltered` keep every resolved mention from every analysis
 message with a sender person, the definition before audit 4.
 
@@ -39,9 +40,10 @@ network it uses, so it is a consistency check, not an independent accuracy.
 
 Only the first MAX_CHARS characters of a message's text are tagged. Tags are
 cached in data/processed/mention_tags.parquet by message path and text hash,
-under a tagger identity (model and spaCy versions, active components,
-character cap and tagging code), so a rerun only tags changed text and any
-change to the tagger retags everything.
+under a tagger identity (model name, version and weight files, spaCy
+version, active components, character cap and tagging code), so a rerun only
+tags changed text and a change to any of these retags everything; a cached
+entry whose names are not at their recorded positions is retagged too.
 
 Outputs
   data/processed/mentions.parquet           one row per resolved (message, recipient, mention), with why
@@ -59,8 +61,9 @@ import hashlib
 import inspect
 import json
 import re
-from importlib.metadata import version
 from collections import defaultdict
+from importlib.metadata import version
+from pathlib import Path
 
 import igraph as ig
 import numpy as np
@@ -68,19 +71,23 @@ import pandas as pd
 
 from .config import load_config
 from .identity import NICKNAMES, extra_recipients, resolve_recipient
-from .provenance import record_stage
+from .provenance import record_stage, tree_hash
 
 _TOKEN = re.compile(r"[a-z]+(?:-[a-z]+)*")
 MAX_CHARS = 5000  # longer authored texts are cut before tagging
 UNREACHABLE = 255
-# An office title just before a name ("Governor Davis", "Sen. Feinstein"): a public figure, not a colleague.
+# An office title just before a name on the same line ("Governor Davis", "Sen. Feinstein"): a public figure.
 _OFFICE = re.compile(r"\b(?:governor|gov\.|senator|sen\.|representative|rep\.|congress(?:man|woman)|"
-                     r"assembly(?:man|woman|member)|mayor|judge|justice|commissioner)\s+$", re.IGNORECASE)
-# A company word just after a name, or ending it ("Williams pipeline", "Duke Energy").
+                     r"assembly(?:man|woman|member)|mayor|judge|justice|commissioner)[ \t]+$", re.IGNORECASE)
+# A company word just after a name on the same line, or ending it ("Williams pipeline", "Duke Energy"),
+# unless a department word follows ("Power Group", "Gas desk" name a colleague's group).
 _COMPANY_WORDS = r"pipeline|pipe line|co|corp|corporation|inc|llc|lp|l\.p|ltd|energy|gas|power|company|companies|capital|holdings|securities|bank"
-_COMPANY_AFTER = re.compile(rf"^\s*(?:&|(?:{_COMPANY_WORDS})\b)", re.IGNORECASE)
+_DEPARTMENT = r"group|desk|team|trading|marketing|origination|department|dept"
+_COMPANY_AFTER = re.compile(rf"^[ \t]*(?:{_COMPANY_WORDS})\b(?![ \t]+(?:{_DEPARTMENT})\b)", re.IGNORECASE)
 _COMPANY_END = re.compile(rf"\b(?:{_COMPANY_WORDS})\.?\s*$", re.IGNORECASE)
 _ABBREVIATION = re.compile(r"\s*[A-Z][a-z]{1,3}\.\s*")
+# Place abbreviations whose period spaCy may leave outside the name ("Ste" in "Ste. Aurelie").
+_PLACE_ABBREVIATIONS = {"st", "ste", "mt", "ft", "pt"}
 _INITIALS = re.compile(r"\s*[A-Z]\.\s*[A-Z]\.?\s*|\s*[A-Z]{2}\s*")
 
 
@@ -140,9 +147,12 @@ def nil_reason(mention: str, text, start: int | None) -> str | None:
         return "company"
     if start is None or not isinstance(text, str):
         return None
+    end = start + len(mention)
+    if mention.strip().lower() in _PLACE_ABBREVIATIONS and text[end:end + 1] == ".":
+        return "abbreviation"
     if _OFFICE.search(text[max(0, start - 40):start]):
         return "office"
-    if _COMPANY_AFTER.match(text[start + len(mention):start + len(mention) + 40]):
+    if _COMPANY_AFTER.match(text[end:end + 40]):
         return "company"
     return None
 
@@ -186,9 +196,11 @@ def tag_mentions(texts: pd.Series, nlp, batch_size: int = 256) -> list[list[tupl
 
 
 def tagger_id(nlp) -> str:
-    """Model and spaCy versions, active components, character cap and tagging code, as one digest."""
-    spec = {"model": f"{nlp.meta['name']}-{nlp.meta['version']}", "spacy": version("spacy"),
-            "pipes": list(getattr(nlp, "pipe_names", [])), "max_chars": MAX_CHARS,
+    """Model name and version, its weight files, spaCy version, active components, character cap and
+    tagging code, as one digest."""
+    path = getattr(nlp, "path", None)
+    spec = {"model": f"{nlp.meta['name']}-{nlp.meta['version']}", "weights": tree_hash(Path(path)) if path else None,
+            "spacy": version("spacy"), "pipes": list(getattr(nlp, "pipe_names", [])), "max_chars": MAX_CHARS,
             "code": inspect.getsource(tag_mentions)}
     return hashlib.sha1(json.dumps(spec, sort_keys=True).encode("utf-8")).hexdigest()[:16]
 
@@ -200,9 +212,11 @@ def text_hash(text) -> str:
 def cached_mentions(messages: pd.DataFrame, cache_path, nlp, chunk: int = 5000) -> pd.Series:
     """Tag each message's authored text, reusing earlier tags for unchanged text from the same tagger.
 
-    Returns (mention, start) pairs per message. The cache is saved after
-    every `chunk` newly tagged messages, so an interrupted run loses at most
-    one chunk.
+    Returns (mention, start) pairs per message. A cached entry is reused only
+    when every name it holds is found at its recorded position in the text;
+    otherwise the message is tagged again. The cache is saved after every
+    `chunk` newly tagged messages, so an interrupted run loses at most one
+    chunk.
     """
     tagger = tagger_id(nlp)
     keys = messages["path"] + "\x1f" + messages["authored"].map(text_hash)
@@ -212,7 +226,10 @@ def cached_mentions(messages: pd.DataFrame, cache_path, nlp, chunk: int = 5000) 
         if "tagger" in old:
             old = old[old["tagger"] == tagger]
             cached = {key: list(zip(names, starts)) for key, names, starts in zip(old["key"], old["mentions"], old["starts"])}
-    missing = keys[~keys.isin(cached.keys())]
+    texts = messages["authored"].map(lambda t: t[:MAX_CHARS] if isinstance(t, str) else "")
+    intact = [key in cached and all(0 <= start and text[start:start + len(name)] == name for name, start in cached[key])
+              for key, text in zip(keys, texts)]
+    missing = keys[~pd.Series(intact, index=keys.index)]
 
     def save():
         saved = pd.DataFrame({"key": list(cached), "tagger": tagger,
