@@ -41,7 +41,7 @@ import pyarrow.parquet as pq
 from .clean import reply_start
 from .config import load_config
 from .dedupe import normalize_subject
-from .identity import resolve_recipient
+from .identity import extra_recipients, resolve_recipient
 
 _SPACE = re.compile(r"\s+")
 PREFIX_CHARS = 60   # opening of a message's authored text used to recognise it when quoted
@@ -140,7 +140,8 @@ def main(config: dict | None = None) -> None:
     """Link messages as people: attributed senders, resolved recipients, bodies from the parsed cache."""
     config = config or load_config()
     processed = config["paths"]["processed"]
-    columns = ["path", "sender", "to", "cc", "subject", "date", "authored", "automated", "structured", "probable_copy"]
+    columns = ["path", "sender", "to", "cc", "to_extra", "cc_extra", "subject", "date", "authored", "automated",
+               "structured", "probable_copy"]
     messages = pd.read_parquet(processed / "messages.parquet", columns=columns)
     messages = messages.merge(pd.read_parquet(processed / "sender_people.parquet")[["path", "sender_person"]], on="path")
     raw = pq.read_table(config["paths"]["interim"] / "messages_raw.parquet", columns=["path", "body"]).to_pandas()
@@ -161,7 +162,10 @@ def main(config: dict | None = None) -> None:
 
     frame = pd.DataFrame({
         "sender": messages["sender_person"].where(messages["sender_person"].notna(), messages["sender"]),
-        "to": messages["to"].map(people_of), "cc": messages["cc"].map(people_of),
+        "to": messages["to"].map(people_of),
+        "cc": [people_of(cc) + extra_recipients(people_of(list(to) + list(cc)), list(te) + list(ce),
+                                                lambda a: people_of([a])[0] if people_of([a]) else None, people)
+               for to, cc, te, ce in zip(messages["to"], messages["cc"], messages["to_extra"], messages["cc_extra"])],
         "subject": messages["subject"], "date": messages["date"],
         "authored": messages["authored"], "body": messages["body"],
     })

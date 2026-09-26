@@ -72,3 +72,22 @@ def test_edges_come_out_sorted_whatever_the_input_order():
     second, _ = build_edges(pd.DataFrame(rows[::-1]), lambda r: PEOPLE.get(r, r), "enron.com")
     assert first.equals(second)
     assert list(zip(first["source"], first["target"])) == [("a", "c"), ("a", "d"), ("b", "a")]
+
+
+def test_people_from_other_copies_join_the_targets():
+    messages = pd.DataFrame([{**msg("a", ["b@enron.com"]), "recipient_extra": ["c"]}])
+    edges, sent = build_edges(messages, lambda r: PEOPLE.get(r, r), "enron.com")
+    assert set(zip(edges["source"], edges["target"])) == {("a", "b"), ("a", "c")}
+    assert edges.set_index("target").loc["c", "weight"] == 0.5
+
+
+def test_second_spellings_of_a_recipient_are_not_added():
+    from enron_importance.identity import extra_recipients
+    people = {"michael brown", "christopher calger", "carla hoffman", "mark a palmer"}
+    resolve = {".brown@enron.com": ".brown@enron.com", "michael.brown@enron.com": "michael brown",
+               "f..calger@enron.com": "christopher calger", "f..carla@enron.com": "carla hoffman",
+               "mark.a.palmer@enron.com": "mark a palmer"}.get
+    assert extra_recipients(["michael brown"], [".brown@enron.com"], resolve, people) == []
+    assert extra_recipients([".brown@enron.com"], ["michael.brown@enron.com"], resolve, people) == []
+    assert extra_recipients(["carla hoffman"], ["f..calger@enron.com"], resolve, people) == ["christopher calger"]
+    assert extra_recipients(["mark palmer"], ["mark.a.palmer@enron.com"], resolve, people) == []

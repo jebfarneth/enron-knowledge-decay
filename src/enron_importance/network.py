@@ -39,26 +39,29 @@ import igraph as ig
 import pandas as pd
 
 from .config import load_config
-from .identity import entity_type, resolve_recipient
+from .identity import entity_type, extra_recipients, resolve_recipient
 
 
 def build_edges(messages: pd.DataFrame, recipient: Callable[[str], str | None], internal_domain: str,
                 max_recipients: int | None = None) -> tuple[pd.DataFrame, pd.Series]:
     """Directed weighted edges and exact sent-message counts.
 
-    `messages` needs sender_person, to and cc. `recipient` maps an address to
-    its node (None to drop it). Messages with more than `max_recipients`
-    internal targets are skipped when a limit is given.
+    `messages` needs sender_person, to and cc, and optionally
+    recipient_extra (people added from other copies of the message).
+    `recipient` maps an address to its node (None to drop it). Messages with
+    more than `max_recipients` internal targets are skipped when a limit is
+    given.
     """
     suffix = "@" + internal_domain
     weight: dict[tuple[str, str], float] = defaultdict(float)
     count: dict[tuple[str, str], int] = defaultdict(int)
     sent: dict[str, int] = defaultdict(int)
-    for source, to, cc in zip(messages["sender_person"], messages["to"], messages["cc"]):
+    extras = messages["recipient_extra"] if "recipient_extra" in messages else [[]] * len(messages)
+    for source, to, cc, extra in zip(messages["sender_person"], messages["to"], messages["cc"], extras):
         if not isinstance(source, str):
             continue
         addresses = sorted({r for r in list(to) + list(cc) if isinstance(r, str) and r.endswith(suffix)})
-        targets = sorted({t for t in map(recipient, addresses) if t is not None} - {source})
+        targets = sorted(({t for t in map(recipient, addresses) if t is not None} | set(extra)) - {source})
         if not targets or (max_recipients is not None and len(targets) > max_recipients):
             continue
         sent[source] += 1
@@ -95,10 +98,20 @@ def centrality(edges: pd.DataFrame, sent: pd.Series | None = None, betweenness: 
 def network_messages(config: dict) -> pd.DataFrame:
     """Internal messages that are neither automated nor structured records, with their sender person."""
     processed = config["paths"]["processed"]
-    columns = ["path", "to", "cc", "sender_internal", "automated", "structured", "probable_copy"]
+    columns = ["path", "to", "cc", "to_extra", "cc_extra", "sender_internal", "automated", "structured", "probable_copy"]
     messages = pd.read_parquet(processed / "messages.parquet", columns=columns)
     messages = messages.merge(pd.read_parquet(processed / "sender_people.parquet"), on="path", how="left")
-    return messages[messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]]
+    messages = messages[messages["sender_internal"] & ~messages["automated"] & ~messages["structured"]
+                        & ~messages["probable_copy"]].copy()
+    resolve = recipient_resolver(config)
+    domain = "@" + config["senders"]["internal_domain"]
+    people = set(pd.read_parquet(processed / "identities.parquet").query("entity_type == 'person'")["person_key"])
+    messages["recipient_extra"] = [
+        extra_recipients([p for p in (resolve(a) for a in list(to) + list(cc) if a.endswith(domain)) if p],
+                         [a for a in list(te) + list(ce) if a.endswith(domain)], resolve, people)
+        for to, cc, te, ce in zip(messages["to"], messages["cc"], messages["to_extra"], messages["cc_extra"])
+    ]
+    return messages
 
 
 def recipient_resolver(config: dict) -> Callable[[str], str | None]:

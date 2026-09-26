@@ -49,7 +49,7 @@ import numpy as np
 import pandas as pd
 
 from .config import load_config
-from .identity import NICKNAMES, resolve_recipient
+from .identity import NICKNAMES, extra_recipients, resolve_recipient
 
 _TOKEN = re.compile(r"[a-z]+")
 MAX_CHARS = 5000  # longer authored texts are cut before tagging
@@ -210,7 +210,8 @@ def main(config: dict | None = None) -> None:
 
     config = config or load_config()
     processed, results = config["paths"]["processed"], config["paths"]["results"]
-    messages = pd.read_parquet(processed / "messages.parquet", columns=["path", "to", "cc", "authored", "analysis"])
+    messages = pd.read_parquet(processed / "messages.parquet",
+                               columns=["path", "to", "cc", "to_extra", "cc_extra", "authored", "analysis"])
     messages = messages[messages["analysis"]].merge(pd.read_parquet(processed / "sender_people.parquet"), on="path")
     messages = messages[messages["sender_person"].notna()].reset_index(drop=True)
     identities = pd.read_parquet(processed / "identities.parquet")
@@ -219,7 +220,11 @@ def main(config: dict | None = None) -> None:
     people = set(types.loc[types["entity_type"] == "person", "person_key"])
     resolve = lambda a: resolve_recipient(a, address_person, people)  # noqa: E731
     messages["to_people"] = messages["to"].map(lambda xs: [p for p in map(resolve, xs) if p])
-    messages["cc_people"] = messages["cc"].map(lambda xs: [p for p in map(resolve, xs) if p])
+    messages["cc_people"] = [
+        [p for p in map(resolve, cc) if p] + extra_recipients([p for p in map(resolve, list(to) + list(cc)) if p],
+                                                              list(te) + list(ce), resolve, people)
+        for to, cc, te, ce in zip(messages["to"], messages["cc"], messages["to_extra"], messages["cc_extra"])
+    ]
 
     nlp = spacy.load("en_core_web_sm", disable=["parser", "lemmatizer", "attribute_ruler", "tagger"])
     messages["mentions"] = cached_mentions(messages, processed / "mention_tags.parquet", nlp)

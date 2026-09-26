@@ -310,6 +310,30 @@ def resolve_recipient(address: str, address_person: dict, people: set) -> str | 
     return address
 
 
+def surname(node: str) -> str:
+    """Last name of a person key, or last token of an address's local part."""
+    if "@" in node:
+        tokens = [t for t in re.split(r"[._]", node.split("@")[0]) if t]
+        return tokens[-1] if tokens else node
+    return node.split()[-1]
+
+
+def extra_recipients(recipients: list[str], extra_addresses, resolve, people: set) -> list[str]:
+    """People to add from addresses only other copies of a message list.
+
+    An address is added only when it resolves to a person who is neither a
+    recipient already nor shares a surname with one, so a second spelling of
+    a recipient (".brown" beside "michael brown") is not counted twice.
+    """
+    surnames = {surname(r) for r in recipients}
+    added: list[str] = []
+    for address in extra_addresses:
+        person = resolve(address)
+        if person in people and person not in recipients and person not in added and surname(person) not in surnames:
+            added.append(person)
+    return added
+
+
 def main(config: dict | None = None) -> None:
     config = config or load_config()
     spec = config["identity"]
