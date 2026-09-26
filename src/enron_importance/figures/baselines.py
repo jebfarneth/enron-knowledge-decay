@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ..config import load_config
+from ..provenance import record_stage
 from .style import GRID, RC, SERIES, TEXT_PRIMARY, TEXT_SECONDARY, save
 
 LABELS = {
@@ -26,6 +27,7 @@ LABELS = {
 
 
 def draw(table: pd.DataFrame) -> plt.Figure:
+    table = table[table["measure"].isin(LABELS)]  # the unfiltered mention measures stay in the results table only
     table = table.sort_values("accuracy").reset_index(drop=True)
     with plt.rc_context(RC):
         fig, ax = plt.subplots(figsize=(6.5, 2.6))
@@ -55,6 +57,7 @@ def main() -> None:
     table = pd.read_csv(config["paths"]["results"] / "baselines_formal_rank.csv")
     for path in save(draw(table), config["paths"]["figures"], "fig06_baselines_formal_rank"):
         print(f"Wrote {path}")
+    record_stage(config, "figures.baselines")
 
 
 if __name__ == "__main__":

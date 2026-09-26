@@ -197,3 +197,10 @@ def test_prose_between_a_to_line_and_a_later_subject_is_kept():
     body = ("Meeting agenda\n05/14/2001 09:00 AM\nTo: operations staff\nWe will review the outage plan, staffing and budget.\n"
             "Then discuss vendors.\nSubject: next steps for Q3")
     assert authored_text(body) == body
+
+
+def test_wrapped_recipient_line_without_an_address_character_is_cut():
+    body = ("I know nothing!\n\nMarie Heard\n\n\n\tTana Jones@ECT\n\t07/13/00 04:26 PM\n\t\t \n"
+            "\t\t To: Alan Aronowitz/HOU/ECT@ECT, Marie Heard/Enron \nCommunications@Enron Communications, Robbi Rossi/Enron \n"
+            "Communications\n\t\t cc: \n\t\t Subject: Allegheny Energy\n\nOne of the online team is looking for someone.")
+    assert authored_text(body) == "I know nothing!\n\nMarie Heard"

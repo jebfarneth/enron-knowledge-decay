@@ -13,8 +13,9 @@ message m when:
    quoted text contains the opening of p's authored text,
 5. p's quoted text does not contain m's opening (that would make p the reply),
 6. p was not sent by m's own sender, and, when m's quoted section names
-   whom it quotes ("From: Susan Scott") but p's text is not found in it, p
-   was sent by that person.
+   whom it quotes first ("From: Susan Scott"), p was sent by that person,
+   even if an older message's text also appears further down the quote.
+   A message whose first quote is its own sender's message is not linked.
 
 Among candidates, the one whose text is quoted nearest the top of m's quoted
 section is the parent (the message m directly answers); without quotation,
@@ -22,9 +23,10 @@ the latest addressed candidate. Automated messages, structured records and
 probable time-shifted copies are never linked.
 
 `link_evidence` records which evidence held. `link_kind` is "reply" when m
-is addressed back to p's sender and "forward" when m only relays p's text to
-others, whatever its subject prefix; `response_seconds` is set for replies
-only.
+is addressed back to p's sender and its subject is not a forward ("FW:"),
+and "forward" otherwise; `response_seconds` is set for replies only.
+`link_confidence` is "high" when the quoted author and quoted text both
+point to p, "medium" when one does, "low" when m is only addressed back.
 
 These are inferred candidate parents, not observed replies. Messages with
 empty or changed subjects are not linked, and a parent whose subject differs
@@ -45,8 +47,10 @@ from .clean import reply_start
 from .config import load_config
 from .dedupe import normalize_subject
 from .identity import extra_recipients, normalize_name, resolve_recipient
+from .provenance import record_stage
 
 _SPACE = re.compile(r"\s+")
+_FORWARD_SUBJECT = re.compile(r"^\s*(fw|fwd)\s*:", re.IGNORECASE)
 PREFIX_CHARS = 60   # opening of a message's authored text used to recognise it when quoted
 MIN_PREFIX_CHARS = 20
 
@@ -66,17 +70,21 @@ def link_replies(messages: pd.DataFrame, max_reply_days: int, eligible: pd.Serie
     `messages` needs sender, to, cc, subject and date, and body and authored
     for quotation evidence (either may be absent; `quoted`, the flattened
     quoted section, may be given instead of body); `quoted_from`, when
-    present, is the person named in the first quoted header. `eligible` marks
-    messages that may be linked at all. The index must be unique.
+    present, names the author of the first quoted header, as one key or a
+    set of keys (person, address, name) it may go by, and `sender_keys` the
+    other keys each message's sender goes by. `eligible` marks messages that
+    may be linked at all. The index must be unique.
     """
     frame = messages.copy()
     frame["_subject"] = frame["subject"].map(normalize_subject)
     frame["reply_to"] = pd.array([pd.NA] * len(frame), dtype="Int64")
     frame["link_evidence"] = pd.Series([None] * len(frame), index=frame.index, dtype=object)
     frame["link_kind"] = pd.Series([None] * len(frame), index=frame.index, dtype=object)
+    frame["link_confidence"] = pd.Series([None] * len(frame), index=frame.index, dtype=object)
     frame["response_seconds"] = pd.array([pd.NA] * len(frame), dtype="Float64")
     bodies = frame["body"] if "body" in frame else pd.Series("", index=frame.index)
     quoted_senders = frame["quoted_from"] if "quoted_from" in frame else pd.Series(None, index=frame.index, dtype=object)
+    sender_keys = frame["sender_keys"] if "sender_keys" in frame else pd.Series(None, index=frame.index, dtype=object)
     quoted_texts = frame["quoted"] if "quoted" in frame else None  # flattened quoted section, when precomputed
     authored = frame["authored"] if "authored" in frame else bodies
     window = pd.Timedelta(days=max_reply_days)
@@ -99,9 +107,13 @@ def link_replies(messages: pd.DataFrame, max_reply_days: int, eligible: pd.Serie
                 body = bodies[index] if isinstance(bodies[index], str) else ""
                 quoted = _flat(body[reply_start(body):])
             own = _prefix(authored[index])
-            quoted_from = quoted_senders[index]
-            best = None  # (rank, index, date, evidence, addressed)
-            for prior_index, prior_date, prior_sender, recipients, prior_prefix, prior_quoted in reversed(earlier):
+            named = _keys(quoted_senders[index])
+            own_keys = _keys(sender) | _keys(sender_keys[index])
+            if named and _same_author(named, own_keys):
+                earlier.append((index, row["date"], sender, addressed_to, own, quoted, own_keys))
+                continue  # it quotes its own sender's message, which cannot be its parent: abstain
+            best = None  # (rank, index, date, evidence, addressed, author_match)
+            for prior_index, prior_date, prior_sender, recipients, prior_prefix, prior_quoted, prior_keys in reversed(earlier):
                 if row["date"] - prior_date > window:
                     break
                 if not sender or sender not in recipients or prior_date >= row["date"] or prior_sender == sender:
@@ -112,48 +124,93 @@ def link_replies(messages: pd.DataFrame, max_reply_days: int, eligible: pd.Serie
                 position = quoted.find(prior_prefix) if prior_prefix else -1
                 if not addressed and position < 0:
                     continue
-                if position < 0 and isinstance(quoted_from, str) and prior_sender != quoted_from:
-                    continue  # the reply quotes someone else's message, which is not this one
+                if named and not _same_author(named, prior_keys):
+                    continue  # the reply quotes a named author; only that author's message can be its parent
                 evidence = "+".join(name for name, held in [("addressed", addressed), ("quoted", position >= 0)] if held)
                 # Quoted parents rank by how near the top they are quoted; then the latest addressed one.
                 rank = (0, position) if position >= 0 else (1, 0)
                 if best is None or rank < best[0]:
-                    best = (rank, prior_index, prior_date, evidence, addressed)
+                    best = (rank, prior_index, prior_date, evidence, addressed, bool(named))
             if best is not None:
-                _, prior_index, prior_date, evidence, addressed = best
-                kind = "reply" if addressed else "forward"
+                _, prior_index, prior_date, evidence, addressed, author_match = best
+                relayed = bool(_FORWARD_SUBJECT.match(row["subject"] if isinstance(row["subject"], str) else ""))
+                kind = "reply" if addressed and not relayed else "forward"
+                quoted_text = "quoted" in evidence
+                confidence = "high" if author_match and quoted_text else "medium" if author_match or quoted_text else "low"
                 frame.at[index, "reply_to"] = prior_index
                 frame.at[index, "link_evidence"] = evidence
                 frame.at[index, "link_kind"] = kind
+                frame.at[index, "link_confidence"] = confidence
                 if kind == "reply":
                     frame.at[index, "response_seconds"] = (row["date"] - prior_date).total_seconds()
-            earlier.append((index, row["date"], sender, addressed_to, own, quoted))
+            earlier.append((index, row["date"], sender, addressed_to, own, quoted, own_keys))
 
     frame["thread_id"] = _thread_ids(frame)
     return frame.drop(columns="_subject")
 
 
+def _keys(value) -> set[str]:
+    """One key, or a collection of keys, as a set (empty for none)."""
+    if isinstance(value, str):
+        return {value}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return {v for v in value if isinstance(v, str)}
+    return set()
+
+
+def _same_author(named: set[str], keys: set[str]) -> bool:
+    """Whether a quoted header's author and a sender share a key, or, for two person names, the
+    same surname and first initial ("kevin m presto" and "kevin presto")."""
+    if named & keys:
+        return True
+    for a, b in ((x.split(), y.split()) for x in named for y in keys if "@" not in x + y):
+        if len(a) >= 2 and len(b) >= 2 and a[-1] == b[-1] and a[0][0] == b[0][0]:
+            return True
+    return False
+
+
 _QUOTED_FROM = re.compile(r"^[ \t>]*From:[ \t]*(?P<value>[^\n]+)", re.IGNORECASE | re.MULTILINE)
 _LOTUS_FROM = re.compile(r"^[ \t]*(?P<value>[A-Z][^\n/@]{2,60})(?:@|/)[^\n]*\n[ \t]*\d{1,2}/\d{1,2}/\d{2,4}", re.MULTILINE)
+# The rest of a Lotus header after its author: a date and time, then a To: line within three lines.
+_LOTUS_TAIL = r"\d{1,2}/\d{1,2}/\d{2,4}[ \t]+\d{1,2}:\d{2}[^\n]*\n(?:[^\n]*\n){0,2}?[ \t]*To:"
+# A bare Lotus name line ("Tana Jones", no @ or /) with the date on the next line.
+_LOTUS_BARE = re.compile(r"^[ \t]*(?P<value>[A-Z][A-Za-z.'-]+(?: [A-Z][A-Za-z.'-]*){1,3})[ \t]*\n[ \t]*" + _LOTUS_TAIL,
+                         re.MULTILINE)
+# The author and date on one line ('"Susan C. Hansen" <susan.hansen@stanford.edu> on 04/06/2001 06:14:10 PM');
+# a "Forwarded by" line names the forwarder, not the author.
+_LOTUS_ON = re.compile(r"^(?![^\n]*Forwarded by)[ \t]*(?P<value>[^\n]{2,100}?)[ \t]+on[ \t]+" + _LOTUS_TAIL, re.MULTILINE)
 _ADDRESS = re.compile(r"[\w.'+-]+@[\w-]+(?:\.[\w-]+)+")
 
 
-def quoted_author(body, person_of_address, person_of_name, start: int | None = None) -> str | None:
-    """The person named in the first quoted header of `body` (From: line or Lotus name line), or None.
+def quoted_author(body, person_of_address, person_of_name, start: int | None = None) -> frozenset[str] | None:
+    """The keys the author of the first quoted header of `body` may go by, or None.
 
-    `start` is where the quoted section begins, when already known.
+    The header is a From: line, or a Lotus author (name, with or without its
+    address, then the date and a To: line). Its keys are the person its
+    address resolves to, the address itself, and the person its display
+    name (or, without one, the address's local part) names. `start` is where
+    the quoted section begins, when already known.
     """
     if not isinstance(body, str):
         return None
     quoted = body[reply_start(body) if start is None else start:]
-    found = [m for m in (_QUOTED_FROM.search(quoted), _LOTUS_FROM.search(quoted)) if m]
+    found = [m for m in (pattern.search(quoted) for pattern in (_QUOTED_FROM, _LOTUS_FROM, _LOTUS_BARE, _LOTUS_ON)) if m]
     if not found:
         return None
     value = min(found, key=lambda m: m.start()).group("value")
     address = _ADDRESS.search(value)
+    # The display name ends at an address, a Notes path (/HOU/ECT), a bracket or a date.
+    name = re.split(r"[@/<\[(]| on |\s\d", value[:address.start()] if address else value)[0].strip(" \t\"',")
+    keys = set()
     if address:
-        return person_of_address(address.group(0).lower())
-    return person_of_name(value.split(" on ")[0].split(" <")[0].strip())
+        email = address.group(0).lower()
+        keys |= {email, person_of_address(email)}
+        if not name:
+            name = " ".join(re.split(r"[._-]+", email.split("@")[0]))
+    if name:
+        keys.add(person_of_name(name))
+    keys = {k for k in keys if isinstance(k, str) and k}
+    return frozenset(keys) or None
 
 
 def _thread_ids(frame: pd.DataFrame) -> pd.Series:
@@ -177,7 +234,7 @@ def main(config: dict | None = None) -> None:
     """Link messages as people: attributed senders, resolved recipients, bodies from the parsed cache."""
     config = config or load_config()
     processed = config["paths"]["processed"]
-    columns = ["path", "sender", "to", "cc", "to_extra", "cc_extra", "subject", "date", "authored", "automated",
+    columns = ["path", "sender", "x_from", "to", "cc", "to_extra", "cc_extra", "subject", "date", "authored", "automated",
                "structured", "probable_copy"]
     messages = pd.read_parquet(processed / "messages.parquet", columns=columns)
     messages = messages.merge(pd.read_parquet(processed / "sender_people.parquet")[["path", "sender_person"]], on="path")
@@ -218,18 +275,24 @@ def main(config: dict | None = None) -> None:
     frame["quoted"] = [_flat(b[o:]) if isinstance(b, str) else "" for b, o in zip(messages["body"], starts)]
     frame["quoted_from"] = [quoted_author(b, lambda a: (people_of([a]) or [None])[0], person_of_name, o)
                             for b, o in zip(messages["body"], starts)]
+    # A sender also goes by the raw address and the name in the From display (outside senders have no person key).
+    frame["sender_keys"] = [frozenset(k for k in (address, person_of_name(display) if isinstance(display, str) else None)
+                                      if isinstance(k, str)) for address, display in zip(messages["sender"], messages["x_from"])]
     frame = frame.drop(columns="body")
     eligible = ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]
     linked = link_replies(frame, config["threads"]["max_reply_days"], eligible)
     parent_path = linked["reply_to"].map(lambda i: messages.at[int(i), "path"] if pd.notna(i) else None)
     links = pd.DataFrame({"path": messages["path"], "parent_path": parent_path, "link_evidence": linked["link_evidence"],
-                          "link_kind": linked["link_kind"], "response_seconds": linked["response_seconds"],
+                          "link_kind": linked["link_kind"], "link_confidence": linked["link_confidence"],
+                          "response_seconds": linked["response_seconds"],
                           "thread": linked["thread_id"].map(messages["path"])})
     links.to_parquet(processed / "links.parquet", index=False)
     counts = {"links": int(links["parent_path"].notna().sum()), "reply_links": int((links["link_kind"] == "reply").sum()),
+              "high_confidence_reply_links": int(((links["link_kind"] == "reply") & (links["link_confidence"] == "high")).sum()),
               "forward_links": int((links["link_kind"] == "forward").sum()), "threads": int(links["thread"].nunique())}
     (processed / "links.json").write_text(json.dumps(counts, indent=2) + "\n")
     print(json.dumps(counts, indent=2))
+    record_stage(config, "threads")
 
 
 if __name__ == "__main__":

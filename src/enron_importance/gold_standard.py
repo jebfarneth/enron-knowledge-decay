@@ -75,6 +75,7 @@ import pandas as pd
 from .config import load_config
 from .download import sha256_of
 from .identity import normalize_name, resolve_recipient
+from .provenance import record_stage
 
 MAPPED = {"name+address", "name", "address node"}
 # A support position: the title ends in Assistant, Asst or Secretary ("Sr Admin Asst",
@@ -256,10 +257,8 @@ def main(config: dict | None = None) -> None:
     config = config or load_config()
     spec = config["gold_standard"]
     source = config["paths"]["raw"] / spec["entities"]
-    outputs = [config["paths"]["processed"] / name for name in ["gold_employees.parquet", "gold_pairs.parquet", "gold_coverage.json"]]
     if not source.exists():
-        for stale in outputs:  # never leave earlier outputs for later stages to read
-            stale.unlink(missing_ok=True)
+        record_stage(config, "gold", skipped=True)  # deletes earlier outputs, so later stages cannot read them
         print(f"Skipped: {source} not found. The release is not public; request it from the authors (config.yaml).")
         return
     if sha256_of(source) != spec["sha256"]:
@@ -308,6 +307,7 @@ def main(config: dict | None = None) -> None:
     }
     (processed / "gold_coverage.json").write_text(json.dumps(coverage, indent=2) + "\n")
     print(json.dumps(coverage, indent=2))
+    record_stage(config, "gold")
 
 
 if __name__ == "__main__":

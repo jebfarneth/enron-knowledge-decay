@@ -26,6 +26,7 @@ from email_reply_parser import EmailReplyParser
 
 from .clean import authored_text
 from .config import load_config
+from .provenance import record_stage
 
 _SPACE = re.compile(r"\s+")
 # Markers of quoted/forwarded material that should never remain in authored text.
@@ -97,6 +98,7 @@ def main() -> None:
         ["path", "jaccard", "ours", "theirs"]
     ].to_csv(results / "cleaning_crosscheck_disagreements.csv", index=False)
     print(json.dumps(result, indent=2))
+    record_stage(config, "crosscheck")
 
 
 if __name__ == "__main__":

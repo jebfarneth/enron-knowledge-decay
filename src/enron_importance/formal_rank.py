@@ -29,6 +29,7 @@ import pandas as pd
 
 from .config import load_config
 from .identity import normalize_name
+from .provenance import record_stage
 
 
 def fetch_title_list(config: dict):
@@ -94,6 +95,7 @@ def main() -> None:
           f"with a title level {len(usable)} ({usable['person_key'].nunique()} distinct people)")
     print(ranks["match"].value_counts().to_string())
     print(f"Disputed labels: {sorted(usable.loc[usable['disputed'], 'person_key'])}")
+    record_stage(config, "rank")
 
 
 if __name__ == "__main__":

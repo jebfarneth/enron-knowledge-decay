@@ -91,3 +91,13 @@ def test_second_spellings_of_a_recipient_are_not_added():
     assert extra_recipients([".brown@enron.com"], ["michael.brown@enron.com"], resolve, people) == []
     assert extra_recipients(["carla hoffman"], ["f..calger@enron.com"], resolve, people) == ["christopher calger"]
     assert extra_recipients(["mark palmer"], ["mark.a.palmer@enron.com"], resolve, people) == []
+
+
+def test_surname_first_addresses_and_unresolved_extras_are_not_added():
+    from enron_importance.identity import extra_recipients
+    people = {"george phillips", "ann lee"}
+    resolve = {"george.phillips@enron.com": "george phillips", "x.unknown@enron.com": "x.unknown@enron.com",
+               "ann.lee@enron.com": "ann lee"}.get
+    assert extra_recipients(["phillips.george@enron.com"], ["george.phillips@enron.com"], resolve, people) == []
+    assert extra_recipients(["bob@enron.com"], ["x.unknown@enron.com"], resolve, people) == []   # not a person
+    assert extra_recipients(["bob@enron.com"], ["ann.lee@enron.com"], resolve, people) == ["ann lee"]

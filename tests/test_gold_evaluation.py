@@ -136,3 +136,15 @@ def test_paired_differences_survive_empty_resamples():
     one = PAIRS.iloc[:1]
     paired = paired_gold(one, SCORES, "custodian", "degree", reps=1, seed=0)
     assert len(paired) >= 1 and "draws" in paired
+
+
+def test_intervals_resample_gold_employees_even_when_they_share_a_graph_key():
+    # Real pairs carry each employee's graph key; two employees on one key stay two resampling units.
+    keyed = BIG.assign(dominant_key=BIG["dominant"].replace({"p1": "shared", "p2": "shared"}),
+                       subordinate_key=BIG["subordinate"].replace({"p1": "shared", "p2": "shared"}))
+    assert keyed["dominant_key"].nunique() < keyed["dominant"].nunique()
+    score = BIG_SCORES["degree"]
+    credit = {(d, s): 0.5 if score[d] == score[s] else float(score[d] > score[s])
+              for d, s in zip(BIG["dominant"], BIG["subordinate"])}
+    table = gold_table(keyed, BIG_SCORES, ["degree"], reps=300, seed=11).set_index("pairs_type")
+    assert (table.loc["all", "ci_low"], table.loc["all", "ci_high"]) == pytest.approx(brute_force(BIG, credit, 300, 11))

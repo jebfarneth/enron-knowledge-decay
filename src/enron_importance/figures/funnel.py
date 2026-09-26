@@ -11,6 +11,7 @@ import json
 import matplotlib.pyplot as plt
 
 from ..config import load_config
+from ..provenance import record_stage
 from .style import GRID, RC, SERIES, TEXT_PRIMARY, TEXT_SECONDARY, save
 
 STEPS = [
@@ -50,6 +51,7 @@ def main() -> None:
     funnel = json.loads((config["paths"]["processed"] / "funnel.json").read_text())["funnel"]
     for path in save(draw(funnel), config["paths"]["figures"], "fig01_data_funnel"):
         print(f"Wrote {path}")
+    record_stage(config, "figures.funnel")
 
 
 if __name__ == "__main__":

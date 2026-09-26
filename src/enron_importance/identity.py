@@ -55,6 +55,7 @@ from collections import defaultdict
 import pandas as pd
 
 from .config import load_config
+from .provenance import record_stage
 
 _BRACKETED = re.compile(r"<[^>]*>|\([^)]*\)")
 _NON_NAME = re.compile(r"[^a-z0-9\s-]")
@@ -118,6 +119,15 @@ def _is_name_then_title(before: str, after: str) -> bool:
 
 def _has_role_word(words) -> bool:
     return any(w in ROLE_WORDS or any(c.isdigit() for c in w) for w in words)
+
+
+def name_tokens(display, address) -> set[str]:
+    """Lower-cased words that can name a sender: display-name words and address local-part pieces."""
+    words = set(_words(display) or [])
+    local = address.split("@")[0] if isinstance(address, str) else ""
+    words |= {w for w in re.split(r"[._-]+", local.lower()) if w}
+    words |= {NICKNAMES.get(w, w) for w in list(words)}
+    return {w for w in words if len(w) > 1}
 
 
 def is_role_key(key) -> bool:
@@ -310,26 +320,29 @@ def resolve_recipient(address: str, address_person: dict, people: set) -> str | 
     return address
 
 
-def surname(node: str) -> str:
-    """Last name of a person key, or last token of an address's local part."""
+def surnames(node: str) -> set[str]:
+    """Possible surnames of a recipient node: a person key's last name, or every piece of an
+    address's local part, since addresses are written both first.last and last.first."""
     if "@" in node:
-        tokens = [t for t in re.split(r"[._]", node.split("@")[0]) if t]
-        return tokens[-1] if tokens else node
-    return node.split()[-1]
+        return {t for t in re.split(r"[._-]+", node.split("@")[0].lower()) if len(t) > 1} or {node}
+    return {node.split()[-1]}
 
 
 def extra_recipients(recipients: list[str], extra_addresses, resolve, people: set) -> list[str]:
     """People to add from addresses only other copies of a message list.
 
     An address is added only when it resolves to a person who is neither a
-    recipient already nor shares a surname with one, so a second spelling of
-    a recipient (".brown" beside "michael brown") is not counted twice.
+    recipient already nor shares a possible surname with one, so a second
+    spelling of a recipient (".brown" beside "michael brown", or
+    "phillips.george@" beside "george phillips") is not counted twice. The
+    cost: a genuinely different person with a recipient's surname is not
+    added either.
     """
-    surnames = {surname(r) for r in recipients}
+    taken = set().union(*(surnames(r) for r in recipients)) if recipients else set()
     added: list[str] = []
     for address in extra_addresses:
         person = resolve(address)
-        if person in people and person not in recipients and person not in added and surname(person) not in surnames:
+        if person in people and person not in recipients and person not in added and not surnames(person) & taken:
             added.append(person)
     return added
 
@@ -362,6 +375,7 @@ def main(config: dict | None = None) -> None:
     print(f"{len(table):,} internal sender addresses -> {len(keyed):,} keys; {len(aliases)} name aliases")
     print(keyed["entity_type"].value_counts().to_string())
     print("placeholder addresses:", sorted(table.loc[table["resolved_by"] == "placeholder", "address"]))
+    record_stage(config, "identity")
 
 
 if __name__ == "__main__":

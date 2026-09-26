@@ -150,7 +150,7 @@ def test_signature_blocks_are_not_speech_acts():
 
 def test_newsletters_are_structured_and_pep_prose_is_not():
     assert structured_record("<http://x/199.gif>\n\nNewsBeat:Daily News\n\nThis email is a daily service of Forestweb's NewsBeat.")
-    assert structured_record("Great article below.\n\nTo unsubscribe, reply with REMOVE.")
+    assert structured_record("Great article: http://a.com/x http://a.com/y http://a.com/z\n\nTo unsubscribe, reply with REMOVE.")
     assert not structured_record("PEP ACCESS (LOGIN/PASSWORD)\n\nYou will be receiving your PEP Access information by Monday. Amy will hold sessions.")
 
 
@@ -159,3 +159,23 @@ def test_whole_text_routine_differs_from_the_old_80_character_prefix_rule():
     opening = "Attached please find the weekly west desk position report and the curve summary for review "
     rows = [{"sender": "a@enron.com", "authored": opening + f"with the {word} notes."} for word in WORDS[:12]]
     assert not routine_messages(pd.DataFrame(rows), min_repeats=10).any()
+
+
+def test_signature_blocks_must_name_the_sender():
+    from enron_importance.identity import name_tokens
+    from enron_importance.senders import signature_only
+    mary = name_tokens("Mary Cook", "mary.cook@enron.com")
+    block = "Mary Cook\nEnron North America Corp.\n1400 Smith, 38th Floor, Legal\n(713) 345-7732 (phone)"
+    assert signature_only(block, mary)
+    assert signature_only("Cordially,\n" + block, mary)                  # a sign-off before the block
+    assert not signature_only("Not I.\n\nCordially,\n" + block, mary)    # an answer before it
+    assert not signature_only(block, name_tokens("Tana Jones", "tana.jones@enron.com"))
+    ranking = "Analyst\t\t\t\t\tRank\n\nStephane Brodeur\t\t\t1\nChad Clark\t\t\t\t1\nIan Cooke\t\t\t\t3"
+    assert not signature_only(ranking, name_tokens("Zufferli, John", "john.zufferli@enron.com"))
+
+
+def test_a_mailing_list_footer_alone_does_not_make_a_newsletter():
+    conversation = "I disagree with Bob's reading of the tariff; see my notes.\n\nTo unsubscribe, send REMOVE to list@x.org"
+    assert not structured_record(conversation)
+    digest = "Top stories http://a.com/1 http://a.com/2 http://a.com/3\n\nTo unsubscribe click here"
+    assert structured_record(digest)
