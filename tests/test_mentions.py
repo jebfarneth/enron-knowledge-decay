@@ -66,3 +66,22 @@ def test_tags_are_cached_and_only_changed_text_is_retagged(tmp_path):
     assert list(cached_mentions(messages, cache, FakeNLP())) == [["Kay"], ["Sara"]] and FakeNLP.calls == 2
     messages.loc[1, "authored"] = "tell Jeff"
     assert list(cached_mentions(messages, cache, FakeNLP())) == [["Kay"], ["Jeff"]] and FakeNLP.calls == 3
+
+
+def test_tags_are_saved_chunk_by_chunk(tmp_path):
+    from enron_importance.mentions import cached_mentions
+
+    class Crashing(FakeNLP):
+        def pipe(self, texts, batch_size=256):
+            for text in texts:
+                if "Boom" in text:
+                    raise RuntimeError("interrupted")
+                yield from FakeNLP.pipe(self, [text])
+
+    cache = tmp_path / "tags.parquet"
+    messages = pd.DataFrame({"path": ["m1", "m2", "m3"], "authored": ["ask Kay", "tell Sara", "Boom"]})
+    try:
+        cached_mentions(messages, cache, Crashing(), chunk=1)
+    except RuntimeError:
+        pass
+    assert len(pd.read_parquet(cache)) == 2       # the two chunks before the failure survive

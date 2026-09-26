@@ -132,8 +132,12 @@ def text_hash(text) -> str:
     return hashlib.sha1((text if isinstance(text, str) else "")[:MAX_CHARS].encode("utf-8")).hexdigest()
 
 
-def cached_mentions(messages: pd.DataFrame, cache_path, nlp) -> pd.Series:
-    """Tag each message's authored text, reusing earlier tags for unchanged text from the same model."""
+def cached_mentions(messages: pd.DataFrame, cache_path, nlp, chunk: int = 5000) -> pd.Series:
+    """Tag each message's authored text, reusing earlier tags for unchanged text from the same model.
+
+    The cache is saved after every `chunk` newly tagged messages, so an
+    interrupted run loses at most one chunk.
+    """
     model = f"{nlp.meta['name']}-{nlp.meta['version']}"
     keys = messages["path"] + "\x1f" + messages["authored"].map(text_hash)
     cached = {}
@@ -141,12 +145,19 @@ def cached_mentions(messages: pd.DataFrame, cache_path, nlp) -> pd.Series:
         old = pd.read_parquet(cache_path)
         old = old[old["model"] == model]
         cached = dict(zip(old["key"], old["mentions"].map(list)))
-    missing = ~keys.isin(cached.keys())
-    if missing.any():
-        cached.update(zip(keys[missing], tag_mentions(messages.loc[missing, "authored"], nlp)))
-    tags = keys.map(cached)
-    pd.DataFrame({"key": keys, "model": model, "mentions": tags}).to_parquet(cache_path, index=False)
-    return tags
+    missing = keys[~keys.isin(cached.keys())]
+
+    def save():
+        saved = pd.DataFrame({"key": list(cached), "model": model, "mentions": list(cached.values())})
+        partial = cache_path.with_suffix(".part")
+        saved.to_parquet(partial, index=False)
+        partial.replace(cache_path)
+
+    for start in range(0, len(missing), chunk):  # save after every chunk, so an interrupted run resumes
+        batch = missing.index[start:start + chunk]
+        cached.update(zip(keys[batch], tag_mentions(messages.loc[batch, "authored"], nlp)))
+        save()
+    return keys.map(cached)
 
 
 def mention_links(messages: pd.DataFrame, index: dict[str, set[str]], distances: Distances) -> tuple[pd.DataFrame, dict]:
