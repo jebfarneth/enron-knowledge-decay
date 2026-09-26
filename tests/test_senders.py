@@ -140,8 +140,12 @@ def test_signature_blocks_are_not_speech_acts():
     from enron_importance.senders import signature_only
     assert signature_only("Ginger Dernehl\nAdministrative Coordinator\nGlobal Government Affairs\nPhone# 713-853-7751\nFax# 713-646-8160")
     assert signature_only("Sara Shackleton\nEnron North America Corp.\n1400 Smith Street, EB 3801a\nHouston, Texas 77002\n713-853-5620 (phone)")
-    for text in ["Thanks,\nJeff", "Approved", "Please print\n\nDF", "The meeting moved to Friday.\nKay Mann\nEnron Corp"]:
+    for text in ["Thanks,\nJeff", "Approved", "Please print\n\nDF", "The meeting moved to Friday.\nKay Mann\nEnron Corp",
+                 "Done :)\n\nTaffy Milligan\nSr. Admin Assistant\nEWS-Legal\nTele: 713-345-7373",
+                 "I can be on.  You want me to join?  Just let me know. You can call me on my cell phone 415.505.6633.\n \nBest,\nJeff",
+                 "Kim,\nThe new TW Hotline was implemented Monday. The new Hotline phone number is 713-853-1234."]:
         assert not signature_only(text), text
+    assert signature_only("Travis McCullough\nEnron North America Corp.\n1400 Smith Street EB 3893\nHouston Texas 77002\nPhone:  (713) 853-1575")
 
 
 def test_newsletters_are_structured_and_pep_prose_is_not():

@@ -97,14 +97,21 @@ _SIGNATURE_WORDS = {
 
 
 def signature_only(text) -> bool:
-    """True when every line looks like a signature block: short capitalized name, title,
-    department, company, address or phone lines, with at least one phone, address or title line."""
+    """True when the text is only a signature block: a name line first (two to four capitalized
+    words), then short name, title, department, company, address, phone or e-mail lines, with at
+    least one phone, e-mail, address or title line. A speech act before the block ("Done :)") or a
+    sentence that happens to contain a phone number is not a signature."""
     lines = [line.strip() for line in (text if isinstance(text, str) else "").splitlines() if line.strip()]
     if len(lines) < 2:
         return False
+    first = re.findall(r"\b[A-Za-z][A-Za-z.'-]*", lines[0])
+    if not 2 <= len(first) <= 4 or not all(w[0].isupper() for w in first) or re.search(r"[:;!?()\d]", lines[0]):
+        return False
     evidence = False
-    for line in lines:
+    for line in lines[1:]:
         words = re.findall(r"\b[A-Za-z][A-Za-z.&'-]*", line)
+        if len(words) > 8:
+            return False
         if _PHONE.search(line) or "@" in line:
             evidence = True
             continue
