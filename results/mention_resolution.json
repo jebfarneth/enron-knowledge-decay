@@ -1,0 +1,14 @@
+{
+  "mentions": 271566,
+  "resolutions": 1202602,
+  "unresolved": 217314,
+  "no_compatible_person": 84635,
+  "cc_checks": 19016,
+  "cc_checks_correct": 13446,
+  "cc_checks_unresolved": 4791,
+  "messages_tagged": 166977,
+  "messages_with_mentions": 105003,
+  "resolved_links": 985288,
+  "people_with_mention_links": 16260,
+  "cc_check_accuracy": 0.7071
+}

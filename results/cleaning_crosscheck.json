@@ -2,9 +2,9 @@
   "messages": 5000,
   "whitespace_normalized_agreement": 0.7722,
   "token_set_jaccard_median": 1.0,
-  "token_set_jaccard_ge_0_9": 0.803,
+  "token_set_jaccard_ge_0_9": 0.8036,
   "empty_output": {
-    "ours": 0.0734,
+    "ours": 0.0738,
     "email_reply_parser": 0.0354,
     "empty_cleaner": 1.0
   },
@@ -25,7 +25,7 @@
       "empty_cleaner": 0.0
     },
     "quoted_header": {
-      "ours": 0.011,
+      "ours": 0.0096,
       "email_reply_parser": 0.0782,
       "empty_cleaner": 0.0
     },
