@@ -30,11 +30,16 @@ def corpus():
         "maildir/x/inbox/2.": email(5, "tonai.lehr@enron.com", "a@enron.com", "Crescendo", "Calendar Entry\n\nBrief description:\nDate:",
                                     x_from="Tonai Lehr"),
         "maildir/mann-k/sent/1.": email(6, "kay.mann@enron.com", "mark.taylor@enron.com", "Turbine",
-                                        "Can you review section 4 of the turbine contract before Friday?", x_from="Kay Mann"),
+                                        "Can you review section 4 of the turbine contract before Friday? " * 3,
+                                        date="Tue, 1 May 2001 06:00:00 -0500", x_from="Kay Mann"),
+        # The same message exported with a shifted clock: a probable copy, never a parent.
+        "maildir/taylor-m/inbox/1.": email(66, "kay.mann@enron.com", "mark.taylor@enron.com", "Turbine",
+                                           "Can you review section 4 of the turbine contract before Friday? " * 3,
+                                           date="Tue, 1 May 2001 09:00:00 -0500", x_from="Kay Mann"),
         "maildir/taylor-m/sent/1.": email(
             7, "mark.taylor@enron.com", "kay.mann@enron.com", "RE: Turbine",
             "Section 4 is fine.\n\n\nKay Mann@ENRON\n05/01/2001 09:00 AM\nTo: Mark Taylor/HOU/ECT@ECT, Ann \nLee/HOU/ECT@ECT, Bo \n"
-            "Chan/HOU/ECT@ECT\ncc:\nSubject: Turbine\n\nCan you review section 4 of the turbine contract before Friday?",
+            "Chan/HOU/ECT@ECT\ncc:\nSubject: Turbine\n\n" + "Can you review section 4 of the turbine contract before Friday? " * 3,
             date="Tue, 1 May 2001 10:30:00 -0500", x_from="Mark E Taylor"),
     }
     for i in range(60):  # a feed account's hourly alerts, plus one message its owner wrote
@@ -96,5 +101,6 @@ def test_generated_corpus_reproduces_the_audited_cases(tmp_path):
     assert messages.loc["maildir/white-a/sent/3.", "routine"] and messages.loc["maildir/white-a/sent/3.", "analysis"]
     assert not messages.loc["maildir/white-a/sent/r3.", "analysis"]                # long routine report
     assert messages.loc["maildir/taylor-m/sent/1.", "authored"] == "Section 4 is fine."  # wrapped To list cut
+    assert messages.loc["maildir/taylor-m/inbox/1.", "probable_copy"]
     assert links.loc["maildir/taylor-m/sent/1.", "parent_path"] == "maildir/mann-k/sent/1."
     assert links.loc["maildir/taylor-m/sent/1.", "link_kind"] == "reply"

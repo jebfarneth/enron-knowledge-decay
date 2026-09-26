@@ -222,3 +222,8 @@ def test_a_name_also_sent_through_a_shared_mailbox_is_that_mailbox():
         ("travel@enron.com", "Joan Smith"),       # a named person using the same address keeps their name
     ])
     assert list(people) == ["mailbox travel agency", "mailbox travel agency", "joan smith"]
+
+
+def test_digit_words_and_short_titles():
+    assert entity_type(normalize_name("Kitchen 32")) == "role"
+    assert normalize_name("Kay Mann, Senior Counsel") == "kay mann"

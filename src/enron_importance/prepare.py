@@ -38,6 +38,25 @@ def code_hash(*names: str) -> str:
     return digest.hexdigest()
 
 
+def config_hash(config: dict) -> str:
+    return hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def stale_reasons(config: dict) -> list[str]:
+    """Why the generated data does not match the current code, configuration and outputs (empty if it does)."""
+    processed = config["paths"]["processed"]
+    manifest = json.loads((processed / "funnel.json").read_text())
+    reasons = []
+    if manifest.get("code_sha256") != code_hash():
+        reasons.append("built by different code")
+    if manifest.get("config_sha256") != config_hash(config):
+        reasons.append("built with a different configuration")
+    for name, digest in manifest.get("outputs", {}).items():
+        if not (processed / name).exists() or sha256_of(processed / name) != digest:
+            reasons.append(f"{name} changed or missing since it was built")
+    return reasons
+
+
 def parsed_messages(config: dict) -> pd.DataFrame:
     """The parsed archive, re-parsed unless the cache was built from this archive by this parser.
 
@@ -123,7 +142,7 @@ def prepare(config: dict) -> dict:
         "corpus": config["corpus"]["filename"],
         "corpus_sha256_verified": config["corpus"]["sha256"],
         "code_sha256": code_hash(),
-        "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest(),
+        "config_sha256": config_hash(config),
         "funnel": funnel,
         "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet", "copies.parquet"]},
     }
