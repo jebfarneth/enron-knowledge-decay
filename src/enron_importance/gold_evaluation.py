@@ -8,9 +8,10 @@ the paper's, not a replication of them.
 
 Main population: pairs from the main construction (see `gold_standard.py`)
 whose two employees are both matched to a graph node by name or by an
-address node spelled from their name, neither of whose records is an
-uncertain owner, and whose dominance does not run through an uncertain
-record. "Matched" and "uncertain" are operational labels from those rules,
+address node spelled from their name, neither of whose records mixes an
+assistant position with another, and whose dominance does not run through
+such a record. Excluding also records whose addresses belong to several
+people is a stricter sensitivity run. "Matched" and "uncertain" are operational labels from those rules,
 not verified identities. Every other choice is a sensitivity run
 in `results/gold_standard_sensitivity.csv`, including the earlier
 convention of scoring unmatched employees 0 over all pairs.
@@ -169,9 +170,10 @@ def main(config: dict | None = None) -> None:
     mapped = pairs["dominant_status"].isin(MAPPED) & pairs["subordinate_status"].isin(MAPPED)
     unmixed = ~pairs["dominant_mixed"] & ~pairs["subordinate_mixed"]
     certain = ~pairs["dominant_uncertain"] & ~pairs["subordinate_uncertain"]
-    independent = pairs["independent_of_uncertain"].fillna(False).astype(bool)
+    independent = pairs["independent_of_mixed"].fillna(False).astype(bool)
+    strict = pairs["independent_of_uncertain"].fillna(False).astype(bool)
     main_construction = pairs["construction"] == "main"
-    population = pairs[main_construction & mapped & certain & independent]
+    population = pairs[main_construction & mapped & unmixed & independent]
     table = gold_table(population, scores, all_measures, reps, seed)
     results.mkdir(parents=True, exist_ok=True)
     table.to_csv(results / "baselines_gold_standard.csv", index=False, float_format="%.10f")
@@ -181,14 +183,14 @@ def main(config: dict | None = None) -> None:
     variants = {
         "all pairs, unmatched employees scored 0": (pairs[main_construction], 0.0),
         "matched, including uncertain records": (pairs[main_construction & mapped], None),
-        "matched, uncertain records excluded only as endpoints": (pairs[main_construction & mapped & certain], None),
-        "matched, mixed-position endpoints excluded (earlier main)": (pairs[main_construction & mapped & unmixed], None),
-        "name+address matches only": (pairs[main_construction & confirmed & certain & independent], None),
+        "matched, no path through any uncertain record (strict)": (pairs[main_construction & mapped & certain & strict], None),
+        "matched, mixed-position endpoints excluded only (earlier main)": (pairs[main_construction & mapped & unmixed], None),
+        "name+address matches only": (pairs[main_construction & confirmed & unmixed & independent], None),
         "without Lay and Skilling": (population[~population["dominant"].isin(lay_skilling)
                                                 & ~population["subordinate"].isin(lay_skilling)], None),
     }
     for construction in sorted(set(pairs["construction"]) - {"main"}):
-        variants[construction] = (pairs[(pairs["construction"] == construction) & mapped & certain], None)
+        variants[construction] = (pairs[(pairs["construction"] == construction) & mapped & unmixed], None)
     runs = [gold_table(subset, scores, all_measures, reps, seed, fill).assign(variant=name)
             for name, (subset, fill) in variants.items()]
     raw = pd.DataFrame({"raw_address_degree": raw_address_degree(

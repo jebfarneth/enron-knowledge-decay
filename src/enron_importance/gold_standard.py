@@ -51,7 +51,11 @@ person's over time, which matching cannot undo. Pairs are marked
 `independent_of_uncertain` when they still follow with every relation
 touching an uncertain record removed before the closure, so a pair whose
 dominance runs through such a record can be excluded, not only a pair with
-one at an end. Custodians
+one at an end. Mixed positions are direct evidence that positions were
+merged, so the main population excludes pairs that run through them;
+several people behind one record's addresses (often an executive and an
+assistant) is weaker evidence about positions, so excluding those paths too
+is a stricter sensitivity run. Custodians
 (records with mailboxes in the corpus, the paper's "core") are marked so
 accuracy can be split into core, inter and non-core pairs.
 
@@ -278,8 +282,10 @@ def main(config: dict | None = None) -> None:
     employees["uncertain_owner"] = employees["mixed_positions"] | employees["multiple_people"]
     emailer_ids = set(employees.loc[employees["has_email"], "gold_id"])
     robust = independent_of(immediate, set(employees.loc[employees["uncertain_owner"], "gold_id"]), emailer_ids)
+    robust_mixed = independent_of(immediate, set(employees.loc[employees["mixed_positions"], "gold_id"]), emailer_ids)
     employees.to_parquet(processed / "gold_employees.parquet", index=False)
     pairs["independent_of_uncertain"] = [pair in robust for pair in zip(pairs["dominant"], pairs["subordinate"])]
+    pairs["independent_of_mixed"] = [pair in robust_mixed for pair in zip(pairs["dominant"], pairs["subordinate"])]
     labelled = pd.concat([label_pairs(pairs, employees).assign(construction="main")]
                          + [label_pairs(p, employees).assign(construction=name) for name, p in alternatives.items()])
     labelled.to_parquet(processed / "gold_pairs.parquet", index=False)
@@ -287,8 +293,8 @@ def main(config: dict | None = None) -> None:
     emailers = employees[employees["has_email"]]
     main_pairs = labelled[labelled["construction"] == "main"]
     usable = (main_pairs["dominant_status"].isin(MAPPED) & main_pairs["subordinate_status"].isin(MAPPED)
-              & ~main_pairs["dominant_uncertain"] & ~main_pairs["subordinate_uncertain"]
-              & main_pairs["independent_of_uncertain"].astype(bool))
+              & ~main_pairs["dominant_mixed"] & ~main_pairs["subordinate_mixed"]
+              & main_pairs["independent_of_mixed"].astype(bool))
     coverage = {
         "employees": len(employees), "employees_with_email": len(emailers),
         "match_status": {k: int(v) for k, v in emailers["match_status"].value_counts().items()},
