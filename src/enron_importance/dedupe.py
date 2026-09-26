@@ -146,6 +146,15 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     id_keeper = frame[~by_content & has_id].drop_duplicates("message_id").set_index("message_id")["path"]
     kept_path = kept_path.where(~by_id, frame["message_id"].map(id_keeper))
     removed = by_content | by_id
+    # A copy's keeper may itself have been removed by the other rule: follow to a kept message.
+    target = dict(zip(frame["path"], kept_path))
+    gone = set(frame.loc[removed, "path"])
+    for path in frame.loc[removed, "path"]:
+        seen = set()
+        while target[path] in gone and target[path] not in seen:
+            seen.add(target[path])
+            target[path] = target[target[path]]
+    kept_path = frame["path"].map(target)
     copies = pd.DataFrame({"path": frame.loc[removed, "path"], "kept_path": kept_path[removed]}).sort_values("path")
     separate = frame.drop_duplicates("_send").duplicated("content_key").sum()
     added = 0

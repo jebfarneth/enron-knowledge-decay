@@ -135,3 +135,13 @@ def test_cc_addresses_only_other_copies_list_are_kept_apart():
     ])
     kept, _, _ = deduplicate(frame)
     assert list(kept.iloc[0]["cc"]) == ["c@enron.com"] and list(kept.iloc[0]["cc_extra"]) == ["d@enron.com"]
+
+
+def test_a_copy_whose_keeper_was_removed_points_to_the_final_kept_message():
+    frame = pd.DataFrame([
+        message("maildir/a/sent/1.", "sent", body="body A", message_id="<1>"),
+        message("maildir/a/inbox/2.", "inbox", body="body B", message_id="<1>", to=["b@enron.com"]),
+        message("maildir/a/inbox/3.", "inbox", body="body B", message_id="<2>", to=["b@enron.com", "z@enron.com"]),
+    ])
+    kept, _, copies = deduplicate(frame)
+    assert set(copies["kept_path"]) <= set(kept["path"])
