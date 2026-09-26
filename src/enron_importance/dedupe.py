@@ -152,7 +152,8 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     if "to" in frame:
         # Copies of one message can list recipients differently (one copy has
         # f..calger@, another only f..carla@); record what the copies add.
-        listed = {path: set(to) | set(cc) for path, to, cc in zip(frame["path"], frame["to"], frame["cc"])}
+        keepers = set(kept_path[removed])  # only kept messages with discarded copies need their lists
+        listed = {path: set(to) | set(cc) for path, to, cc in zip(frame["path"], frame["to"], frame["cc"]) if path in keepers}
         for column in ["to", "cc"]:
             extra: dict[str, list[str]] = {}
             for path, keeper, addresses in zip(frame.loc[removed, "path"], kept_path[removed], frame.loc[removed, column]):
