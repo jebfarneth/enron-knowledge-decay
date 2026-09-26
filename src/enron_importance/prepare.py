@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .clean import authored_text, has_quoted_material
+from .clean import authored_text, has_quoted_material, normalized_body, reply_start
 from .config import load_config
 from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
@@ -99,8 +99,11 @@ def prepare(config: dict) -> dict:
     messages["probable_copy"] = messages["probable_copy_of"].notna()
     funnel["probable_time_shifted_copies"] = int(messages["probable_copy"].sum())
 
-    messages["authored"] = messages["body"].map(authored_text)
-    messages["has_quoted"] = messages["body"].map(has_quoted_material)
+    # Finding where quoting starts is the costly step (about 1 ms a message): do it once.
+    bodies = messages["body"].map(normalized_body)
+    starts = bodies.map(reply_start)
+    messages["authored"] = [authored_text(b, o) for b, o in zip(bodies, starts)]
+    messages["has_quoted"] = [has_quoted_material(b, o) for b, o in zip(bodies, starts)]
     funnel["with_quoted_material"] = int(messages["has_quoted"].sum())
     funnel["with_authored_text"] = int((messages["authored"] != "").sum())
 

@@ -98,10 +98,10 @@ def reply_start(body: str) -> int:
     return min(starts, default=len(body))
 
 
-def authored_text(body) -> str:
-    """The part of `body` written by the sender of this message."""
+def authored_text(body, start: int | None = None) -> str:
+    """The part of `body` written by the sender of this message (`start`: where quoting begins, if known)."""
     body = (body if isinstance(body, str) else "").replace("\r\n", "\n").replace("\r", "\n")
-    text = body[: reply_start(body)]
+    text = body[: reply_start(body) if start is None else start]
     text = _PROVIDER_FOOTERS.sub("\n", text)
     for pattern in _DISCLAIMERS:
         text = pattern.sub("", text)
@@ -110,6 +110,10 @@ def authored_text(body) -> str:
     return text.strip()
 
 
-def has_quoted_material(body) -> bool:
+def has_quoted_material(body, start: int | None = None) -> bool:
     body = body if isinstance(body, str) else ""
-    return reply_start(body) < len(body) or bool(_QUOTED_LINE.search(body))
+    return (reply_start(body) if start is None else start) < len(body) or bool(_QUOTED_LINE.search(body))
+
+
+def normalized_body(body) -> str:
+    return (body if isinstance(body, str) else "").replace("\r\n", "\n").replace("\r", "\n")
