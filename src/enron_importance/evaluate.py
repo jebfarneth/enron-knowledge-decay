@@ -16,7 +16,7 @@ Evaluation against the Agarwal et al. (2012) gold standard is in
 
 Outputs
   results/baselines_formal_rank.csv          main evaluation (title proxy)
-  results/baselines_paired_differences.csv   top measure minus each other measure
+  results/baselines_paired_differences.csv   top measure minus each other measure, and mentioned_to minus degree
   results/baselines_sensitivity.csv          label and graph sensitivity runs
 
 Usage: uv run python -m enron_importance.evaluate
@@ -31,8 +31,12 @@ from .config import load_config
 from .network import build_edges, centrality, network_messages, recipient_resolver
 
 BASELINES = ["degree", "in_strength", "out_strength", "pagerank", "betweenness"]
-# From the mention network (mentions.py), when that stage has been run.
-MENTION_MEASURES = ["mention_degree", "mentioned_to", "third_party_mentioned_to"]
+# From the mention network (mentions.py), when that stage has been run; mentioned_to is the primary
+# mention measure, and the unfiltered pair keeps the definition before audit 4 for comparison.
+MENTION_MEASURES = ["mention_degree", "mentioned_to", "third_party_mentioned_to", "mention_degree_unfiltered",
+                    "mentioned_to_unfiltered"]
+# The comparison declared before the audit-4 rerun: the primary mention measure against degree.
+PRIMARY = ("mentioned_to", "degree")
 
 
 def load_measures(processed) -> tuple[pd.DataFrame, list[str]]:
@@ -108,14 +112,18 @@ def evaluation_table(ranked: pd.DataFrame, measures: list[str], reps: int, seed:
 
 
 def paired_table(ranked: pd.DataFrame, measures: list[str], reps: int, seed: int) -> pd.DataFrame:
-    """The highest-accuracy measure minus every other measure, on paired resamples."""
+    """The highest-accuracy measure minus every other measure, and the declared PRIMARY comparison,
+    on paired resamples."""
     levels = ranked["level"].to_numpy(float)
     accuracy = {m: pairwise_accuracy(levels, ranked[m].to_numpy(float)) for m in measures}
     top = max(accuracy, key=accuracy.get)
+    comparisons = [(top, other) for other in measures if other != top]
+    if set(PRIMARY) <= set(measures) and PRIMARY not in comparisons:
+        comparisons.append(PRIMARY)
     rows = []
-    for other in (m for m in measures if m != top):
-        diff, low, high = paired_difference(levels, ranked[top].to_numpy(float), ranked[other].to_numpy(float), reps, seed)
-        rows.append({"measure": top, "versus": other, "difference": diff, "ci_low": low, "ci_high": high})
+    for first, second in comparisons:
+        diff, low, high = paired_difference(levels, ranked[first].to_numpy(float), ranked[second].to_numpy(float), reps, seed)
+        rows.append({"measure": first, "versus": second, "difference": diff, "ci_low": low, "ci_high": high})
     return pd.DataFrame(rows)
 
 

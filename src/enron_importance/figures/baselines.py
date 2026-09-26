@@ -26,6 +26,7 @@ LABELS = {
 
 
 def draw(table: pd.DataFrame) -> plt.Figure:
+    table = table[table["measure"].isin(LABELS)]  # the unfiltered mention measures stay in the results table only
     table = table.sort_values("accuracy").reset_index(drop=True)
     with plt.rc_context(RC):
         fig, ax = plt.subplots(figsize=(6.5, 2.6))
