@@ -75,18 +75,20 @@ def template_of(text) -> str:
 
 
 # Copied newsletters and mailing-list digests, wherever the markers appear.
-NEWSLETTER = re.compile(
-    r"this e-?mail is a (daily|weekly) service of|to unsubscribe|unsubscribe from this|"
-    r"was forwarded to you by a colleague|you are receiving this (e-?mail|newsletter|message) because",
-    re.IGNORECASE,
-)
+# Strong markers identify a newsletter anywhere; an unsubscribe or "you are receiving this" line
+# counts only in a link-heavy message, since mailing-list conversations carry the same footer.
+NEWSLETTER = re.compile(r"this e-?mail is a (daily|weekly) service of|was forwarded to you by a colleague", re.IGNORECASE)
+LIST_FOOTER = re.compile(r"to unsubscribe|unsubscribe from this|you are receiving this (e-?mail|newsletter|message) because",
+                         re.IGNORECASE)
+_URL = re.compile(r"https?://|www\.", re.IGNORECASE)
 
 
 def structured_record(text) -> bool:
     """True for machine-generated records (calendar entries, notices) and copied newsletters rather than prose."""
     if not isinstance(text, str):
         return False
-    return bool(STRUCTURED.search(_SALUTATION.sub("", text, count=1)) or NEWSLETTER.search(text))
+    return bool(STRUCTURED.search(_SALUTATION.sub("", text, count=1)) or NEWSLETTER.search(text)
+                or (LIST_FOOTER.search(text) and len(_URL.findall(text)) >= 3))
 
 
 _PHONE = re.compile(r"\(?\d{3}\)?[\s.-]*\d{3}[\s.-]\d{4}|\b(phone|fax|tel|cell|mobile|pager|direct)\b", re.IGNORECASE)
