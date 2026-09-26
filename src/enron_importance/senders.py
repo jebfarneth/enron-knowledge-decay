@@ -23,8 +23,10 @@ Two further message-level flags:
   e-mails, mailbox synchronization logs), and copied newsletters (their
   "daily service of" and unsubscribe markers). A fixed list of formats: it
   misses formats not listed.
-* signature only: the authored text is nothing but a signature block
-  (name, title, department, company, address, phone lines).
+* signature only: the authored text is nothing but the sender's own
+  signature block (optionally after a sign-off such as "Cordially,"): a
+  name line containing the sender's name, then title, department, company,
+  address, phone or e-mail lines.
 * routine: the sender sends the same whole text (digits masked) at least
   `routine_repeats` times; a shared opening is not enough. Routine messages
   stay in the network. They leave the text analysis only when longer than
@@ -96,16 +98,30 @@ _SIGNATURE_WORDS = {
 }
 
 
-def signature_only(text) -> bool:
-    """True when the text is only a signature block: a name line first (two to four capitalized
-    words), then short name, title, department, company, address, phone or e-mail lines, with at
-    least one phone, e-mail, address or title line. A speech act before the block ("Done :)") or a
-    sentence that happens to contain a phone number is not a signature."""
+_SIGN_OFF = re.compile(r"^(cordially|regards|best regards|kind regards|sincerely|respectfully|best|cheers)[,.!]?$", re.IGNORECASE)
+
+
+def signature_only(text, sender_names=None) -> bool:
+    """True when the text is only a signature block.
+
+    The block may open with a sign-off ("Cordially,"); its first other line
+    must be a name line of two to four capitalized words that, when
+    `sender_names` is given, contains one of the sender's own name words.
+    Every later line must be short: a name, title, department, company,
+    address, phone or e-mail line, with at least one phone, e-mail, address
+    or title line. Anything before the block ("Not I.", "Done :)") or a
+    sentence that happens to contain a phone number means it is not a
+    signature, and neither is a table of other people's names.
+    """
     lines = [line.strip() for line in (text if isinstance(text, str) else "").splitlines() if line.strip()]
+    while lines and _SIGN_OFF.match(lines[0]):
+        lines = lines[1:]
     if len(lines) < 2:
         return False
     first = re.findall(r"\b[A-Za-z][A-Za-z.'-]*", lines[0])
-    if not 2 <= len(first) <= 4 or not all(w[0].isupper() for w in first) or re.search(r"[:;!?()\d]", lines[0]):
+    if not 2 <= len(first) <= 4 or not all(w[0].isupper() for w in first) or re.search(r"[:;!?()\d\t]", lines[0]):
+        return False
+    if sender_names is not None and not {w.lower().strip(".'") for w in first} & set(sender_names):
         return False
     evidence = False
     for line in lines[1:]:

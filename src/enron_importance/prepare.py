@@ -22,6 +22,7 @@ from .clean import authored_text, has_quoted_material, normalized_body, reply_st
 from .config import load_config
 from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
+from .identity import name_tokens
 from .ingest import iter_archive, write_messages
 from .senders import automated_messages, routine_messages, sender_profiles, signature_only, speech_act, structured_record
 
@@ -119,7 +120,9 @@ def prepare(config: dict) -> dict:
     funnel["automated_messages"] = int(messages["automated"].sum())
     messages["structured"] = messages["authored"].map(structured_record) & ~messages["automated"]
     funnel["structured_records"] = int(messages["structured"].sum())
-    messages["signature_only"] = messages["authored"].map(signature_only) & ~messages["automated"] & ~messages["structured"]
+    names = [name_tokens(x, a) for x, a in zip(messages["x_from"], messages["sender"])]
+    messages["signature_only"] = (pd.Series([signature_only(t, n) for t, n in zip(messages["authored"], names)],
+                                            index=messages.index) & ~messages["automated"] & ~messages["structured"])
     funnel["signature_only_messages"] = int(messages["signature_only"].sum())
     messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["automated"]
     messages["routine_excluded"] = messages["routine"] & ~messages["authored"].map(

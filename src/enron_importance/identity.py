@@ -120,6 +120,15 @@ def _has_role_word(words) -> bool:
     return any(w in ROLE_WORDS or any(c.isdigit() for c in w) for w in words)
 
 
+def name_tokens(display, address) -> set[str]:
+    """Lower-cased words that can name a sender: display-name words and address local-part pieces."""
+    words = set(_words(display) or [])
+    local = address.split("@")[0] if isinstance(address, str) else ""
+    words |= {w for w in re.split(r"[._-]+", local.lower()) if w}
+    words |= {NICKNAMES.get(w, w) for w in list(words)}
+    return {w for w in words if len(w) > 1}
+
+
 def is_role_key(key) -> bool:
     return isinstance(key, str) and "@" not in key and _has_role_word(key.split())
 

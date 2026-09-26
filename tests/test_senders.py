@@ -159,3 +159,16 @@ def test_whole_text_routine_differs_from_the_old_80_character_prefix_rule():
     opening = "Attached please find the weekly west desk position report and the curve summary for review "
     rows = [{"sender": "a@enron.com", "authored": opening + f"with the {word} notes."} for word in WORDS[:12]]
     assert not routine_messages(pd.DataFrame(rows), min_repeats=10).any()
+
+
+def test_signature_blocks_must_name_the_sender():
+    from enron_importance.identity import name_tokens
+    from enron_importance.senders import signature_only
+    mary = name_tokens("Mary Cook", "mary.cook@enron.com")
+    block = "Mary Cook\nEnron North America Corp.\n1400 Smith, 38th Floor, Legal\n(713) 345-7732 (phone)"
+    assert signature_only(block, mary)
+    assert signature_only("Cordially,\n" + block, mary)                  # a sign-off before the block
+    assert not signature_only("Not I.\n\nCordially,\n" + block, mary)    # an answer before it
+    assert not signature_only(block, name_tokens("Tana Jones", "tana.jones@enron.com"))
+    ranking = "Analyst\t\t\t\t\tRank\n\nStephane Brodeur\t\t\t1\nChad Clark\t\t\t\t1\nIan Cooke\t\t\t\t3"
+    assert not signature_only(ranking, name_tokens("Zufferli, John", "john.zufferli@enron.com"))
