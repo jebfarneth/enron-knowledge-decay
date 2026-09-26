@@ -123,3 +123,23 @@ def test_a_reply_that_repeats_the_parent_instruction_is_not_rejected_as_inverted
     child = {**msg("b@enron.com", ["a@enron.com"], "RE: Contract", "2001-05-01 10:00"), "authored": ask + " Done.",
              "body": ask + " Done."}
     assert link_replies(pd.DataFrame([parent, child]), 14).loc[1, "reply_to"] == 0
+
+
+def test_a_message_never_replies_to_its_own_sender():
+    frame = pd.DataFrame([
+        msg("a@enron.com", ["b@enron.com", "a@enron.com"], "Invite", "2001-05-01 09:00"),
+        msg("a@enron.com", ["b@enron.com", "a@enron.com"], "Re: Invite", "2001-05-01 10:00"),
+    ])
+    assert link_replies(frame, 14)["reply_to"].isna().all()
+
+
+def test_an_addressed_parent_from_someone_other_than_the_quoted_author_is_rejected():
+    rows = [
+        {**msg("sullivan", ["scott", "cherry"], "Exhibit", "2000-06-08 12:47"), "quoted_from": None},
+        {**msg("scott", ["sullivan", "cherry"], "RE: Exhibit", "2000-06-08 13:04"), "quoted_from": None},
+        {**msg("cherry", ["scott", "sullivan"], "RE: Exhibit", "2000-06-09 07:51"), "quoted_from": "scott"},
+    ]
+    linked = link_replies(pd.DataFrame(rows), 14)
+    assert linked.loc[2, "reply_to"] == 1          # Scott's message, which Cherry quotes, not Sullivan's
+    rows[1]["quoted_from"], rows[2]["quoted_from"] = None, "someone else"
+    assert pd.isna(link_replies(pd.DataFrame(rows), 14).loc[2, "reply_to"])
