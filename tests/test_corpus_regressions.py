@@ -1,8 +1,9 @@
 """Real-corpus cases from the 2026-09-25 audits, checked against the generated data.
 
-Run after the pipeline (`make regress`). Skipped when data/processed has not
-been built; fails when it was built by different code than the current
-source, so old outputs cannot certify new code. Each case is a message or
+Run after the pipeline (`make regress`). Skipped only when data/processed
+holds no files at all; otherwise fails unless the stage manifest certifies
+one complete run by the current code and configuration with every output
+unchanged (provenance.py), so old or mixed outputs cannot certify new code. Each case is a message or
 address the audits showed an earlier pipeline got wrong, and every case must
 be present.
 """
@@ -11,20 +12,18 @@ import pandas as pd
 import pytest
 
 from enron_importance.config import load_config
-from enron_importance.prepare import stale_reasons
+from enron_importance.provenance import stale_reasons
 
 CONFIG = load_config()
 PROCESSED = CONFIG["paths"]["processed"]
-REQUIRED = ["messages.parquet", "sender_people.parquet", "identities.parquet", "person_types.parquet", "links.parquet"]
-# Skip only on a checkout where nothing has been built; once data exists, every check must run.
-pytestmark = [pytest.mark.corpus,
-              pytest.mark.skipif(not (PROCESSED / "funnel.json").exists(), reason="generated data not built")]
+BUILT = PROCESSED.exists() and any(PROCESSED.iterdir())
+# Skip only on a checkout where nothing has been built; once any file exists, every check must run.
+pytestmark = [pytest.mark.corpus, pytest.mark.skipif(not BUILT, reason="generated data not built")]
 
 
 def test_generated_data_is_complete_and_current():
-    missing = [name for name in REQUIRED if not (PROCESSED / name).exists()]
-    assert not missing, f"missing generated files: {missing}; rerun the pipeline"
-    assert not stale_reasons(CONFIG), f"generated data is stale: {stale_reasons(CONFIG)}; rerun the pipeline"
+    reasons = stale_reasons(CONFIG)
+    assert not reasons, f"generated data is not one current run: {reasons}; rerun the pipeline"
 
 
 @pytest.fixture(scope="module")

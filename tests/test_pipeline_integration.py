@@ -13,6 +13,7 @@ import pandas as pd
 
 from enron_importance import identity, threads
 from enron_importance.prepare import prepare
+from enron_importance.provenance import stale_reasons
 
 
 def email(message_id, sender, to, subject, body, date="Tue, 1 May 2001 09:00:00 -0500", x_from=""):
@@ -98,6 +99,7 @@ def test_generated_corpus_reproduces_the_audited_cases(tmp_path):
     prepare(config)
     identity.main(config)
     threads.main(config)
+    assert stale_reasons(config, ["prepare", "identity", "threads"]) == []
     processed = config["paths"]["processed"]
     messages = pd.read_parquet(processed / "messages.parquet").set_index("path")
     people = pd.read_parquet(processed / "sender_people.parquet").set_index("path")["sender_person"]

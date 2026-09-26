@@ -40,6 +40,7 @@ import pandas as pd
 
 from .config import load_config
 from .identity import entity_type, extra_recipients, resolve_recipient
+from .provenance import record_stage
 
 
 def build_edges(messages: pd.DataFrame, recipient: Callable[[str], str | None], internal_domain: str,
@@ -140,6 +141,7 @@ def main() -> None:
     measures.to_parquet(processed / "centrality.parquet", index=False)
     print(f"{len(measures):,} nodes, {len(edges):,} directed edges")
     print(measures["entity_type"].value_counts().to_string())
+    record_stage(config, "network")
 
 
 if __name__ == "__main__":

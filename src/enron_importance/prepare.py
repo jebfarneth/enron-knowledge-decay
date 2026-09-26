@@ -4,17 +4,16 @@ Writes
   data/processed/messages.parquet   one row per kept message
   data/processed/senders.parquet    one row per sender with automation flags
   data/processed/copies.parquet     every discarded duplicate and the message kept for it
-  data/processed/funnel.json        counts at every step + output checksums
+  data/processed/funnel.json        counts at every step
+  (and records the stage's output checksums in data/processed/manifest.json; see provenance.py)
 
 Usage: uv run python -m enron_importance.prepare
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
-from pathlib import Path
 
 import pandas as pd
 
@@ -24,38 +23,9 @@ from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
 from .identity import name_tokens
 from .ingest import iter_archive, write_messages
+from .provenance import PACKAGE, code_hash, record_stage
 from .senders import automated_messages, routine_messages, sender_profiles, signature_only, speech_act, structured_record
 
-
-PACKAGE = Path(__file__).resolve().parent
-
-
-def code_hash(*names: str) -> str:
-    """SHA-256 over the named source files of this package (all of them if none given)."""
-    files = [PACKAGE / name for name in names] if names else sorted(PACKAGE.rglob("*.py"))
-    digest = hashlib.sha256()
-    for path in files:
-        digest.update(path.relative_to(PACKAGE).as_posix().encode() + b"\0" + path.read_bytes())
-    return digest.hexdigest()
-
-
-def config_hash(config: dict) -> str:
-    return hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest()
-
-
-def stale_reasons(config: dict) -> list[str]:
-    """Why the generated data does not match the current code, configuration and outputs (empty if it does)."""
-    processed = config["paths"]["processed"]
-    manifest = json.loads((processed / "funnel.json").read_text())
-    reasons = []
-    if manifest.get("code_sha256") != code_hash():
-        reasons.append("built by different code")
-    if manifest.get("config_sha256") != config_hash(config):
-        reasons.append("built with a different configuration")
-    for name, digest in manifest.get("outputs", {}).items():
-        if not (processed / name).exists() or sha256_of(processed / name) != digest:
-            reasons.append(f"{name} changed or missing since it was built")
-    return reasons
 
 
 def parsed_messages(config: dict) -> pd.DataFrame:
@@ -144,15 +114,9 @@ def prepare(config: dict) -> dict:
     messages.drop(columns=["body"]).to_parquet(out / "messages.parquet", index=False)
     senders.rename_axis("sender").reset_index().to_parquet(out / "senders.parquet", index=False)
     copies.to_parquet(out / "copies.parquet", index=False)
-    manifest = {
-        "corpus": config["corpus"]["filename"],
-        "corpus_sha256_verified": config["corpus"]["sha256"],
-        "code_sha256": code_hash(),
-        "config_sha256": config_hash(config),
-        "funnel": funnel,
-        "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet", "copies.parquet"]},
-    }
+    manifest = {"corpus": config["corpus"]["filename"], "corpus_sha256_verified": config["corpus"]["sha256"], "funnel": funnel}
     (out / "funnel.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    record_stage(config, "prepare")
     return manifest
 
 

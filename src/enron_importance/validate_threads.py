@@ -21,6 +21,7 @@ import json
 import pandas as pd
 
 from .config import ROOT, load_config
+from .provenance import record_stage
 
 LABELS = ROOT / "audits" / "labels" / "thread_links_sample60.json"
 
@@ -60,6 +61,7 @@ def main() -> None:
     out.write_text(json.dumps(summary, indent=2) + "\n")
     print(counts.to_string())
     print(json.dumps({k: v for k, v in summary.items() if k != "outcomes_by_label"}, indent=2))
+    record_stage(config, "threadcheck")
 
 
 if __name__ == "__main__":

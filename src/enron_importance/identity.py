@@ -55,6 +55,7 @@ from collections import defaultdict
 import pandas as pd
 
 from .config import load_config
+from .provenance import record_stage
 
 _BRACKETED = re.compile(r"<[^>]*>|\([^)]*\)")
 _NON_NAME = re.compile(r"[^a-z0-9\s-]")
@@ -374,6 +375,7 @@ def main(config: dict | None = None) -> None:
     print(f"{len(table):,} internal sender addresses -> {len(keyed):,} keys; {len(aliases)} name aliases")
     print(keyed["entity_type"].value_counts().to_string())
     print("placeholder addresses:", sorted(table.loc[table["resolved_by"] == "placeholder", "address"]))
+    record_stage(config, "identity")
 
 
 if __name__ == "__main__":

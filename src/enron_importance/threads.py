@@ -47,6 +47,7 @@ from .clean import reply_start
 from .config import load_config
 from .dedupe import normalize_subject
 from .identity import extra_recipients, normalize_name, resolve_recipient
+from .provenance import record_stage
 
 _SPACE = re.compile(r"\s+")
 _FORWARD_SUBJECT = re.compile(r"^\s*(fw|fwd)\s*:", re.IGNORECASE)
@@ -266,6 +267,7 @@ def main(config: dict | None = None) -> None:
               "forward_links": int((links["link_kind"] == "forward").sum()), "threads": int(links["thread"].nunique())}
     (processed / "links.json").write_text(json.dumps(counts, indent=2) + "\n")
     print(json.dumps(counts, indent=2))
+    record_stage(config, "threads")
 
 
 if __name__ == "__main__":

@@ -48,6 +48,7 @@ import pandas as pd
 from .config import load_config
 from .evaluate import BASELINES, RTOL, _near, load_measures
 from .gold_standard import MAPPED
+from .provenance import record_stage
 
 GROUPS = ["all", "core", "inter", "non-core"]
 MEASURES = BASELINES + ["custodian"]  # plus mention-network measures when available
@@ -158,6 +159,7 @@ def main(config: dict | None = None) -> None:
     config = config or load_config()
     processed, results = config["paths"]["processed"], config["paths"]["results"]
     if not (processed / "gold_pairs.parquet").exists():
+        record_stage(config, "goldeval", skipped=True)  # deletes earlier result files and coverage
         print("Skipped: no gold_pairs.parquet (the gold-standard release is not available).")
         return
     reps, seed = config["evaluation"]["bootstrap_reps"], config["random_seed"]
@@ -214,6 +216,7 @@ def main(config: dict | None = None) -> None:
     show(table)
     show(sensitivity[sensitivity["pairs_type"] == "all"])
     show(paired)
+    record_stage(config, "goldeval")
 
 
 if __name__ == "__main__":

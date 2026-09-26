@@ -29,6 +29,7 @@ import pandas as pd
 
 from .config import load_config
 from .network import build_edges, centrality, network_messages, recipient_resolver
+from .provenance import record_stage
 
 BASELINES = ["degree", "in_strength", "out_strength", "pagerank", "betweenness"]
 # From the mention network (mentions.py), when that stage has been run; mentioned_to is the primary
@@ -198,6 +199,7 @@ def main() -> None:
     runs = sensitivity(config, ranks, measures)
     runs.to_csv(results / "baselines_sensitivity.csv", index=False, float_format="%.10f")
     print(runs.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
+    record_stage(config, "evaluate")
 
 
 if __name__ == "__main__":

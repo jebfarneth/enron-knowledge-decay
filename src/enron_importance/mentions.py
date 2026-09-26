@@ -68,6 +68,7 @@ import pandas as pd
 
 from .config import load_config
 from .identity import NICKNAMES, extra_recipients, resolve_recipient
+from .provenance import record_stage
 
 _TOKEN = re.compile(r"[a-z]+(?:-[a-z]+)*")
 MAX_CHARS = 5000  # longer authored texts are cut before tagging
@@ -358,6 +359,7 @@ def main(config: dict | None = None) -> None:
     results.mkdir(parents=True, exist_ok=True)
     (results / "mention_resolution.json").write_text(json.dumps(counts, indent=2) + "\n")
     print(json.dumps(counts, indent=2))
+    record_stage(config, "mentions")
 
 
 if __name__ == "__main__":

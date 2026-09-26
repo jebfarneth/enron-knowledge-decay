@@ -67,8 +67,9 @@ def test_end_to_end_funnel(tmp_path):
     messages = pd.read_parquet(tmp_path / "processed" / "messages.parquet")
     reply = messages[messages["sender"] == "mark.taylor@enron.com"].iloc[0]
     assert reply["authored"] == "Section 4 is fine."
-    saved = json.loads((tmp_path / "processed" / "funnel.json").read_text())
-    assert set(saved["outputs"]) == {"messages.parquet", "senders.parquet", "copies.parquet"}
+    saved = json.loads((tmp_path / "processed" / "manifest.json").read_text())["stages"]["prepare"]
+    assert set(saved["outputs"]) == {"interim/messages_raw.parquet", "processed/messages.parquet", "processed/senders.parquet",
+                                     "processed/copies.parquet", "processed/funnel.json"}
 
 
 def test_cached_parse_still_verifies_the_archive(tmp_path):
@@ -100,9 +101,16 @@ def test_an_altered_parsed_cache_is_rebuilt(tmp_path):
 
 
 def test_cache_is_rebuilt_when_the_python_or_lockfile_stamp_differs(tmp_path):
+    import sys
+
+    from enron_importance.download import sha256_of
+    from enron_importance.provenance import PACKAGE
     config = build(tmp_path)
     prepare(config)
     stamp_path = tmp_path / "interim" / "messages_raw.json"
+    stamp = json.loads(stamp_path.read_text())      # the stamp holds the real versions, not placeholders
+    assert stamp["python"] == sys.version.split()[0]
+    assert stamp["uv_lock_sha256"] == sha256_of(PACKAGE.parents[1] / "uv.lock")
     for field in ["python", "uv_lock_sha256"]:
         stamp = json.loads(stamp_path.read_text())
         stamp[field] = "different"
@@ -112,12 +120,12 @@ def test_cache_is_rebuilt_when_the_python_or_lockfile_stamp_differs(tmp_path):
 
 
 def test_stale_reasons_catch_configuration_and_output_changes(tmp_path):
-    from enron_importance.prepare import stale_reasons
+    from enron_importance.provenance import stale_reasons
     config = build(tmp_path)
     prepare(config)
-    assert stale_reasons(config) == []
+    assert stale_reasons(config, ["prepare"]) == []
     (tmp_path / "processed" / "senders.parquet").write_bytes(b"altered")
     config["senders"]["routine_repeats"] = 11
-    reasons = stale_reasons(config)
-    assert "built with a different configuration" in reasons
+    reasons = stale_reasons(config, ["prepare"])
+    assert "prepare: built with a different configuration" in reasons
     assert any("senders.parquet" in r for r in reasons)
