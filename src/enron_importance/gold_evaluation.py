@@ -138,7 +138,8 @@ def macro_accuracy(pairs: pd.DataFrame, scores: pd.DataFrame, name: str) -> floa
 
 
 def raw_address_degree(messages: pd.DataFrame, employees: pd.DataFrame) -> pd.Series:
-    """Undirected degree over raw addresses in all mail (To, Cc, Bcc, any domain), max over each employee's release addresses."""
+    """Undirected degree over raw addresses (To, Cc, Bcc, any domain) in the windowed, deduplicated messages,
+    max over each employee's release addresses. The paper's graph instead merged aliases into people."""
     neighbours: dict[str, set] = defaultdict(set)
     for sender, to, cc, bcc in zip(messages["sender"], messages["to"], messages["cc"], messages["bcc"]):
         if not isinstance(sender, str):
@@ -193,7 +194,7 @@ def main(config: dict | None = None) -> None:
     raw = pd.DataFrame({"raw_address_degree": raw_address_degree(
         pd.read_parquet(processed / "messages.parquet", columns=["sender", "to", "cc", "bcc"]), employees)})
     runs.append(gold_table(pairs[main_construction], raw, ["raw_address_degree"], reps, seed, 0.0)
-                .assign(variant="all pairs, raw-address degree over all mail, max over release addresses"))
+                .assign(variant="all pairs, raw-address degree over windowed, deduplicated mail, max over release addresses"))
     macro = pd.DataFrame([{"variant": "macro average over dominant employees", "measure": name, "pairs_type": "all",
                            "pairs": len(population), "accuracy": macro_accuracy(population, scores, name)}
                           for name in all_measures])
