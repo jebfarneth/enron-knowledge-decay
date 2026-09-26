@@ -26,6 +26,9 @@ compatible with a mention is Cc'd on the message, that person is taken as
 correct, and the resolver (which does not see the Cc list) is scored on those
 cases.
 
+Tags are cached in data/processed/mention_tags.parquet by message path,
+authored-text hash and model version, so a rerun only tags changed text.
+
 Outputs
   data/processed/mentions.parquet           one row per resolved (message, recipient, mention)
   data/processed/mention_centrality.parquet  per person: mention_degree, mentioned_to, third_party_mentioned_to
@@ -36,6 +39,7 @@ Usage: uv run python -m enron_importance.mentions
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from collections import defaultdict
@@ -124,6 +128,27 @@ def tag_mentions(texts: pd.Series, nlp, batch_size: int = 256) -> list[list[str]
     return [[ent.text for ent in doc.ents if ent.label_ == "PERSON"] for doc in docs]
 
 
+def text_hash(text) -> str:
+    return hashlib.sha1((text if isinstance(text, str) else "")[:MAX_CHARS].encode("utf-8")).hexdigest()
+
+
+def cached_mentions(messages: pd.DataFrame, cache_path, nlp) -> pd.Series:
+    """Tag each message's authored text, reusing earlier tags for unchanged text from the same model."""
+    model = f"{nlp.meta['name']}-{nlp.meta['version']}"
+    keys = messages["path"] + "\x1f" + messages["authored"].map(text_hash)
+    cached = {}
+    if cache_path.exists():
+        old = pd.read_parquet(cache_path)
+        old = old[old["model"] == model]
+        cached = dict(zip(old["key"], old["mentions"].map(list)))
+    missing = ~keys.isin(cached.keys())
+    if missing.any():
+        cached.update(zip(keys[missing], tag_mentions(messages.loc[missing, "authored"], nlp)))
+    tags = keys.map(cached)
+    pd.DataFrame({"key": keys, "model": model, "mentions": tags}).to_parquet(cache_path, index=False)
+    return tags
+
+
 def mention_links(messages: pd.DataFrame, index: dict[str, set[str]], distances: Distances) -> tuple[pd.DataFrame, dict]:
     """Resolve mentions per (message, recipient) and return resolved rows plus the Cc check.
 
@@ -197,7 +222,7 @@ def main(config: dict | None = None) -> None:
     messages["cc_people"] = messages["cc"].map(lambda xs: [p for p in map(resolve, xs) if p])
 
     nlp = spacy.load("en_core_web_sm", disable=["parser", "lemmatizer", "attribute_ruler", "tagger"])
-    messages["mentions"] = tag_mentions(messages["authored"], nlp)
+    messages["mentions"] = cached_mentions(messages, processed / "mention_tags.parquet", nlp)
     edges = pd.read_parquet(processed / "edges.parquet")
     graph_people = people & (set(edges["source"]) | set(edges["target"]))
     links, counts = mention_links(messages, name_index(graph_people), Distances(edges))

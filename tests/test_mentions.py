@@ -47,3 +47,22 @@ def test_links_and_centrality_count_distinct_people_mentioned_to_a_recipient():
     assert measures.loc["jeffrey skilling", "mention_degree"] == 1
     assert measures.loc["sara shackleton", "third_party_mentioned_to"] == 2
     assert counts["mentions"] == 4
+
+
+class FakeNLP:
+    meta = {"name": "fake", "version": "1"}
+    calls = 0
+
+    def pipe(self, texts, batch_size=256):
+        for text in texts:
+            FakeNLP.calls += 1
+            yield type("Doc", (), {"ents": [type("Ent", (), {"text": w, "label_": "PERSON"}) for w in text.split() if w.istitle()]})
+
+
+def test_tags_are_cached_and_only_changed_text_is_retagged(tmp_path):
+    from enron_importance.mentions import cached_mentions
+    cache = tmp_path / "tags.parquet"
+    messages = pd.DataFrame({"path": ["m1", "m2"], "authored": ["ask Kay", "tell Sara"]})
+    assert list(cached_mentions(messages, cache, FakeNLP())) == [["Kay"], ["Sara"]] and FakeNLP.calls == 2
+    messages.loc[1, "authored"] = "tell Jeff"
+    assert list(cached_mentions(messages, cache, FakeNLP())) == [["Kay"], ["Jeff"]] and FakeNLP.calls == 3
