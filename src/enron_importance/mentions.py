@@ -237,7 +237,9 @@ def main(config: dict | None = None) -> None:
         for to, cc, te, ce in zip(messages["to"], messages["cc"], messages["to_extra"], messages["cc_extra"])
     ]
 
-    nlp = spacy.load("en_core_web_sm", disable=["parser", "lemmatizer", "attribute_ruler", "tagger"])
+    # Only the entity recognizer is needed; it has its own embedding layer, so the shared
+    # tok2vec (used only by the tagger and parser) is disabled too, halving the time.
+    nlp = spacy.load("en_core_web_sm", disable=["parser", "lemmatizer", "attribute_ruler", "tagger", "tok2vec"])
     messages["mentions"] = cached_mentions(messages, processed / "mention_tags.parquet", nlp)
     edges = pd.read_parquet(processed / "edges.parquet")
     graph_people = people & (set(edges["source"]) | set(edges["target"]))
