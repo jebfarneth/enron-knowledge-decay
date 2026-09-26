@@ -32,11 +32,14 @@ _MARKERS = [
     # a date line (12- or 24-hour), To:, then cc: or Subject:. The To list may
     # wrap over up to 80 lines, each containing an address character (/ or @),
     # so prose between a To: line and a later Subject: is not taken for a header.
-    # Each wrapped line is matched as "no address character, one, then the rest",
-    # so a line can match only one way (no catastrophic backtracking on long bodies).
+    # A wrapped line either holds an address character (matched as "no address
+    # character, one, then the rest") or is a short plain phrase such as
+    # "Communications" (at most 40 characters, no / @ : or sentence punctuation).
+    # The two forms are disjoint, so a line can match only one way and long
+    # bodies cannot trigger catastrophic backtracking.
     re.compile(
         r"^[^\n]{1,80}\n(?:[ \t]*Sent by:[^\n]*\n)?\s*\d{1,2}/\d{1,2}/\d{2,4} \d{1,2}:\d{2}(?::\d{2})?(?: ?[AP]M)?\s*\n"
-        r"(?:.*\n){0,2}?\s*To:[^\n]*\n(?:[^\n/@]*[/@][^\n]*\n){0,80}?\s*(?:cc|Subject):",
+        r"(?:.*\n){0,2}?\s*To:[^\n]*\n(?:[^\n/@]*[/@][^\n]*\n|[ \t]*[A-Za-z][^\n.?!:/@]{0,40}\n){0,80}?\s*(?:cc|Subject):",
         re.MULTILINE,
     ),
     # Single-line variant: "Name/ENRON@enronXgate on 03/30/2001 07:45 AM" or
@@ -57,7 +60,7 @@ _MARKERS = [
         re.MULTILINE,
     ),
     # Bare quoted header block with no name line: "To:" (wrapped lines hold / or @), "cc:", "Subject:".
-    re.compile(r"^[ \t]*To:[^\n]*\n(?:[^\n:/@]*[/@][^\n:]*\n){0,80}?[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:",
+    re.compile(r"^[ \t]*To:[^\n]*\n(?:[^\n:/@]*[/@][^\n:]*\n|[ \t]*[A-Za-z][^\n.?!:/@]{0,40}\n){0,80}?[ \t]*cc:[^\n]*\n(?:[ \t]*\n)*[ \t]*Subject:",
                re.IGNORECASE | re.MULTILINE),
     # Inline forwarded message: "--------- Inline attachment follows ---------".
     re.compile(r"^[ \t]*-{3,}\s*Inline attachment follows\s*-{3,}", re.IGNORECASE | re.MULTILINE),
