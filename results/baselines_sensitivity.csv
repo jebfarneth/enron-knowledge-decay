@@ -4,41 +4,41 @@ main,in_strength,0.6229350441,0.5544837126,0.6877727323,129,6235
 main,out_strength,0.5290296712,0.4469212302,0.6010257815,129,6235
 main,pagerank,0.6288692863,0.5569818803,0.7009893216,129,6235
 main,betweenness,0.5829190056,0.5050624258,0.6563851751,129,6235
-main,mention_degree,0.7334402566,0.6654526453,0.7955566659,129,6235
-main,mentioned_to,0.6939855654,0.6187706286,0.7570815423,129,6235
+main,mention_degree,0.7336006415,0.6654625376,0.7955004008,129,6235
+main,mentioned_to,0.6943063352,0.6201179666,0.7571453521,129,6235
 main,third_party_mentioned_to,0.6951884523,0.6202906148,0.7587518151,129,6235
 main,mention_degree_unfiltered,0.7309542903,0.6644504847,0.7913230100,129,6235
-main,mentioned_to_unfiltered,0.7047313553,0.6308405157,0.7661559604,129,6235
+main,mentioned_to_unfiltered,0.7046511628,0.6308405157,0.7661559604,129,6235
 disputed labels removed,degree,0.6769243957,0.6014703038,0.7469018765,125,5833
 disputed labels removed,in_strength,0.6317503857,0.5573821686,0.7002365552,125,5833
 disputed labels removed,out_strength,0.5332590434,0.4501496931,0.6071152863,125,5833
 disputed labels removed,pagerank,0.6375792902,0.5551337151,0.7098584225,125,5833
 disputed labels removed,betweenness,0.5869192525,0.5087908364,0.6602370745,125,5833
-disputed labels removed,mention_degree,0.7459283388,0.6769091853,0.8126694417,125,5833
-disputed labels removed,mentioned_to,0.7061546374,0.6316193775,0.7743146830,125,5833
+disputed labels removed,mention_degree,0.7460997771,0.6770505403,0.8131419757,125,5833
+disputed labels removed,mentioned_to,0.7064975141,0.6321639363,0.7760814805,125,5833
 disputed labels removed,third_party_mentioned_to,0.7072689868,0.6315581676,0.7775836364,125,5833
 disputed labels removed,mention_degree_unfiltered,0.7442996743,0.6760566267,0.8103605673,125,5833
-disputed labels removed,mentioned_to_unfiltered,0.7178124464,0.6451277816,0.7867965754,125,5833
+disputed labels removed,mentioned_to_unfiltered,0.7177267272,0.6451277816,0.7867204117,125,5833
 conflicting rows kept at higher title,degree,0.6612569610,0.5844646618,0.7299827611,129,6285
 conflicting rows kept at higher title,in_strength,0.6152744630,0.5430948382,0.6791709522,129,6285
 conflicting rows kept at higher title,out_strength,0.5240254574,0.4438232376,0.5964849068,129,6285
 conflicting rows kept at higher title,pagerank,0.6260938743,0.5538806856,0.6986726604,129,6285
 conflicting rows kept at higher title,betweenness,0.5744630072,0.4958156765,0.6462091066,129,6285
-conflicting rows kept at higher title,mention_degree,0.7315831344,0.6623379065,0.7933503278,129,6285
-conflicting rows kept at higher title,mentioned_to,0.6973747017,0.6237697639,0.7613299813,129,6285
+conflicting rows kept at higher title,mention_degree,0.7320604614,0.6627328769,0.7935043141,129,6285
+conflicting rows kept at higher title,mentioned_to,0.6981702466,0.6250221747,0.7622707024,129,6285
 conflicting rows kept at higher title,third_party_mentioned_to,0.6953858393,0.6221129900,0.7591792868,129,6285
 conflicting rows kept at higher title,mention_degree_unfiltered,0.7275258552,0.6576330762,0.7886503382,129,6285
-conflicting rows kept at higher title,mentioned_to_unfiltered,0.7081941130,0.6377477252,0.7688858376,129,6285
+conflicting rows kept at higher title,mentioned_to_unfiltered,0.7081145585,0.6377477252,0.7688427035,129,6285
 CEO and President removed,degree,0.6161683489,0.5353029895,0.6936566497,121,5251
 CEO and President removed,in_strength,0.5894115407,0.5164487857,0.6669305423,121,5251
 CEO and President removed,out_strength,0.5102837555,0.4284982040,0.5880073474,121,5251
 CEO and President removed,pagerank,0.5817939440,0.5012645774,0.6591089000,121,5251
 CEO and President removed,betweenness,0.5386593030,0.4540980620,0.6237199853,121,5251
-CEO and President removed,mention_degree,0.6895829366,0.6131719022,0.7646510444,121,5251
-CEO and President removed,mentioned_to,0.6578746905,0.5799422471,0.7355459463,121,5251
+CEO and President removed,mention_degree,0.6897733765,0.6136994517,0.7649039188,121,5251
+CEO and President removed,mentioned_to,0.6582555704,0.5810215799,0.7378036774,121,5251
 CEO and President removed,third_party_mentioned_to,0.6576842506,0.5763514759,0.7342762962,121,5251
 CEO and President removed,mention_degree_unfiltered,0.6864406780,0.6121565855,0.7613926276,121,5251
-CEO and President removed,mentioned_to_unfiltered,0.6665397067,0.5886658377,0.7425146844,121,5251
+CEO and President removed,mentioned_to_unfiltered,0.6664444868,0.5885570567,0.7425146844,121,5251
 messages with at most 10 recipients,degree,0.6386527666,0.5658729634,0.7052044495,129,6235
 messages with at most 10 recipients,in_strength,0.6166800321,0.5455707509,0.6814847343,129,6235
 messages with at most 10 recipients,out_strength,0.5301523657,0.4471148028,0.6009177751,129,6235

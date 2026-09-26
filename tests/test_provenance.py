@@ -7,8 +7,20 @@ from enron_importance.provenance import STAGES, output_path, record_stage, stale
 
 
 @pytest.fixture
-def config(tmp_path):
-    return {"paths": {kind: tmp_path / kind for kind in ["interim", "processed", "results", "figures"]}, "seed": 1}
+def config(tmp_path, monkeypatch):
+    for name, text in [("uv.lock", "lock"), ("labels.json", "labels")]:
+        (tmp_path / name).write_text(text)
+    monkeypatch.setattr(provenance, "LOCKFILE", tmp_path / "uv.lock")
+    monkeypatch.setattr(provenance, "THREAD_LABELS", tmp_path / "labels.json")
+    model = tmp_path / "model"
+    model.mkdir()
+    (model / "weights").write_text("w")
+    monkeypatch.setattr(provenance, "model_directory", lambda name="en_core_web_sm": model)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "corpus.tar.gz").write_text("corpus")
+    return {"paths": {kind: tmp_path / kind for kind in ["raw", "interim", "processed", "results", "figures"]}, "seed": 1,
+            "corpus": {"filename": "corpus.tar.gz"}}
 
 
 def build(config, stages=None):
@@ -89,3 +101,32 @@ def test_only_the_gold_stages_may_be_skipped(config):
 def test_a_stage_must_write_every_declared_output(config):
     with pytest.raises(FileNotFoundError):
         record_stage(config, "threads")
+
+
+@pytest.mark.parametrize("path, stages", [
+    ("uv.lock", list(STAGES)),                       # the lockfile is an input of every stage
+    ("labels.json", ["threadcheck"]),                # the labelled thread sample
+    ("model/weights", ["mentions"]),                 # the NER model files
+    ("raw/corpus.tar.gz", ["prepare"]),              # the raw corpus
+])
+def test_a_changed_input_makes_its_stages_stale(config, tmp_path, path, stages):
+    build(config)
+    (tmp_path / path).write_text("changed")
+    stale = {r.split(":")[0] for r in stale_reasons(config) if "input" in r}
+    assert stale == set(stages)
+
+
+def test_a_different_python_makes_every_stage_stale(config):
+    build(config)
+    path = config["paths"]["processed"] / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["stages"]["rank"]["python"] = "3.11.0"
+    path.write_text(json.dumps(manifest))
+    assert stale_reasons(config) == ["rank: built with Python 3.11.0"]
+
+
+def test_a_partial_check_also_checks_everything_upstream(config):
+    build(config)
+    output_path(config, "processed/centrality.parquet").write_text("damaged")
+    assert any("centrality.parquet" in r for r in stale_reasons(config, ["figures.baselines"]))
+    assert stale_reasons(config, ["crosscheck"]) == []   # reads only prepare

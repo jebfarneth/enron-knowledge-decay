@@ -12,10 +12,12 @@ message m when:
 4. there is direct evidence: m is addressed back to p's sender, or m's
    quoted text contains the opening of p's authored text,
 5. p's quoted text does not contain m's opening (that would make p the reply),
-6. p was not sent by m's own sender, and, when m's quoted section names
-   whom it quotes first ("From: Susan Scott"), p was sent by that person,
-   even if an older message's text also appears further down the quote.
-   A message whose first quote is its own sender's message is not linked.
+6. p was not sent by m's own sender, and, when the first quoted header the
+   parser recognizes in m names an author ("From: Susan Scott"), p was sent
+   by that person, even if an older message's text also appears further down
+   the quote. A message whose first recognized quote is its own sender's is
+   not linked. (The first recognized header is not always the first actual
+   one: an unrecognized inline header can come before it.)
 
 Among candidates, the one whose text is quoted nearest the top of m's quoted
 section is the parent (the message m directly answers); without quotation,
@@ -26,7 +28,9 @@ probable time-shifted copies are never linked.
 is addressed back to p's sender and its subject is not a forward ("FW:"),
 and "forward" otherwise; `response_seconds` is set for replies only.
 `link_confidence` is "high" when the quoted author and quoted text both
-point to p, "medium" when one does, "low" when m is only addressed back.
+point to p, "medium" when one does, "low" when m is only addressed back: an
+evidence category, not a calibrated probability that p is the immediate
+parent.
 
 These are inferred candidate parents, not observed replies. Messages with
 empty or changed subjects are not linked, and a parent whose subject differs
@@ -46,7 +50,7 @@ import pyarrow.parquet as pq
 from .clean import reply_start
 from .config import load_config
 from .dedupe import normalize_subject
-from .identity import extra_recipients, normalize_name, resolve_recipient
+from .identity import NICKNAMES, extra_recipients, normalize_name, resolve_recipient
 from .provenance import record_stage
 
 _SPACE = re.compile(r"\s+")
@@ -158,15 +162,22 @@ def _keys(value) -> set[str]:
     return set()
 
 
+def _same_name(a: list[str], b: list[str]) -> bool:
+    """Two person names that may be one person: the same surname, first names that are equal, nicknames of
+    one name or an initial of the other ("kevin m presto" and "kevin presto"), and no conflicting middle initials."""
+    if len(a) < 2 or len(b) < 2 or a[-1] != b[-1]:
+        return False
+    first_a, first_b = NICKNAMES.get(a[0], a[0]), NICKNAMES.get(b[0], b[0])
+    if first_a != first_b and not (min(len(a[0]), len(b[0])) == 1 and a[0][0] == b[0][0]):
+        return False
+    return not (a[1:-1] and b[1:-1] and a[1:-1] != b[1:-1])
+
+
 def _same_author(named: set[str], keys: set[str]) -> bool:
-    """Whether a quoted header's author and a sender share a key, or, for two person names, the
-    same surname and first initial ("kevin m presto" and "kevin presto")."""
+    """Whether a quoted header's author and a sender share a key or a compatible person name."""
     if named & keys:
         return True
-    for a, b in ((x.split(), y.split()) for x in named for y in keys if "@" not in x + y):
-        if len(a) >= 2 and len(b) >= 2 and a[-1] == b[-1] and a[0][0] == b[0][0]:
-            return True
-    return False
+    return any(_same_name(x.split(), y.split()) for x in named for y in keys if "@" not in x + y)
 
 
 _QUOTED_FROM = re.compile(r"^[ \t>]*From:[ \t]*(?P<value>[^\n]+)", re.IGNORECASE | re.MULTILINE)

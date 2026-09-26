@@ -172,6 +172,11 @@ def test_signature_blocks_must_name_the_sender():
     assert not signature_only(block, name_tokens("Tana Jones", "tana.jones@enron.com"))
     ranking = "Analyst\t\t\t\t\tRank\n\nStephane Brodeur\t\t\t1\nChad Clark\t\t\t\t1\nIan Cooke\t\t\t\t3"
     assert not signature_only(ranking, name_tokens("Zufferli, John", "john.zufferli@enron.com"))
+    # Another person's contact block sharing the sender's surname is not the sender's signature.
+    assert not signature_only("Tom Cook\nEnron North America Corp.\n(713) 345-1111 (phone)", mary)
+    # A filled-in form is not a signature, even when it opens with the sender's name.
+    form = "Mary Cook\nSupervisor: Sally Beck\nCost Center: 105657\nRotation Date: 5/1/01\n(713) 345-7732"
+    assert not signature_only(form, mary)
 
 
 def test_a_mailing_list_footer_alone_does_not_make_a_newsletter():
@@ -179,3 +184,7 @@ def test_a_mailing_list_footer_alone_does_not_make_a_newsletter():
     assert not structured_record(conversation)
     digest = "Top stories http://a.com/1 http://a.com/2 http://a.com/3\n\nTo unsubscribe click here"
     assert structured_record(digest)
+    # Two links written with both a scheme and www. are two links, not four.
+    two = "See https://www.example.com/a and https://www.example.com/b for my notes.\n\nTo unsubscribe click here"
+    assert not structured_record(two)
+    assert structured_record(two.replace("my notes", "notes, https://www.example.com/c"))

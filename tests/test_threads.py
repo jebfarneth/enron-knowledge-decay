@@ -234,3 +234,19 @@ def test_a_quoted_author_matches_any_key_the_parent_sender_goes_by():
     assert link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"] == 0
     rows[1]["quoted_from"] = frozenset({"someone else"})
     assert pd.isna(link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"])
+
+
+def test_conflicting_first_names_or_middle_initials_are_different_authors():
+    for quoted, parent_sender, linked in [("cara white", "cindy white", False), ("kevin m presto", "kevin presto", True),
+                                          ("bob smith", "robert smith", True), ("mark a taylor", "mark e taylor", False),
+                                          ("j smith", "john smith", True), ("jane smith", "john smith", False)]:
+        rows = [{**msg(parent_sender, ["sally beck"], "Budget", "2001-05-01 09:00"), "quoted_from": None},
+                {**msg("sally beck", [parent_sender], "RE: Budget", "2001-05-01 10:00"), "quoted_from": quoted}]
+        assert pd.notna(link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"]) == linked, (quoted, parent_sender)
+
+
+def test_a_message_quoting_its_own_sender_abstains_even_if_a_namesake_wrote_earlier():
+    # The quoted author is the sender; an earlier message from a split key of the same name must not be taken.
+    rows = [{**msg("mary l cook", ["mary cook"], "Contracts", "2002-01-04 09:00"), "quoted_from": None},
+            {**msg("mary cook", ["mary l cook"], "RE: Contracts", "2002-01-07 11:00"), "quoted_from": "mary cook"}]
+    assert pd.isna(link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"])

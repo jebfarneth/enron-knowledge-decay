@@ -4,7 +4,7 @@ import pytest
 
 from enron_importance import mentions as mentions_module
 from enron_importance.mentions import (Distances, cached_mentions, compatible, mention_centrality, mention_links,
-                                       mention_measures, name_index, nil_reason, tag_mentions)
+                                       mention_measures, name_index, nil_reason, tag_mentions, tagger_id)
 
 PEOPLE = {"jeffrey skilling", "jeffrey dasovich", "mark e taylor", "kay mann", "sara shackleton", "jonah self"}
 
@@ -115,10 +115,39 @@ def test_any_change_to_the_tagger_retags_everything(tmp_path, monkeypatch):
     assert FakeNLP.calls == 4                        # a cache from before tagger identities
 
 
-def test_only_the_first_max_chars_are_tagged():
-    text = "ask Kay " + "x" * mentions_module.MAX_CHARS + " Sara"
+def test_only_the_first_5000_characters_are_tagged():
+    assert mentions_module.MAX_CHARS == 5000              # the documented cap
+    text = "ask Kay " + "x" * 5000 + " Sara"
     assert tag_mentions(pd.Series([text]), FakeNLP()) == [[("Kay", 4)]]
-    assert len(FakeNLP.seen) == mentions_module.MAX_CHARS
+    assert len(FakeNLP.seen) == 5000
+
+
+def test_the_tagger_identity_covers_model_spacy_and_weights(tmp_path, monkeypatch):
+    base = tagger_id(FakeNLP())
+
+    class OtherVersion(FakeNLP):
+        meta = {"name": "fake", "version": "2"}
+
+    class WithWeights(FakeNLP):
+        path = tmp_path
+
+    assert tagger_id(OtherVersion()) != base
+    (tmp_path / "weights").write_text("a")
+    first = tagger_id(WithWeights())
+    (tmp_path / "weights").write_text("b")
+    assert first != tagger_id(WithWeights()) and first != base
+    monkeypatch.setattr(mentions_module, "version", lambda package: "0.0")
+    assert tagger_id(FakeNLP()) != base
+
+
+def test_a_cached_entry_whose_names_are_not_in_the_text_is_retagged(tmp_path):
+    cache = tmp_path / "tags.parquet"
+    messages = pd.DataFrame({"path": ["m1"], "authored": ["ask Kay"]})
+    FakeNLP.calls = 0
+    cached_mentions(messages, cache, FakeNLP())
+    forged = pd.read_parquet(cache).assign(mentions=[["FORGED PERSON"]], starts=[[999999]])
+    forged.to_parquet(cache)
+    assert list(cached_mentions(messages, cache, FakeNLP())) == [[("Kay", 4)]] and FakeNLP.calls == 2
 
 
 def test_initials_middle_initials_and_hyphenated_names():
@@ -135,7 +164,12 @@ def test_initials_middle_initials_and_hyphenated_names():
     ("Governor Davis signed the bill.", "Davis", "office"),
     ("We met Sen. Feinstein today.", "Feinstein", "office"),
     ("Williams pipeline capacity is full.", "Williams", "company"),
-    ("Talk to Williams & Connolly.", "Williams", "company"),
+    ("email Sally & let her know", "Sally", None),                  # a conjunction, not a company
+    ("Call Tim Belden\nPower prices rose.", "Tim Belden", None),   # the next line is not the same phrase
+    ("Kevin Presto Power Group", "Kevin Presto", None),            # a department, not a company
+    ("Ask Dana Davis\nCapital Calls", "Dana Davis", None),
+    ("Ste. Aurelie Timberlands", "Ste", "abbreviation"),           # spaCy's span stops before the period
+    ("Thanks, Kay. See you.", "Kay", None),
     ("Duke Energy called.", "Duke Energy", "company"),
     ("Clemens Ste. Marie", "Ste.", "abbreviation"),
     ("Ask Dana Davis about it.", "Dana Davis", None),

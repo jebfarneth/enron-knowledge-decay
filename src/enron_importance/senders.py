@@ -80,7 +80,7 @@ def template_of(text) -> str:
 NEWSLETTER = re.compile(r"this e-?mail is a (daily|weekly) service of|was forwarded to you by a colleague", re.IGNORECASE)
 LIST_FOOTER = re.compile(r"to unsubscribe|unsubscribe from this|you are receiving this (e-?mail|newsletter|message) because",
                          re.IGNORECASE)
-_URL = re.compile(r"https?://|www\.", re.IGNORECASE)
+_URL = re.compile(r"(?:https?://|www\.)[^\s<>\"')\]]+", re.IGNORECASE)  # one match per whole link
 
 
 def structured_record(text) -> bool:
@@ -108,12 +108,15 @@ def signature_only(text, sender_names=None) -> bool:
 
     The block may open with a sign-off ("Cordially,"); its first other line
     must be a name line of two to four capitalized words that, when
-    `sender_names` is given, contains one of the sender's own name words.
-    Every later line must be short: a name, title, department, company,
-    address, phone or e-mail line, with at least one phone, e-mail, address
-    or title line. Anything before the block ("Not I.", "Done :)") or a
-    sentence that happens to contain a phone number means it is not a
-    signature, and neither is a table of other people's names.
+    `sender_names` is given, contains two of the sender's own name words
+    (first and last name), so another person's contact block is not the
+    sender's signature. Every later line must be short: a name, title,
+    department, company, address, phone or e-mail line, with at least one
+    phone, e-mail, address or title line; a "label: value" line other than a
+    phone or e-mail line is a form field, not a signature. Anything before
+    the block ("Not I.", "Done :)") or a sentence that happens to contain a
+    phone number means it is not a signature. A roster that opens with the
+    sender's own name can still pass.
     """
     lines = [line.strip() for line in (text if isinstance(text, str) else "").splitlines() if line.strip()]
     while lines and _SIGN_OFF.match(lines[0]):
@@ -123,7 +126,7 @@ def signature_only(text, sender_names=None) -> bool:
     first = re.findall(r"\b[A-Za-z][A-Za-z.'-]*", lines[0])
     if not 2 <= len(first) <= 4 or not all(w[0].isupper() for w in first) or re.search(r"[:;!?()\d\t]", lines[0]):
         return False
-    if sender_names is not None and not {w.lower().strip(".'") for w in first} & set(sender_names):
+    if sender_names is not None and len({w.lower().strip(".'") for w in first} & set(sender_names)) < 2:
         return False
     evidence = False
     for line in lines[1:]:
@@ -133,6 +136,8 @@ def signature_only(text, sender_names=None) -> bool:
         if _PHONE.search(line) or "@" in line:
             evidence = True
             continue
+        if ":" in line:
+            return False  # a form field ("Supervisor: ..."), not a signature line
         if len(words) > 6 or not all(w[0].isupper() for w in words):
             return False
         if {w.lower().strip(".") for w in words} & _SIGNATURE_WORDS or re.search(r"\d+\s+\w+", line):

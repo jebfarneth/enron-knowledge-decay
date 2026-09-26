@@ -148,3 +148,13 @@ def test_intervals_resample_gold_employees_even_when_they_share_a_graph_key():
               for d, s in zip(BIG["dominant"], BIG["subordinate"])}
     table = gold_table(keyed, BIG_SCORES, ["degree"], reps=300, seed=11).set_index("pairs_type")
     assert (table.loc["all", "ci_low"], table.loc["all", "ci_high"]) == pytest.approx(brute_force(BIG, credit, 300, 11))
+
+
+def test_paired_intervals_also_resample_employees_when_they_share_a_graph_key():
+    keyed = BIG.assign(dominant_key=BIG["dominant"].replace({"p1": "shared", "p2": "shared"}),
+                       subordinate_key=BIG["subordinate"].replace({"p1": "shared", "p2": "shared"}))
+    d, c = BIG_SCORES["degree"], BIG_SCORES["custodian"]
+    cr = lambda s, a, b: 0.5 if s[a] == s[b] else float(s[a] > s[b])  # noqa: E731
+    gap = {(a, b): cr(c, a, b) - cr(d, a, b) for a, b in zip(BIG["dominant"], BIG["subordinate"])}
+    paired = paired_gold(keyed, BIG_SCORES, "custodian", "degree", reps=300, seed=5).set_index("pairs_type")
+    assert (paired.loc["all", "ci_low"], paired.loc["all", "ci_high"]) == pytest.approx(brute_force(BIG, gap, 300, 5))
