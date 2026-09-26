@@ -205,16 +205,32 @@ def test_a_quoted_author_matches_a_sender_with_a_middle_initial():
 
 def test_quoted_author_reads_every_header_form_and_takes_the_first():
     def author(body):
-        return quoted_author(body, lambda a: {"kay.mann@enron.com": "kay mann"}.get(a), normalize_name)
+        return quoted_author(body, lambda a: {"kay.mann@enron.com": "kay mann"}.get(a, a), normalize_name)
 
     lotus_bare = "Here it is.\n\n\n\tTana Jones\n\t05/01/2001 06:00 AM\n\t\t\n\t\t To: Sara Shackleton/HOU/ECT@ECT\n\t\t cc: \n"
     nested = "\n\n -----Original Message-----\nFrom: Heard, Marie\nSent: x\n\nold text"
-    assert author(lotus_bare + "\t\t Subject: ISDA\n\nPlease send it." + nested) == "tana jones"
-    assert author("OK\n\n\nKay Mann@ENRON\n05/01/2001 09:00 AM\nTo: Mark Taylor/HOU/ECT@ECT\ncc:\nSubject: T\n\nx") == "kay mann"
-    assert author("OK\n\n -----Original Message-----\nFrom: Kay Mann/HOU/ECT@ECT on 05/01/2001\nSent: x\n\nx") == "kay mann"
+    assert author(lotus_bare + "\t\t Subject: ISDA\n\nPlease send it." + nested) == {"tana jones"}
+    assert author("OK\n\n\nKay Mann@ENRON\n05/01/2001 09:00 AM\nTo: Mark Taylor/HOU/ECT@ECT\ncc:\nSubject: T\n\nx") == {"kay mann"}
+    assert author("OK\n\n -----Original Message-----\nFrom: Kay Mann/HOU/ECT@ECT on 05/01/2001\nSent: x\n\nx") == {"kay mann"}
+    assert author("OK\n\n -----Original Message-----\nFrom: Sharen Cason 01/05/2001 10:23 AM\nSent: x\n\nx") == {"sharen cason"}
     one_line = ("FYI.\n\n---------------------- Forwarded by Vince J Kaminski/HOU/ECT on 04/09/2001 11:20 AM ------\n\n\n"
                 '"Susan C. Hansen" <susan.hansen@stanford.edu> on 04/06/2001 06:14:10 PM\nTo:\tVince.J.Kaminski@enron.com\n'
                 "Subject:\tVisiting Enron\n\nDear Vince,")
-    assert author(one_line) == "susan.hansen@stanford.edu"   # an unresolved address still names the author
+    assert author(one_line) == {"susan.hansen@stanford.edu", "susan hansen"}   # the address and the display name
+    bare_address = "OK\n\n -----Original Message-----\nFrom: carol.st.clair@enron.com [mailto:carol.st.clair@enron.com]\nSent: x\n\nx"
+    assert author(bare_address) == {"carol.st.clair@enron.com", "carol clair"}  # the local part names the person
     # A name and a date inside a quote, without a To: line, are not a header.
     assert author("OK\n\n -----Original Message-----\nSent: x\n\nThanks,\nTana Jones\n05/01/2001 10:00 AM\nMore") is None
+
+
+def test_a_quoted_author_matches_any_key_the_parent_sender_goes_by():
+    rows = [
+        # An outside sender has no person key: the message's sender is its raw address.
+        {**msg("cameron@mondavi.com", ["jeff dasovich"], "Wine", "2001-05-01 09:00"),
+         "sender_keys": frozenset({"cameron sellers"}), "quoted_from": None},
+        {**msg("jeff dasovich", ["cameron@mondavi.com"], "RE: Wine", "2001-05-01 10:00"),
+         "quoted_from": frozenset({"cameron sellers"})},
+    ]
+    assert link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"] == 0
+    rows[1]["quoted_from"] = frozenset({"someone else"})
+    assert pd.isna(link_replies(pd.DataFrame(rows), 14).loc[1, "reply_to"])
