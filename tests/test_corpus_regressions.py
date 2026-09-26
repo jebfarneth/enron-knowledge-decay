@@ -28,7 +28,7 @@ def test_generated_data_is_complete_and_current():
 
 @pytest.fixture(scope="module")
 def messages():
-    columns = ["path", "sender", "automated", "structured", "routine", "analysis"]
+    columns = ["path", "sender", "automated", "structured", "routine", "signature_only", "analysis"]
     frame = pd.read_parquet(PROCESSED / "messages.parquet", columns=columns)
     frame = frame.merge(pd.read_parquet(PROCESSED / "sender_people.parquet"), on="path")
     return frame.merge(pd.read_parquet(PROCESSED / "links.parquet"), on="path").set_index("path", drop=False)
@@ -97,3 +97,32 @@ def test_audited_wrong_parents_are_not_linked(messages):
     for child, wrong in [("maildir/hodge-j/deleted_items/466.", "maildir/heard-m/inbox/255."),
                          ("maildir/kaminski-v/var/2.", "maildir/kaminski-v/sent/8.")]:
         assert messages.loc[child, "parent_path"] != wrong, child
+
+
+# Audit 4 (2026-09-26) cases.
+
+def test_a_wrapped_plain_recipient_line_ends_the_quoted_header():
+    authored = pd.read_parquet(PROCESSED / "messages.parquet", columns=["path", "authored"]).set_index("path")["authored"]
+    text = authored["maildir/jones-t/notes_inbox/964."]
+    assert text.startswith("I know nothing!") and "Aronowitz" not in text and "To:" not in text
+
+
+def test_answers_and_tables_are_not_signature_only(messages):
+    for path in ["maildir/jones-t/notes_inbox/3821.", "maildir/zufferli-j/sent_items/98."]:
+        assert not messages.loc[path, "signature_only"], path
+
+
+def test_a_second_spelling_of_a_recipient_is_not_added(messages):
+    from enron_importance.network import network_messages
+    row = network_messages(CONFIG).set_index("path").loc["maildir/forney-j/sent_items/96."]
+    assert row["recipient_extra"] == []
+
+
+def test_reply_parents_follow_the_first_quoted_author(messages):
+    def parent_sender(path):
+        parent = messages.loc[path, "parent_path"]
+        return messages.loc[parent, "sender_person"] if isinstance(parent, str) else None
+
+    assert parent_sender("maildir/lavorato-j/sent_items/591.") != "kevin presto"            # quotes Louise first
+    assert parent_sender("maildir/kaminski-v/stanford/7.") != "christie patrick"             # relays Susan's message
+    assert pd.isna(messages.loc["maildir/kitchen-l/_americas/netco_legal/46.", "parent_path"])  # quotes its own sender
