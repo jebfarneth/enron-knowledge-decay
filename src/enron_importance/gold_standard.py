@@ -37,13 +37,25 @@ by their principal name, not by address:
    ambiguous, or several address nodes none spelled that way, leaves the
    employee "ambiguous"; no candidate in the graph is "absent".
 
-No tie is broken by spelling order and no measure's value is read, though
-any matching rule still affects measures unequally (see the sensitivity
-runs). Records whose known positions combine a support position (a title
-ending in Assistant, Asst or Secretary) with a different one (Sally Beck,
-Steven Kean, Mike McConnell) are flagged `mixed_positions`: the release
-merged two people's positions, or one person's positions over time, which
-matching cannot undo. Custodians
+No tie is broken by spelling or mailbox order and no measure's value is
+read, though any matching rule still affects measures unequally (see the
+sensitivity runs).
+
+Uncertain records. A record whose known positions combine a support
+position (a title ending in Assistant, Asst or Secretary) with a different
+one (Sally Beck, Steven Kean, Mike McConnell) is flagged `mixed_positions`;
+a record holding several positions whose addresses resolve to two or more
+different people is flagged `multiple_people`. Either makes the record an
+`uncertain_owner`: the release merged two people's positions, or one
+person's over time, which matching cannot undo. Pairs are marked
+`independent_of_uncertain` when they still follow with every relation
+touching an uncertain record removed before the closure, so a pair whose
+dominance runs through such a record can be excluded, not only a pair with
+one at an end. Mixed positions are direct evidence that positions were
+merged, so the main population excludes pairs that run through them;
+several people behind one record's addresses (often an executive and an
+assistant) is weaker evidence about positions, so excluding those paths too
+is a stricter sensitivity run. Custodians
 (records with mailboxes in the corpus, the paper's "core") are marked so
 accuracy can be split into core, inter and non-core pairs.
 
@@ -107,8 +119,8 @@ def _asymmetric_closure(immediate: set, keep: set) -> list[tuple[str, str]]:
     return sorted((a, b) for a, b in pairs if (b, a) not in pairs)
 
 
-def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, pd.DataFrame]]:
-    """Employees, the main (dominant, subordinate) pairs, and alternative constructions."""
+def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, pd.DataFrame], set]:
+    """Employees, the main (dominant, subordinate) pairs, alternative constructions, and the immediate relations."""
     edges = set()
     owner: dict[str, str] = {}
     rows = []
@@ -128,7 +140,7 @@ def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame, d
                 "names": [n for n in doc.get("email_names") or [] if isinstance(n, str)],
                 "mailboxes": [m for m in doc.get("mailboxes") or [] if isinstance(m, str)],
                 "custodian": bool(doc.get("mailboxes")),
-                "mixed_positions": mixed_positions(titles),
+                "mixed_positions": mixed_positions(titles), "positions": len(titles),
             })
     graph = nx.DiGraph(edges)
     employees = pd.DataFrame(rows)
@@ -149,18 +161,41 @@ def dominance_pairs(entities: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame, d
         "cycle arcs removed before closure": _asymmetric_closure(immediate - cyclic, emailers),
     }
     frame = lambda pairs: pd.DataFrame(pairs, columns=["dominant", "subordinate"])  # noqa: E731
-    return employees, frame(main), {name: frame(pairs) for name, pairs in alternatives.items()}
+    return employees, frame(main), {name: frame(pairs) for name, pairs in alternatives.items()}, immediate
 
 
-def principal_name(names: list[str], mailboxes: list[str]) -> str | None:
-    """The normalized name the record belongs to: mailbox-matched, else most frequent, else None on a tie."""
-    keys = [k for k in map(normalize_name, names) if k and "@" not in k]
+def independent_of(immediate: set, uncertain: set, emailers: set) -> set[tuple[str, str]]:
+    """Pairs that still follow when every relation touching an uncertain record is removed before the closure."""
+    return set(_asymmetric_closure({(a, b) for a, b in immediate if a not in uncertain and b not in uncertain}, emailers))
+
+
+def principal_name(names: list[str], mailboxes: list[str], aliases: dict | None = None) -> str | None:
+    """The normalized name the record belongs to, or None when that is ambiguous.
+
+    Names matching any of the record's mailboxes (surname and first
+    initial, "Allen-P") are pooled: exactly one such person is the principal,
+    two or more is ambiguous whatever the mailboxes' order. Without a
+    mailbox match, the most frequent name is the principal; a tie is
+    ambiguous.
+    """
+    aliases = aliases or {}
+    written: dict[str, set[str]] = {}  # key -> first names as written ("bob" for "robert jones")
+    keys = []
+    for name in names:
+        key = normalize_name(name)
+        if key and "@" not in key:
+            key = aliases.get(key, key)
+            keys.append(key)
+            first = re.findall(r"[a-z]+", name.lower().split(",")[-1] if "," in name else name.lower())
+            written.setdefault(key, set()).update(first[:1] + [key.split()[0]])
     counts = Counter(keys)
+    matching = set()
     for mailbox in mailboxes:
         surname, _, initial = mailbox.lower().partition("-")
-        matching = {k for k in counts if k.split()[-1] == surname and (not initial or k.split()[0].startswith(initial[0]))}
-        if len(matching) == 1:
-            return matching.pop()
+        matching |= {k for k in counts if k.split()[-1] == surname
+                     and (not initial or any(f.startswith(initial[0]) for f in written[k]))}
+    if matching:
+        return matching.pop() if len(matching) == 1 else None
     if not counts:
         return None
     ranked = counts.most_common()
@@ -177,10 +212,9 @@ def match_people(employees: pd.DataFrame, identities: pd.DataFrame, nodes=frozen
     people = set(identities.loc[identities["entity_type"] == "person", "person_key"])
 
     def match(names, addresses, mailboxes):
-        key = principal_name(names, mailboxes)
+        key = principal_name(names, mailboxes, aliases)
         if key is None:
             return None, "ambiguous" if names else "absent"
-        key = aliases.get(key, key)
         if types.get(key) == "ambiguous":
             return None, "ambiguous"
         if key in nodes and types.get(key, "person") == "person":
@@ -212,6 +246,7 @@ def label_pairs(pairs: pd.DataFrame, employees: pd.DataFrame) -> pd.DataFrame:
         out[f"{role}_key"] = out[role].map(table["person_key"])
         out[f"{role}_status"] = out[role].map(table["match_status"])
         out[f"{role}_mixed"] = out[role].map(table["mixed_positions"]).astype(bool)
+        out[f"{role}_uncertain"] = out[role].map(table["uncertain_owner"]).astype(bool)
     core = out["dominant"].map(table["custodian"]).astype(int) + out["subordinate"].map(table["custodian"]).astype(int)
     out["type"] = core.map({2: "core", 1: "inter", 0: "non-core"})
     return out
@@ -221,12 +256,15 @@ def main(config: dict | None = None) -> None:
     config = config or load_config()
     spec = config["gold_standard"]
     source = config["paths"]["raw"] / spec["entities"]
+    outputs = [config["paths"]["processed"] / name for name in ["gold_employees.parquet", "gold_pairs.parquet", "gold_coverage.json"]]
     if not source.exists():
+        for stale in outputs:  # never leave earlier outputs for later stages to read
+            stale.unlink(missing_ok=True)
         print(f"Skipped: {source} not found. The release is not public; request it from the authors (config.yaml).")
         return
     if sha256_of(source) != spec["sha256"]:
         raise SystemExit(f"{source.name}: SHA-256 mismatch")
-    employees, pairs, alternatives = dominance_pairs(read_entities(source))
+    employees, pairs, alternatives, immediate = dominance_pairs(read_entities(source))
     processed = config["paths"]["processed"]
     nodes = set(pd.read_parquet(processed / "centrality.parquet", columns=["person_key"])["person_key"])
     aliases = pd.read_parquet(processed / "name_aliases.parquet")
@@ -234,7 +272,20 @@ def main(config: dict | None = None) -> None:
     employees = employees.join(match_people(employees, pd.read_parquet(processed / "identities.parquet"), nodes,
                                             dict(zip(aliases["name_key"], aliases["person_key"])),
                                             dict(zip(types["person_key"], types["entity_type"]))))
+    identities = pd.read_parquet(processed / "identities.parquet")
+    address_person = dict(zip(identities["address"], identities["person_key"]))
+    person_keys = set(types.loc[types["entity_type"] == "person", "person_key"])
+    resolved = employees["addresses"].map(lambda addresses: {
+        p for p in (resolve_recipient(a, address_person, person_keys) for a in addresses if a.endswith("@enron.com"))
+        if p in person_keys})
+    employees["multiple_people"] = (employees["positions"] >= 2) & (resolved.map(len) >= 2)
+    employees["uncertain_owner"] = employees["mixed_positions"] | employees["multiple_people"]
+    emailer_ids = set(employees.loc[employees["has_email"], "gold_id"])
+    robust = independent_of(immediate, set(employees.loc[employees["uncertain_owner"], "gold_id"]), emailer_ids)
+    robust_mixed = independent_of(immediate, set(employees.loc[employees["mixed_positions"], "gold_id"]), emailer_ids)
     employees.to_parquet(processed / "gold_employees.parquet", index=False)
+    pairs["independent_of_uncertain"] = [pair in robust for pair in zip(pairs["dominant"], pairs["subordinate"])]
+    pairs["independent_of_mixed"] = [pair in robust_mixed for pair in zip(pairs["dominant"], pairs["subordinate"])]
     labelled = pd.concat([label_pairs(pairs, employees).assign(construction="main")]
                          + [label_pairs(p, employees).assign(construction=name) for name, p in alternatives.items()])
     labelled.to_parquet(processed / "gold_pairs.parquet", index=False)
@@ -242,14 +293,17 @@ def main(config: dict | None = None) -> None:
     emailers = employees[employees["has_email"]]
     main_pairs = labelled[labelled["construction"] == "main"]
     usable = (main_pairs["dominant_status"].isin(MAPPED) & main_pairs["subordinate_status"].isin(MAPPED)
-              & ~main_pairs["dominant_mixed"] & ~main_pairs["subordinate_mixed"])
+              & ~main_pairs["dominant_mixed"] & ~main_pairs["subordinate_mixed"]
+              & main_pairs["independent_of_mixed"].astype(bool))
     coverage = {
         "employees": len(employees), "employees_with_email": len(emailers),
         "match_status": {k: int(v) for k, v in emailers["match_status"].value_counts().items()},
         "employees_with_mixed_positions": int(emailers["mixed_positions"].sum()),
+        "employees_with_several_people_and_positions": int(emailers["multiple_people"].sum()),
+        "employees_uncertain": int(emailers["uncertain_owner"].sum()),
         "pairs": {name: int((labelled["construction"] == name).sum()) for name in labelled["construction"].unique()},
         "main_pairs_by_type": {k: int(v) for k, v in main_pairs["type"].value_counts().items()},
-        "main_pairs_both_mapped_unmixed": int(usable.sum()),
+        "main_population_pairs": int(usable.sum()),
         "paper": {"immediate_relations": 2155, "pairs": 13724, "core": 440, "inter": 6436, "non_core": 6847},
     }
     (processed / "gold_coverage.json").write_text(json.dumps(coverage, indent=2) + "\n")

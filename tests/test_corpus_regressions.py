@@ -7,22 +7,24 @@ address the audits showed an earlier pipeline got wrong, and every case must
 be present.
 """
 
-import json
-
 import pandas as pd
 import pytest
 
 from enron_importance.config import load_config
-from enron_importance.prepare import code_hash
+from enron_importance.prepare import stale_reasons
 
-PROCESSED = load_config()["paths"]["processed"]
+CONFIG = load_config()
+PROCESSED = CONFIG["paths"]["processed"]
+REQUIRED = ["messages.parquet", "sender_people.parquet", "identities.parquet", "person_types.parquet", "links.parquet"]
+# Skip only on a checkout where nothing has been built; once data exists, every check must run.
 pytestmark = [pytest.mark.corpus,
-              pytest.mark.skipif(not (PROCESSED / "links.parquet").exists(), reason="generated data not built")]
+              pytest.mark.skipif(not (PROCESSED / "funnel.json").exists(), reason="generated data not built")]
 
 
-def test_generated_data_comes_from_the_current_code():
-    manifest = json.loads((PROCESSED / "funnel.json").read_text())
-    assert manifest["code_sha256"] == code_hash(), "data/processed was built by other code: rerun the pipeline"
+def test_generated_data_is_complete_and_current():
+    missing = [name for name in REQUIRED if not (PROCESSED / name).exists()]
+    assert not missing, f"missing generated files: {missing}; rerun the pipeline"
+    assert not stale_reasons(CONFIG), f"generated data is stale: {stale_reasons(CONFIG)}; rerun the pipeline"
 
 
 @pytest.fixture(scope="module")

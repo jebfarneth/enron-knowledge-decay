@@ -18,12 +18,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from .clean import authored_text, has_quoted_material
+from .clean import authored_text, has_quoted_material, normalized_body, reply_start
 from .config import load_config
 from .dedupe import deduplicate, flag_shifted_copies, restrict_window
 from .download import ensure_corpus, sha256_of
 from .ingest import iter_archive, write_messages
-from .senders import automated_messages, routine_messages, sender_profiles, speech_act, structured_record
+from .senders import automated_messages, routine_messages, sender_profiles, signature_only, speech_act, structured_record
 
 
 PACKAGE = Path(__file__).resolve().parent
@@ -36,6 +36,25 @@ def code_hash(*names: str) -> str:
     for path in files:
         digest.update(path.relative_to(PACKAGE).as_posix().encode() + b"\0" + path.read_bytes())
     return digest.hexdigest()
+
+
+def config_hash(config: dict) -> str:
+    return hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def stale_reasons(config: dict) -> list[str]:
+    """Why the generated data does not match the current code, configuration and outputs (empty if it does)."""
+    processed = config["paths"]["processed"]
+    manifest = json.loads((processed / "funnel.json").read_text())
+    reasons = []
+    if manifest.get("code_sha256") != code_hash():
+        reasons.append("built by different code")
+    if manifest.get("config_sha256") != config_hash(config):
+        reasons.append("built with a different configuration")
+    for name, digest in manifest.get("outputs", {}).items():
+        if not (processed / name).exists() or sha256_of(processed / name) != digest:
+            reasons.append(f"{name} changed or missing since it was built")
+    return reasons
 
 
 def parsed_messages(config: dict) -> pd.DataFrame:
@@ -80,8 +99,11 @@ def prepare(config: dict) -> dict:
     messages["probable_copy"] = messages["probable_copy_of"].notna()
     funnel["probable_time_shifted_copies"] = int(messages["probable_copy"].sum())
 
-    messages["authored"] = messages["body"].map(authored_text)
-    messages["has_quoted"] = messages["body"].map(has_quoted_material)
+    # Finding where quoting starts is the costly step (about 1 ms a message): do it once.
+    bodies = messages["body"].map(normalized_body)
+    starts = bodies.map(reply_start)
+    messages["authored"] = [authored_text(b, o) for b, o in zip(bodies, starts)]
+    messages["has_quoted"] = [has_quoted_material(b, o) for b, o in zip(bodies, starts)]
     funnel["with_quoted_material"] = int(messages["has_quoted"].sum())
     funnel["with_authored_text"] = int((messages["authored"] != "").sum())
 
@@ -97,6 +119,8 @@ def prepare(config: dict) -> dict:
     funnel["automated_messages"] = int(messages["automated"].sum())
     messages["structured"] = messages["authored"].map(structured_record) & ~messages["automated"]
     funnel["structured_records"] = int(messages["structured"].sum())
+    messages["signature_only"] = messages["authored"].map(signature_only) & ~messages["automated"] & ~messages["structured"]
+    funnel["signature_only_messages"] = int(messages["signature_only"].sum())
     messages["routine"] = routine_messages(messages, senders_cfg["routine_repeats"]) & ~messages["automated"]
     messages["routine_excluded"] = messages["routine"] & ~messages["authored"].map(
         lambda t: speech_act(t, senders_cfg["speech_act_words"]))
@@ -106,6 +130,7 @@ def prepare(config: dict) -> dict:
     messages = messages.reset_index(drop=True)
 
     analysis = (messages["sender_internal"] & ~messages["automated"] & ~messages["structured"] & ~messages["probable_copy"]
+                & ~messages["signature_only"]
                 & ~messages["routine_excluded"] & (messages["authored"] != ""))
     messages["analysis"] = analysis
     funnel["analysis_messages"] = int(analysis.sum())
@@ -120,7 +145,7 @@ def prepare(config: dict) -> dict:
         "corpus": config["corpus"]["filename"],
         "corpus_sha256_verified": config["corpus"]["sha256"],
         "code_sha256": code_hash(),
-        "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest(),
+        "config_sha256": config_hash(config),
         "funnel": funnel,
         "outputs": {name: sha256_of(out / name) for name in ["messages.parquet", "senders.parquet", "copies.parquet"]},
     }

@@ -2,11 +2,11 @@
   "labelled_links": 60,
   "old_rule_supported_direct_replies": 27,
   "direct_replies_still_linked_to_same_parent": 26,
-  "links_kept_same_parent": 44,
-  "share_of_kept_links_that_are_direct_replies": 0.5909,
-  "links_kept_as_reply_kind": 33,
+  "links_kept_same_parent": 42,
+  "share_of_kept_links_that_are_direct_replies": 0.619,
+  "links_kept_as_reply_kind": 31,
   "direct_replies_kept_as_reply_kind": 24,
-  "share_of_reply_kind_links_that_are_direct_replies": 0.7273,
+  "share_of_reply_kind_links_that_are_direct_replies": 0.7742,
   "outcomes_by_label": {
     "direct_reply": {
       "other parent": 1,
@@ -23,8 +23,8 @@
     "independent_broadcast_or_unrelated_topic": {
       "other parent": 0,
       "same parent (forward)": 0,
-      "same parent (reply)": 2,
-      "unlinked": 2
+      "same parent (reply)": 0,
+      "unlinked": 4
     },
     "same_author_related_update_not_reply": {
       "other parent": 0,

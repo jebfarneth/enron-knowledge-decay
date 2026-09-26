@@ -52,7 +52,7 @@ def resolve(rows, placeholders=()):
     messages = pd.DataFrame(rows, columns=["sender", "x_from"])
     people, table, aliases, _ = resolve_people(messages, "enron.com", list(placeholders), min_initial_support=2,
                                                min_initialled=2)
-    return people, table.set_index("address"), aliases
+    return people, table.set_index("address"), dict(zip(aliases["name_key"], aliases["person_key"]))
 
 
 def test_alias_addresses_merge_into_one_person():
@@ -190,3 +190,40 @@ def test_initial_inference_boundaries():
     assert assign(2, 1, 3) == "mark e taylor"     # exactly two thirds, exactly the minimum
     assert assign(2, 1, 4) == "mark taylor"       # one initialled message short
     assert assign(3, 2, 5) == "mark taylor"       # 60% is under two thirds
+
+
+def test_department_accounts_are_roles_in_every_rendering():
+    for name in ["ISC Hotline", "Security Console", "SAP Security", "Parking & Transportation"]:
+        assert entity_type(normalize_name(name)) == "role", name
+    people, _, _ = resolve([
+        ("parking.transportation@enron.com", "Parking & Transportation </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MBX_PARKING>"),
+        ("parking.transportation@enron.com", "Parking Transportation"),
+        ("isc.support@enron.com", "Isc Desk </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MBX_ISC>"),
+        ("isc.support@enron.com", "Isc Desk"),
+    ])
+    assert all(entity_type(p) == "role" for p in people)
+
+
+def test_aliases_record_their_evidence():
+    messages = pd.DataFrame([
+        ("albert.meyers@enron.com", "Meyers, Albert </O=ENRON/OU=NA/CN=RECIPIENTS/CN=BMEYERS>"),
+        ("bert.meyers@enron.com", "Meyers, Bert </O=ENRON/OU=NA/CN=RECIPIENTS/CN=BMEYERS>"),
+        ("dana.davis@enron.com", "Dana Davis"), ("dana.davis@enron.com", "Dana Davis"),
+        ("dana.davis@enron.com", "Davis, Mark Dana"),
+    ], columns=["sender", "x_from"])
+    _, _, aliases, _ = resolve_people(messages, "enron.com", [])
+    assert dict(zip(aliases["name_key"], aliases["evidence"])) == {"bert meyers": "directory ID", "mark davis": "go-by name"}
+
+
+def test_a_name_also_sent_through_a_shared_mailbox_is_that_mailbox():
+    people, _, _ = resolve([
+        ("travel@enron.com", "Travel Agency </O=ENRON/OU=NA/CN=RECIPIENTS/CN=MBX_TRAVEL>"),
+        ("travel@enron.com", "Travel Agency"),
+        ("travel@enron.com", "Joan Smith"),       # a named person using the same address keeps their name
+    ])
+    assert list(people) == ["mailbox travel agency", "mailbox travel agency", "joan smith"]
+
+
+def test_digit_words_and_short_titles():
+    assert entity_type(normalize_name("Kitchen 32")) == "role"
+    assert normalize_name("Kay Mann, Senior Counsel") == "kay mann"

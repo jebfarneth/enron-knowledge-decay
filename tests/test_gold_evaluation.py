@@ -77,3 +77,62 @@ def test_scores_are_missing_for_unmatched_employees_but_custodian_is_always_know
     scores = gold_scores(employees, measures)
     assert scores.loc["a", "degree"] == 4.0 and np.isnan(scores.loc["b", "degree"])
     assert list(scores["custodian"]) == [1.0, 0.0]
+
+
+def _big_fixture():
+    rng = np.random.default_rng(1)
+    people = [f"p{i}" for i in range(30)]
+    level = {p: int(rng.integers(0, 4)) for p in people}
+    rows = []
+    while len(rows) < 80:
+        a, b = rng.choice(people, 2, replace=False)
+        if level[a] > level[b]:
+            rows.append((a, b, ["core", "inter", "non-core"][len(rows) % 3]))
+    scores = pd.DataFrame({"degree": [level[p] + rng.normal(0, 3.0) for p in people],
+                           "custodian": [float(rng.integers(0, 2)) for _ in people]}, index=people)
+    return pd.DataFrame(rows, columns=["dominant", "subordinate", "type"]).drop_duplicates(["dominant", "subordinate"]), scores
+
+
+BIG, BIG_SCORES = _big_fixture()
+
+
+def brute_force(pairs, credit, reps, seed):
+    people = sorted(set(pairs["dominant"]) | set(pairs["subordinate"]))
+    rng = np.random.default_rng(seed)
+    draws = []
+    for _ in range(reps):
+        sample = [people[i] for i in rng.integers(0, len(people), len(people))]
+        total = weight = 0.0
+        for x in sample:
+            for y in sample:
+                if (x, y) in credit:
+                    total += credit[(x, y)]
+                    weight += 1
+        if weight:
+            draws.append(total / weight)
+    return tuple(np.percentile(draws, [2.5, 97.5]))
+
+
+def test_gold_intervals_match_the_oracle_on_a_nondegenerate_fixture():
+    score = BIG_SCORES["degree"]
+    credit = {(d, s): 0.5 if score[d] == score[s] else float(score[d] > score[s])
+              for d, s in zip(BIG["dominant"], BIG["subordinate"])}
+    low, high = brute_force(BIG, credit, 300, 11)
+    table = gold_table(BIG, BIG_SCORES, ["degree"], reps=300, seed=11).set_index("pairs_type")
+    assert (table.loc["all", "ci_low"], table.loc["all", "ci_high"]) == pytest.approx((low, high))
+    assert 0.0 < low < high < 1.0
+
+
+def test_paired_intervals_match_the_oracle():
+    d, c = BIG_SCORES["degree"], BIG_SCORES["custodian"]
+    cr = lambda s, a, b: 0.5 if s[a] == s[b] else float(s[a] > s[b])  # noqa: E731
+    gap = {(a, b): cr(c, a, b) - cr(d, a, b) for a, b in zip(BIG["dominant"], BIG["subordinate"])}
+    low, high = brute_force(BIG, gap, 300, 5)
+    paired = paired_gold(BIG, BIG_SCORES, "custodian", "degree", reps=300, seed=5).set_index("pairs_type")
+    assert (paired.loc["all", "ci_low"], paired.loc["all", "ci_high"]) == pytest.approx((low, high))
+
+
+def test_paired_differences_survive_empty_resamples():
+    one = PAIRS.iloc[:1]
+    paired = paired_gold(one, SCORES, "custodian", "degree", reps=1, seed=0)
+    assert len(paired) >= 1 and "draws" in paired

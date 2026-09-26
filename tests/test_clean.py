@@ -179,3 +179,21 @@ def test_sent_by_line_and_wrapped_recipients_are_cut():
             "\t04/03/2001 09:31 AM\n\t\t \n\t\t To: John Letvin/Enron@EnronXGate, Becky \nYoung/NA/Enron@Enron, Bob \n"
             "Hillier/Enron@enronXgate\n\t\t cc: Louis Allen/EPSC/HOU/ECT@ECT\n\t\t Subject: EZ Tags\n\nold text\n")
     assert authored_text(body) == "I do not have an EZ tag."
+
+
+def test_day_first_24_hour_lotus_header_is_cut():
+    body = ("Hope this helps.\n\nPaul\n\n\nTomas Valnek\n22/05/2000 10:44\nTo: Bryan Seyfried/LON/ECT@ECT\n"
+            "cc: William S Bradford/HOU/ECT@ECT, Paul \nSimons/LON/ECT@ECT\n\nSubject: Re: Credit Trading\n\nold")
+    assert authored_text(body) == "Hope this helps.\n\nPaul"
+
+
+def test_long_wrapped_recipient_list_is_cut():
+    recipients = "".join(f"Person {i}/HOU/ECT@ECT, Name \n" for i in range(45))
+    body = f"Done.\n\nOutlook Migration Team@ENRON\n05/11/2001 01:49 PM\nTo: {recipients}cc:\nSubject: survey\n\nold"
+    assert authored_text(body) == "Done."
+
+
+def test_prose_between_a_to_line_and_a_later_subject_is_kept():
+    body = ("Meeting agenda\n05/14/2001 09:00 AM\nTo: operations staff\nWe will review the outage plan, staffing and budget.\n"
+            "Then discuss vendors.\nSubject: next steps for Q3")
+    assert authored_text(body) == body

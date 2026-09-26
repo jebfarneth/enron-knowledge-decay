@@ -97,3 +97,27 @@ def test_an_altered_parsed_cache_is_rebuilt(tmp_path):
     table = tmp_path / "interim" / "messages_raw.parquet"
     pd.read_parquet(table).head(1).assign(body="POISONED CACHE TEXT").to_parquet(table, index=False)
     assert prepare(config)["funnel"]["parsed_files"] == 4
+
+
+def test_cache_is_rebuilt_when_the_python_or_lockfile_stamp_differs(tmp_path):
+    config = build(tmp_path)
+    prepare(config)
+    stamp_path = tmp_path / "interim" / "messages_raw.json"
+    for field in ["python", "uv_lock_sha256"]:
+        stamp = json.loads(stamp_path.read_text())
+        stamp[field] = "different"
+        stamp_path.write_text(json.dumps(stamp))
+        prepare(config)
+        assert json.loads(stamp_path.read_text())[field] != "different"
+
+
+def test_stale_reasons_catch_configuration_and_output_changes(tmp_path):
+    from enron_importance.prepare import stale_reasons
+    config = build(tmp_path)
+    prepare(config)
+    assert stale_reasons(config) == []
+    (tmp_path / "processed" / "senders.parquet").write_bytes(b"altered")
+    config["senders"]["routine_repeats"] = 11
+    reasons = stale_reasons(config)
+    assert "built with a different configuration" in reasons
+    assert any("senders.parquet" in r for r in reasons)

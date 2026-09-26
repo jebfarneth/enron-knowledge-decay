@@ -1,5 +1,7 @@
-# Every parameter the pipeline uses lives here. Changing a value here and
-# re-running `make` regenerates every downstream table and figure.
+# Tunable parameters of the pipeline. Fixed rules (regular expressions, word
+# lists such as role and title words, folder priorities, the 80-line header
+# allowance) live in the source. Changing a value here and re-running
+# `make all` regenerates every downstream table and figure.
 
 corpus:
   # CMU CALO release of the Enron email corpus (May 7, 2015 version).
@@ -43,11 +45,13 @@ senders:
   min_messages: 50
   top_templates: 3
   feed_share: 0.9
-  # A message is routine (e.g. a weekly report blast) when its template repeats
-  # at least `routine_repeats` times for the same sender. Routine messages are
-  # kept in the communication network. They are excluded from text analysis
-  # only when their template is longer than `speech_act_words` words, so
-  # repeated short speech acts ("approved", "please print") are kept.
+  # A message is routine (e.g. a weekly report blast) when the same sender
+  # sends the same whole text (digits masked) at least `routine_repeats`
+  # times. Routine messages are kept in the communication network. They are
+  # excluded from text analysis only when longer than `speech_act_words`
+  # words, counted over the whole message after dropping an addressee line
+  # and a short sign-off, so repeated short speech acts ("approved",
+  # "please print") are kept.
   routine_repeats: 10
   speech_act_words: 4
 

@@ -21,7 +21,7 @@ def test_copies_in_several_folders_collapse_to_the_sent_copy():
     kept, stats, copies = deduplicate(frame)
     assert list(kept["folder"]) == ["sent"]
     assert stats == {"duplicate_content": 2, "duplicate_message_id": 0, "candidate_separate_sends": 0,
-                     "recipient_addresses_added_from_copies": 0}
+                     "recipient_addresses_only_in_other_copies": 0}
     assert set(copies["kept_path"]) == {"maildir/a/sent/7."} and len(copies) == 2
 
 
@@ -99,11 +99,39 @@ def test_whole_hour_shifted_copies_are_flagged_not_removed():
     assert flags.drop(index=1).isna().all()
 
 
-def test_kept_message_lists_recipients_from_every_copy_of_the_send():
+def test_recipients_only_other_copies_list_are_kept_apart():
     frame = pd.DataFrame([
         message("maildir/haedicke-m/california/3.", "california", to=["f..carla@enron.com", "ray@enron.com"]),
         message("maildir/williams-w3/bill_williams_iii/874.", "bill_williams_iii", to=["f..calger@enron.com", "ray@enron.com"]),
     ])
     kept, stats, _ = deduplicate(frame)
-    assert len(kept) == 1 and set(kept.iloc[0]["to"]) == {"f..carla@enron.com", "ray@enron.com", "f..calger@enron.com"}
-    assert stats["recipient_addresses_added_from_copies"] == 1
+    assert len(kept) == 1 and list(kept.iloc[0]["to"]) == ["f..carla@enron.com", "ray@enron.com"]
+    assert list(kept.iloc[0]["to_extra"]) == ["f..calger@enron.com"]
+    assert stats["recipient_addresses_only_in_other_copies"] == 1
+
+
+def test_send_grouping_does_not_depend_on_copy_order():
+    rows = [message(f"maildir/a/{f}/{i}.", f, to=to) for i, (f, to) in
+            enumerate([("sent", ["b@enron.com"]), ("inbox", ["c@enron.com"]), ("all_documents", ["b@enron.com", "c@enron.com"])])]
+    for order in (rows, rows[::-1], [rows[1], rows[2], rows[0]]):
+        kept, stats, _ = deduplicate(pd.DataFrame(order))
+        assert len(kept) == 1 and stats["candidate_separate_sends"] == 0
+
+
+def test_message_id_duplicates_point_at_a_kept_message():
+    frame = pd.DataFrame([
+        message("maildir/a/sent/1.", "sent", body="same", message_id="<x>"),
+        message("maildir/a/inbox/2.", "inbox", body="same", message_id="<y>"),       # content copy of 1
+        message("maildir/a/inbox/3.", "inbox", body="different", message_id="<y>"),  # same ID as the removed copy
+    ])
+    kept, stats, copies = deduplicate(frame)
+    assert set(copies["kept_path"]) <= set(kept["path"])
+
+
+def test_cc_addresses_only_other_copies_list_are_kept_apart():
+    frame = pd.DataFrame([
+        message("maildir/a/sent/1.", "sent", to=["b@enron.com"], cc=["c@enron.com"]),
+        message("maildir/a/inbox/2.", "inbox", to=["b@enron.com"], cc=["d@enron.com"]),
+    ])
+    kept, _, _ = deduplicate(frame)
+    assert list(kept.iloc[0]["cc"]) == ["c@enron.com"] and list(kept.iloc[0]["cc_extra"]) == ["d@enron.com"]

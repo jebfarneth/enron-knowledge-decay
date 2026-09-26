@@ -7,9 +7,9 @@ RUN = uv run python -m enron_importance
 
 # Stages depend on each other's files; never run them in parallel.
 .NOTPARALLEL:
-.PHONY: all setup test data identity threads rank network gold goldeval evaluate crosscheck threadcheck figures regress clean-generated
+.PHONY: all setup test data identity threads rank network mentions gold goldeval evaluate crosscheck threadcheck figures regress clean-generated
 
-all: setup test data identity threads rank network gold goldeval evaluate crosscheck threadcheck figures regress
+all: setup test data identity threads rank network mentions gold goldeval evaluate crosscheck threadcheck figures regress
 
 setup:
 	uv sync --group dev
@@ -37,6 +37,11 @@ rank:
 # Communication graph and centrality measures (exact betweenness takes several minutes).
 network:
 	$(RUN).network
+
+# Mention network of Agarwal et al. (2014): names in authored text resolved to people
+# (name tagging takes over an hour the first time; later runs reuse cached tags).
+mentions:
+	$(RUN).mentions
 
 # Agarwal et al. (2012) dominance pairs and their evaluation. The release is
 # not public (request it from the authors, see config.yaml); without it both

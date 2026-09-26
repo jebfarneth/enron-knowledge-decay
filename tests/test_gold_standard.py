@@ -1,6 +1,6 @@
 import pandas as pd
 
-from enron_importance.gold_standard import dominance_pairs, match_people, mixed_positions, principal_name
+from enron_importance.gold_standard import dominance_pairs, independent_of, match_people, mixed_positions, principal_name
 
 
 def employee(uid, node, position="Manager", edges=(), email=True, mailbox=None, names=None, addresses=None,
@@ -37,14 +37,14 @@ def test_dominance_is_the_closure_through_units_among_emailers():
         employee(5, "N5"),
         unit("U1", ["N2", "N3"]),
     ]
-    employees, pairs, _ = dominance_pairs(entities)
+    employees, pairs, _, _ = dominance_pairs(entities)
     assert pairs_of(pairs) == {("1", "2"), ("1", "4"), ("2", "4"), ("1", "5")}
     assert employees.set_index("gold_id").loc["1", "custodian"]
 
 
 def test_edges_stored_only_at_the_top_level_of_a_record_are_used():
     entities = [employee(1, "N1", top_level_edges=[("N1", "N2")]), employee(2, "N2")]
-    _, pairs, _ = dominance_pairs(entities)
+    _, pairs, _, _ = dominance_pairs(entities)
     assert pairs_of(pairs) == {("1", "2")}
 
 
@@ -52,7 +52,7 @@ def test_every_position_of_a_record_counts_and_alternatives_differ():
     # 1 holds N1 and N1b; N1b supervises 2. Closing positions first keeps 1 over 2 as well.
     entities = [employee(1, "N1", extra_nodes=[("N1b", "Director")], top_level_edges=[("N1b", "N2")]),
                 employee(2, "N2", edges=[("N2", "N3")]), employee(3, "N3")]
-    _, pairs, alternatives = dominance_pairs(entities)
+    _, pairs, alternatives, _ = dominance_pairs(entities)
     assert pairs_of(pairs) == {("1", "2"), ("1", "3"), ("2", "3")}
     assert pairs_of(alternatives["positions closed before mapping"]) == {("1", "2"), ("1", "3"), ("2", "3")}
 
@@ -61,7 +61,7 @@ def test_contradictory_pairs_are_dropped_and_cycle_arcs_can_be_removed_first():
     # 1 and 2 dominate each other through different positions; both dominate 3.
     entities = [employee(1, "N1", edges=[("N1", "N2")], extra_nodes=[("N1b", "Chair")]),
                 employee(2, "N2", edges=[("N2", "N1b"), ("N2", "N3")]), employee(3, "N3")]
-    _, pairs, alternatives = dominance_pairs(entities)
+    _, pairs, alternatives, _ = dominance_pairs(entities)
     assert ("1", "2") not in pairs_of(pairs) and ("2", "1") not in pairs_of(pairs)
     assert {("1", "3"), ("2", "3")} <= pairs_of(pairs)
     assert pairs_of(alternatives["cycle arcs removed before closure"]) == {("2", "3")}
@@ -118,3 +118,29 @@ def test_address_nodes_ambiguous_keys_and_absent_people():
     out = matched(rows, IDENTITIES, nodes, types={"mark palmer": "ambiguous"})
     assert list(out["person_key"].fillna("-")) == ["lou.pai@enron.com", "thomas.white@enron.com", "-", "-", "-"]
     assert list(out["match_status"]) == ["address node", "address node", "ambiguous", "absent", "ambiguous"]
+
+
+def test_employee_closure_and_position_closure_really_differ():
+    # X holds P1 (under A) and P2 (over B): A > X > B by employee, but A's position never reaches B's.
+    entities = [employee(1, "A", edges=[("A", "P1")]),
+                employee(2, "P1", extra_nodes=[("P2", "Director")], top_level_edges=[("P2", "B")]),
+                employee(3, "B")]
+    _, pairs, alternatives, _ = dominance_pairs(entities)
+    assert ("1", "3") in pairs_of(pairs)
+    assert ("1", "3") not in pairs_of(alternatives["positions closed before mapping"])
+
+
+def test_pairs_that_run_through_an_uncertain_record_are_identified():
+    entities = [employee(1, "N1", edges=[("N1", "N2")]), employee(2, "N2", edges=[("N2", "N3")]),
+                employee(3, "N3"), employee(4, "N4", edges=[("N4", "N3")])]
+    employees, pairs, _, immediate = dominance_pairs(entities)
+    emailers = set(employees["gold_id"])
+    assert pairs_of(pairs) == {("1", "2"), ("1", "3"), ("2", "3"), ("4", "3")}
+    assert independent_of(immediate, {"2"}, emailers) == {("4", "3")}
+
+
+def test_mailbox_order_does_not_decide_the_principal():
+    names = ["Alice Smith", "Bob Jones", "Alice Smith"]
+    assert principal_name(names, ["Smith-A", "Jones-B"]) is None
+    assert principal_name(names, ["Jones-B", "Smith-A"]) is None
+    assert principal_name(["Kay Mann", "Kay E Mann"], ["Lavorado-K", "Mann-K"]) == "kay mann"

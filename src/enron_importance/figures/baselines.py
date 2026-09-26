@@ -19,6 +19,9 @@ LABELS = {
     "in_strength": "Email received (weighted)",
     "betweenness": "Betweenness (exact)",
     "out_strength": "Email sent (messages)",
+    "mention_degree": "Mention network degree",
+    "mentioned_to": "People mentioned to them",
+    "third_party_mentioned_to": "Others mentioned to them",
 }
 
 

@@ -65,7 +65,8 @@ ROLE_WORDS = {
     "office", "chairman", "temp", "team", "desk", "crawler", "notification", "notifications",
     "announcement", "announcements", "mailbox", "services", "department", "center", "committee",
     "communications", "resources", "administrator", "support", "group", "operations", "enron",
-    "conf", "room",
+    "conf", "room", "hotline", "console", "parking", "transportation", "payroll", "registrar", "security",
+    "helpdesk", "mailsweeper", "benefits",
 }
 # Words that mark the part after a comma as a job title, not a first name.
 TITLE_WORDS = {
@@ -193,16 +194,25 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
     `messages` needs `sender` and `x_from`. Returns `sender_person` (aligned to
     `messages`; None when unknown or external), one row per internal sender
     address with person_key, entity_type, n_messages and resolved_by, the
-    aliases applied to name keys, and the entity type of every key used.
+    aliases applied to name keys (name_key, person_key, evidence), and the
+    entity type of every key used.
     """
     suffix = "@" + internal_domain
     frame = messages.loc[messages["sender"].fillna("").str.endswith(suffix), ["sender", "x_from"]].copy()
     frame["key"] = frame["x_from"].map(normalize_name)
     frame["initial"] = frame["x_from"].map(middle_initial)
     frame["cn"] = frame["x_from"].map(directory_id)
+    # A name an address also sends through a shared Exchange mailbox is that mailbox,
+    # whatever the header rendering ("Parking & Transportation" with or without CN=MBX_).
+    mailbox_words = (frame.loc[frame["key"].fillna("").str.startswith("mailbox "), ["sender", "key"]]
+                     .groupby("sender")["key"].agg(lambda keys: set(" ".join(keys).split())))
+    shared = [isinstance(k, str) and not is_role_key(k) and s in mailbox_words.index and set(k.split()) <= mailbox_words[s]
+              for s, k in zip(frame["sender"], frame["key"])]
+    frame.loc[shared, "key"] = "mailbox " + frame.loc[shared, "key"]
     named = frame["key"].notna() & ~frame["key"].map(is_role_key)
 
     # Aliases: same last name under one (non-shared) directory ID.
+    evidence: dict[str, str] = {}
     size = frame.loc[named, "key"].value_counts()
     alias: dict[str, str] = {}
     with_cn = frame[named & frame["cn"].notna() & ~frame["cn"].fillna("").str.startswith("MBX_")]
@@ -214,6 +224,7 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
             # The fuller first name becomes the key ("albert meyers", not "bert meyers").
             target = max(group, key=lambda k: (len(k.split()[0]), size.get(k, 0), k))
             alias.update({k: target for k in group if k != target})
+            evidence.update({k: "directory ID" for k in group if k != target})
     frame["key"] = frame["key"].map(lambda k: alias.get(k, k))
 
     # Go-by middle names: "Davis, Mark Dana" at the address Dana Davis uses is Dana Davis.
@@ -229,6 +240,7 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
         target = frame.loc[at_address & (frame["key"] == key), "go_by"].iloc[0]
         if target != key and (group["go_by"] == target).mean() >= go_by_share:
             alias[key] = target
+            evidence[key] = "go-by name"
     # Every message with the same full name ("Mark Dana Davis") follows, at any address.
     validated = set(zip(frame.loc[at_address, "key"], frame.loc[at_address, "go_by"]))
     follows = pd.Series([pair in validated for pair in zip(frame["key"], frame["go_by"])], index=frame.index)
@@ -280,7 +292,9 @@ def resolve_people(messages: pd.DataFrame, internal_domain: str, placeholders=()
     sender_person = frame["person"].where(frame["person"].notna(), frame["sender"].map(address_person))
     keys = set(sender_person.dropna()) | set(table["person_key"].dropna())
     types = {key: entity_type(key, split) for key in sorted(keys)}
-    return sender_person.reindex(messages.index), table.sort_values("address").reset_index(drop=True), alias, types
+    aliases = pd.DataFrame([(k, v, evidence.get(k, "")) for k, v in sorted(alias.items())],
+                           columns=["name_key", "person_key", "evidence"])
+    return sender_person.reindex(messages.index), table.sort_values("address").reset_index(drop=True), aliases, types
 
 
 def resolve_recipient(address: str, address_person: dict, people: set) -> str | None:
@@ -294,6 +308,30 @@ def resolve_recipient(address: str, address_person: dict, people: set) -> str | 
         if key in people:
             return key
     return address
+
+
+def surname(node: str) -> str:
+    """Last name of a person key, or last token of an address's local part."""
+    if "@" in node:
+        tokens = [t for t in re.split(r"[._]", node.split("@")[0]) if t]
+        return tokens[-1] if tokens else node
+    return node.split()[-1]
+
+
+def extra_recipients(recipients: list[str], extra_addresses, resolve, people: set) -> list[str]:
+    """People to add from addresses only other copies of a message list.
+
+    An address is added only when it resolves to a person who is neither a
+    recipient already nor shares a surname with one, so a second spelling of
+    a recipient (".brown" beside "michael brown") is not counted twice.
+    """
+    surnames = {surname(r) for r in recipients}
+    added: list[str] = []
+    for address in extra_addresses:
+        person = resolve(address)
+        if person in people and person not in recipients and person not in added and surname(person) not in surnames:
+            added.append(person)
+    return added
 
 
 def main(config: dict | None = None) -> None:
@@ -317,8 +355,7 @@ def main(config: dict | None = None) -> None:
               "person_text_people": int(sender_person[person_text].nunique())}
     (processed / "person_text.json").write_text(json.dumps(funnel, indent=2) + "\n")
     print(json.dumps(funnel, indent=2))
-    pd.DataFrame(sorted(aliases.items()), columns=["name_key", "person_key"]).to_parquet(
-        processed / "name_aliases.parquet", index=False)
+    aliases.to_parquet(processed / "name_aliases.parquet", index=False)
     pd.DataFrame(sorted(types.items()), columns=["person_key", "entity_type"]).to_parquet(
         processed / "person_types.parquet", index=False)
     keyed = table.dropna(subset=["person_key"]).drop_duplicates("person_key")

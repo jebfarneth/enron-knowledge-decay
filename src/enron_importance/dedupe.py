@@ -10,9 +10,9 @@ no address are treated as candidate separate sends of the same text (one
 note mailed to two distributions) and are all kept; address strings alone
 cannot prove two sends, since one person can appear under two spellings.
 The copy kept is the one from the most authoritative folder; every discarded
-copy is recorded against it, and the kept message lists every recipient
-address that any copy of the same send lists. Aliases of one person then
-collapse when recipients are resolved to people.
+copy is recorded against it. Recipient addresses that only other copies
+list are kept in separate columns; downstream stages add one only when it
+resolves to a person who is not already a recipient under another spelling.
 
 Some copies of one message carry timestamps shifted by whole hours (the same
 numeric time zone, different wall-clock times, from different mailbox
@@ -88,20 +88,40 @@ def _recipients(frame: pd.DataFrame) -> list[frozenset]:
 def send_keys(frame: pd.DataFrame) -> pd.Series:
     """Content key, split where copies went to disjoint non-empty recipient lists.
 
-    `frame` must already be in priority order; each copy joins the first
-    earlier send it shares a recipient with (or any send, if either list is empty).
+    Within one content key, copies whose recipient lists share an address are
+    one send (connected components, so copy order does not matter); a copy
+    with no recipients joins the send of the highest-priority copy. `frame`
+    must already be in priority order.
     """
     keys = frame["content_key"].to_numpy(dtype=object).copy()
     recipients = _recipients(frame)
-    sends: dict[str, list[frozenset]] = {}
-    for i in np.flatnonzero(frame["content_key"].duplicated(keep=False).to_numpy()):
-        seen = sends.setdefault(keys[i], [])
-        mine = recipients[i]
-        match = next((n for n, other in enumerate(seen) if not mine or not other or mine & other), None)
-        if match is None:
-            seen.append(mine)
-            match = len(seen) - 1
-        keys[i] = f"{keys[i]}:{match}"
+    duplicated = np.flatnonzero(frame["content_key"].duplicated(keep=False).to_numpy())
+    groups: dict[str, list[int]] = {}
+    for i in duplicated:
+        groups.setdefault(keys[i], []).append(i)
+    for key, members in groups.items():
+        parent = {i: i for i in members}
+
+        def root(i):
+            while parent[i] != i:
+                parent[i] = parent[parent[i]]
+                i = parent[i]
+            return i
+
+        owner: dict[str, int] = {}
+        for i in members:
+            for address in recipients[i]:
+                if address in owner:
+                    parent[root(i)] = root(owner[address])
+                else:
+                    owner[address] = i
+        listed = [i for i in members if recipients[i]]
+        for i in members:
+            if not recipients[i]:
+                parent[root(i)] = root(listed[0] if listed else members[0])
+        order = {r: n for n, r in enumerate(dict.fromkeys(root(i) for i in members))}
+        for i in members:
+            keys[i] = f"{key}:{order[root(i)]}"
     return pd.Series(keys, index=frame.index)
 
 
@@ -109,7 +129,10 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     """Drop duplicate copies, keeping the most authoritative folder's copy.
 
     Returns the kept messages, counts, and a copies table mapping every
-    discarded copy's path to the path of the message kept for it.
+    discarded copy's path to the path of the message kept for it. The kept
+    message's own To and Cc stay as they are; addresses that only its other
+    copies list are kept apart in `to_extra` and `cc_extra`, to be added
+    downstream only when they resolve to a person not already a recipient.
     """
     frame = messages.copy()
     frame["content_key"] = content_keys(frame)
@@ -118,27 +141,29 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     frame["_send"] = send_keys(frame)
     by_content = frame.duplicated("_send", keep="first")
     has_id = frame["message_id"].notna()
-    by_id = has_id & frame.duplicated("message_id", keep="first") & ~by_content
+    by_id = has_id & ~by_content & frame[~by_content].duplicated("message_id", keep="first").reindex(frame.index, fill_value=False)
     kept_path = frame.groupby("_send")["path"].transform("first")
-    kept_path = kept_path.where(~by_id, frame["message_id"].map(frame.drop_duplicates("message_id").set_index("message_id")["path"]))
+    id_keeper = frame[~by_content & has_id].drop_duplicates("message_id").set_index("message_id")["path"]
+    kept_path = kept_path.where(~by_id, frame["message_id"].map(id_keeper))
     removed = by_content | by_id
     copies = pd.DataFrame({"path": frame.loc[removed, "path"], "kept_path": kept_path[removed]}).sort_values("path")
     separate = frame.drop_duplicates("_send").duplicated("content_key").sum()
     added = 0
     if "to" in frame:
-        # Copies of one send can list recipients differently (one copy has
-        # f..calger@, another only f..carla@); keep every address any copy lists.
+        # Copies of one message can list recipients differently (one copy has
+        # f..calger@, another only f..carla@); record what the copies add.
+        keepers = set(kept_path[removed])  # only kept messages with discarded copies need their lists
+        listed = {path: set(to) | set(cc) for path, to, cc in zip(frame["path"], frame["to"], frame["cc"]) if path in keepers}
         for column in ["to", "cc"]:
-            union = (frame[["_send", column]].explode(column).dropna().drop_duplicates()
-                     .groupby("_send", sort=False)[column].agg(list))
-            merged = frame["_send"].map(union)
-            before = frame[column].map(len)
-            frame[column] = [list(dict.fromkeys(list(own) + (extra if isinstance(extra, list) else [])))
-                             for own, extra in zip(frame[column], merged)]
-            added += int((frame.loc[~removed, column].map(len) - before[~removed]).sum())
+            extra: dict[str, list[str]] = {}
+            for path, keeper, addresses in zip(frame.loc[removed, "path"], kept_path[removed], frame.loc[removed, column]):
+                new = [a for a in addresses if a not in listed[keeper] and a not in extra.get(keeper, [])]
+                extra.setdefault(keeper, []).extend(new)
+            frame[f"{column}_extra"] = frame["path"].map(lambda p: extra.get(p, []))
+            added += int(frame.loc[~removed, f"{column}_extra"].map(len).sum())
     kept = frame[~removed].drop(columns=["_rank", "_send"]).sort_values("path", kind="stable")
     stats = {"duplicate_content": int(by_content.sum()), "duplicate_message_id": int(by_id.sum()),
-             "candidate_separate_sends": int(separate), "recipient_addresses_added_from_copies": added}
+             "candidate_separate_sends": int(separate), "recipient_addresses_only_in_other_copies": added}
     return kept.reset_index(drop=True), stats, copies.reset_index(drop=True)
 
 
