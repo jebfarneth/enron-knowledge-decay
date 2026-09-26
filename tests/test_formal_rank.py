@@ -32,8 +32,9 @@ def test_unmatched_and_untitled_rows_are_kept_but_marked():
 
 def test_names_merged_by_directory_id_match_through_the_alias():
     titles = pd.DataFrame({"name": ["Bert Meyers"], "title": ["Employee"]})
-    ranks = formal_ranks(titles, identities("albert meyers"), LEVELS, {}, {"bert meyers": "albert meyers"})
-    assert ranks.loc[0, "person_key"] == "albert meyers" and ranks.loc[0, "match"] == "directory-ID alias"
+    ranks = formal_ranks(titles, identities("albert meyers"), LEVELS, {}, {"bert meyers": "albert meyers"},
+                         evidence={"bert meyers": "directory ID"})
+    assert ranks.loc[0, "person_key"] == "albert meyers" and ranks.loc[0, "match"] == "directory ID alias"
 
 
 def test_dropped_conflicting_rows_and_disputed_labels_are_marked():

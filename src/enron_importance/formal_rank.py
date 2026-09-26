@@ -45,7 +45,7 @@ def fetch_title_list(config: dict):
 
 
 def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, corrections: dict,
-                 aliases: dict | None = None, dropped_rows=(), disputed=()) -> pd.DataFrame:
+                 aliases: dict | None = None, dropped_rows=(), disputed=(), evidence: dict | None = None) -> pd.DataFrame:
     """Match title-list rows to identities and attach seniority levels.
 
     `titles` has name, title and (optionally) note columns; returns one row
@@ -54,7 +54,7 @@ def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, c
     and whether the label is disputed. `aliases` maps name keys to the person
     key they were merged into by directory ID.
     """
-    aliases = aliases or {}
+    aliases, evidence = aliases or {}, evidence or {}
     known = set(identities["person_key"].dropna())
     notes = titles["note"] if "note" in titles else pd.Series([None] * len(titles), index=titles.index)
     rows = []
@@ -65,8 +65,9 @@ def formal_ranks(titles: pd.DataFrame, identities: pd.DataFrame, levels: dict, c
             key, method = corrections[name], "reviewed correction"
         else:
             key, method = normalize_name(name), "normalized name"
+            name_key = key
             if key in aliases:
-                key, method = aliases[key], "directory-ID alias"
+                key, method = aliases[key], f"{evidence.get(name_key, 'name')} alias"
         if key not in known:
             key, method = None, "unmatched"
         level = levels.get(title)
@@ -85,7 +86,8 @@ def main() -> None:
     identities = pd.read_parquet(out / "identities.parquet")
     aliases = pd.read_parquet(out / "name_aliases.parquet")
     ranks = formal_ranks(titles, identities, spec["levels"], spec["corrections"],
-                         dict(zip(aliases["name_key"], aliases["person_key"])), spec["dropped_rows"], spec["disputed"])
+                         dict(zip(aliases["name_key"], aliases["person_key"])), spec["dropped_rows"], spec["disputed"],
+                         dict(zip(aliases["name_key"], aliases.get("evidence", pd.Series(dtype=str)))))
     ranks.to_parquet(out / "formal_rank.parquet", index=False)
     usable = ranks.dropna(subset=["person_key", "level"])
     print(f"Listed {len(ranks)}; matched {ranks['person_key'].notna().sum()}; "
