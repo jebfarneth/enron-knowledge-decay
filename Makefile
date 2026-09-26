@@ -39,7 +39,7 @@ network:
 	$(RUN).network
 
 # Mention network of Agarwal et al. (2014): names in authored text resolved to people
-# (name tagging takes over an hour the first time; later runs reuse cached tags).
+# (name tagging takes about 15 minutes the first time; later runs reuse cached tags).
 mentions:
 	$(RUN).mentions
 
