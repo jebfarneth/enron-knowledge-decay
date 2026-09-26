@@ -42,6 +42,18 @@ def corpus():
             "Chan/HOU/ECT@ECT\ncc:\nSubject: Turbine\n\n" + "Can you review section 4 of the turbine contract before Friday? " * 3,
             date="Tue, 1 May 2001 10:30:00 -0500", x_from="Mark E Taylor"),
     }
+    # Sara answers Tana, quoting her under a bare Lotus header; Marie wrote later on the same subject.
+    ask = "Please send me the executed Dynegy ISDA master agreement by noon tomorrow if you can."
+    files["maildir/jones-t/sent/1."] = email(8, "tana.jones@enron.com", "sara.shackleton@enron.com", "ISDA", ask,
+                                             date="Tue, 1 May 2001 06:00:00 -0500", x_from="Tana Jones")
+    files["maildir/heard-m/sent/1."] = email(9, "marie.heard@enron.com", "sara.shackleton@enron.com", "ISDA",
+                                             "The Dynegy master went to the legal files last week.",
+                                             date="Tue, 1 May 2001 07:00:00 -0500", x_from="Marie Heard")
+    files["maildir/shackleton-s/sent/1."] = email(
+        10, "sara.shackleton@enron.com", "tana.jones@enron.com, marie.heard@enron.com", "Re: ISDA",
+        "Attached.\n\n\n\tTana Jones\n\t05/01/2001 06:00 AM\n\t\t\n\t\t To: Sara Shackleton/HOU/ECT@ECT\n\t\t cc: \n"
+        "\t\t Subject: ISDA\n\nPlease send me the executed",  # the quote is cut short: no text match
+        date="Tue, 1 May 2001 08:00:00 -0500", x_from="Sara Shackleton")
     for i in range(60):  # a feed account's hourly alerts, plus one message its owner wrote
         files[f"maildir/davis-p/inbox/{i}."] = email(
             100 + i, "pete.davis@enron.com", "a@enron.com", "Schedule Crawler",
@@ -104,3 +116,6 @@ def test_generated_corpus_reproduces_the_audited_cases(tmp_path):
     assert messages.loc["maildir/taylor-m/inbox/1.", "probable_copy"]
     assert links.loc["maildir/taylor-m/sent/1.", "parent_path"] == "maildir/mann-k/sent/1."
     assert links.loc["maildir/taylor-m/sent/1.", "link_kind"] == "reply"
+    # The quoted author, read from the bare Lotus header, picks Tana's message over Marie's later one.
+    assert links.loc["maildir/shackleton-s/sent/1.", "parent_path"] == "maildir/jones-t/sent/1."
+    assert links.loc["maildir/shackleton-s/sent/1.", "link_confidence"] == "medium"
