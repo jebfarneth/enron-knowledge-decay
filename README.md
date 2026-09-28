@@ -130,7 +130,10 @@ paper's, not a replication. Employees are matched to graph nodes by their
 principal name (release records for executives often list their assistants'
 addresses). The main population is the 7,338 pairs whose two employees are
 matched and whose dominance does not start, end or run through one of the
-eight records that merge an assistant's position with another.
+eight records that merge an assistant's position with another. The release's
+2012 documentation already notes that an executive and an assistant were
+sometimes assigned the same uid; this reconstruction identifies and counts
+those records.
 
 The graph has 20,755 nodes: 5,563 people, 140 roles, 305 distribution lists,
 2 ambiguous keys and 14,745 internal addresses that could not be matched to a
@@ -210,6 +213,47 @@ minus degree is +2.8 (−0.9 to +6.9). Rosters, forwarded news and quoted header
 names, and a person key is not verified employment. This is the first signal
 derived from what people write rather than whom they write to; Phase 3 text
 models must beat it on the same pairs.
+
+## Phase 3, first results: a labelling pilot
+
+The frozen pipeline's inferred pieces were checked on 480 items drawn with a
+fixed seed (`scripts/draw_label_samples.py`) and shown to the labellers on
+blinded sheets that hide the pipeline's decision and confidence. Two AI
+agents (Codex, both reporting the same model, GPT-6) labelled every item
+independently and then settled their 19 disagreements from the evidence
+(96.0% agreement, Cohen's kappa 0.91 to 0.99 by field); the settled labels
+were scored against the pipeline's decisions (`scripts/score_pilot_labels.py`).
+Two labellers running the same model can share blind spots, so these are
+pilot estimates until a human-labelled subset validates them. Intervals are
+95% Wilson intervals for the sampled frames.
+
+| Check | Items | Result |
+|---|---:|---|
+| Reply links, high confidence (71% of reply links) | 39 | parent correct 97.4% (86.8 to 99.5) |
+| Reply links, medium confidence (8%) | 38 | parent correct 73.7% (58.0 to 85.0) |
+| Reply links, low confidence (21%) | 32 | parent correct 78.1% (61.2 to 89.0) |
+| Unlinked replies with an earlier same-subject message | 58 | true parent missed: 19.0% (10.9 to 30.9) |
+| Name mentions in the main measures | 98 | resolved to the right person: 78.6% (69.5 to 85.5) |
+| Signature-only exclusions | 50 | real content wrongly excluded: 0 (0 to 7.1%) |
+| Structured and newsletter exclusions | 40 | real content wrongly excluded: 0 (0 to 8.8%) |
+| Kept person-text messages | 60 | not real content: 1 |
+
+Weighted by the size of each confidence level, about 91% of the 26,902 reply
+links point to the right parent, and the pipeline finds about 90% of the
+replies whose parent is an earlier same-subject message in the corpus
+(missed replies outside that frame are not estimated). High-confidence links
+are the ones to use for reply-timing features. Name resolution is the main
+weakness: of the 21 wrong mentions in the main sample, 15 were people outside
+Enron (public figures and outside contacts) matched to an employee with the
+same name, and 36 of 100 sampled mentions came from quoted or forwarded text,
+lists or signatures rather than the sender's own sentences. Removing signatures,
+quoted headers and rosters inside messages is therefore the first Phase 3
+task. The office-title filter removed only public figures (15 of 15), while
+the company-word filter removed 4 colleagues among 10 sampled rows; it affects
+278 of about 988,000 resolved mention rows. The labellers also found a few messages
+stored twice with different timestamps that the deduplication step missed.
+The label sheets and labels are kept outside git until the human check is
+done.
 
 ## Independent check of the cleaning
 
