@@ -1,0 +1,36 @@
+[project]
+name = "enron-search"
+version = "0.1.0"
+description = "Semantic search over the frozen Enron person-text messages with sentence embeddings and pgvector"
+authors = [{ name = "Jeb Farneth" }]
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas>=2.2",
+    "pyyaml>=6",
+    # PyTorch 2.2 is the last release built for Intel Macs, and it is compiled against NumPy 1.x,
+    # which newer PyArrow releases no longer support.
+    "numpy>=1.26,<2",
+    "pyarrow>=17,<22",
+    "torch>=2.2,<2.3 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "torch>=2.2 ; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    # Transformers 5 no longer runs on PyTorch 2.2.
+    "transformers>=4.41,<5 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "sentence-transformers>=3",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/enron_search"]
+
+[tool.pytest.ini_options]
+markers = ["db: needs PostgreSQL with pgvector; set ENRON_SEARCH_TEST_DSN to run"]
+testpaths = ["tests"]

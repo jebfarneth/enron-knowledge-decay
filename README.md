@@ -255,6 +255,38 @@ stored twice with different timestamps that the deduplication step missed.
 The label sheets and labels are kept outside git until the human check is
 done.
 
+## Semantic search and near-duplicates (pgvector)
+
+[`search/`](search/) embeds the 165,431 person-text messages of the certified
+run with `all-MiniLM-L6-v2` (sentence-transformers, pinned revision) and
+stores them in PostgreSQL with pgvector: an HNSW index for cosine distance
+and B-tree indexes on sender and date, so similarity search combines with SQL
+filters. It is a separate project with its own lockfile that reads
+`data/processed` only after checking the files against the manifest, so the
+frozen pipeline's certification is unaffected.
+
+| Check | Result |
+|---|---|
+| HNSW recall@10 against exact search (200 seeded queries, ef_search 100) | 96.1% |
+| Median query time on a dual-core laptop | 10.9 ms |
+| Load and index build | 1.9 minutes, 721 MB |
+
+An exact similarity join over pairs from the same sender person, sent within
+48 hours, both with at least 100 characters of authored text and cosine
+similarity of at least 0.98, finds 4,180 candidate pairs among 6,235
+messages. In 1,729 of them the authored text, subject and recipients are
+identical and the timestamps differ by a whole 9 to 17 hours (1,200 pairs by
+exactly 10), beyond the 8-hour maximum of the time-shifted-copy rule; in 1,442
+both messages are in one custodian's mailbox, and in 710 both are in that
+custodian's sent folders (`sent` and `_sent_mail`, for example), which points
+to two exports of one message. The other pairs differ in text (1,224),
+recipients (822), a gap that is not a whole number of hours (198), subject
+(111) or share a timestamp (94). These are candidates, not labelled
+duplicates; raising the shift maximum is a Phase 3 change to check against
+labels before the pipeline is rerun. Details:
+[`search/README.md`](search/README.md),
+[`search/results/near_duplicates.json`](search/results/near_duplicates.json).
+
 ## Independent check of the cleaning
 
 Quote removal was compared with `email_reply_parser` (Zapier's Python port of
@@ -298,7 +330,9 @@ Cached name tags are reused only when each name sits at its recorded
 position in the text. Without the private release the two gold-standard stages are
 recorded as skipped, delete their earlier processed files and result tables,
 and say so. Dependencies are pinned in
-`uv.lock` for Python 3.12; runs have been reproduced on macOS only.
+`uv.lock` for Python 3.12; runs have been reproduced on macOS only. Semantic
+search is a separate project in `search/` (`make -C search all`, which needs
+PostgreSQL with pgvector).
 
 ## Related work
 

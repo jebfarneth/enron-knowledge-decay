@@ -1,0 +1,36 @@
+{
+  "window_hours": 48,
+  "min_chars": 100,
+  "min_similarity": 0.98,
+  "pairs": 4180,
+  "messages_in_pairs": 6235,
+  "senders": 765,
+  "pairs_by_reason": {
+    "shift over 8 hours": 1729,
+    "text differs": 1224,
+    "recipients differ": 822,
+    "shift not whole hours": 198,
+    "subject differs": 111,
+    "same time": 94,
+    "matches on authored text": 2
+  },
+  "pairs_at_similarity": {
+    ">=0.98": 4180,
+    ">=0.99": 3613,
+    ">=0.999": 3004
+  },
+  "shift_over_8_hours": {
+    "pairs": 1729,
+    "gap_hours": {
+      "9": 19,
+      "10": 1200,
+      "11": 247,
+      "12": 187,
+      "13": 8,
+      "14": 62,
+      "17": 6
+    },
+    "same_custodian": 1442,
+    "same_custodian_two_sent_folders": 710
+  }
+}
