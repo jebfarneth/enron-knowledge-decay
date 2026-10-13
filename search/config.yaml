@@ -1,0 +1,45 @@
+# Semantic search over the person-text messages of the frozen pipeline run.
+# This sub-project only reads the main pipeline's outputs; it never writes
+# to them, so the certified run in ../data/processed stays valid.
+
+paths:
+  # The main pipeline's certified outputs (read only).
+  source: ../data/processed
+  # Embeddings and their stamp.
+  data: data
+  results: results
+
+embedding:
+  # Sentence-transformers model and the exact Hugging Face revision used.
+  model: sentence-transformers/all-MiniLM-L6-v2
+  revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+  dimensions: 384
+  # Characters of subject plus authored text passed to the model; the model
+  # itself reads at most 256 word pieces, so longer text adds only tokenizing time.
+  max_chars: 2000
+  batch_size: 64
+  # Messages per saved shard, so an interrupted run resumes where it stopped.
+  shard_size: 8192
+
+database:
+  # libpq connection string; ENRON_SEARCH_DSN overrides it.
+  dsn: dbname=enron_search
+  # HNSW graph parameters (pgvector defaults).
+  hnsw_m: 16
+  hnsw_ef_construction: 64
+  # Candidates examined per query.
+  ef_search: 100
+
+check:
+  # Messages used as queries to measure the index's recall against exact search.
+  queries: 200
+  k: 10
+  seed: 20261013
+
+duplicates:
+  # Pairs from one sender person sent at most this many hours apart (wider
+  # than any time-zone shift), both with authored text of at least min_chars
+  # characters (the flagging rule's minimum), and at least this similar.
+  window_hours: 48
+  min_chars: 100
+  min_similarity: 0.98
