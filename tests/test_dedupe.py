@@ -89,14 +89,34 @@ def test_whole_hour_shifted_copies_are_flagged_not_removed():
     frame = pd.DataFrame([
         message("maildir/salisbury-h/inbox/1079.", "inbox", body=body, date="2001-06-11 23:23:06"),
         message("maildir/williams-w3/sent_items/512.", "sent_items", body=body, date="2001-06-12 02:23:06"),
-        message("maildir/a/sent/9.", "sent", body=body, date="2001-06-12 02:23:07"),     # not whole hours
-        message("maildir/a/sent/10.", "sent", body=body, date="2001-06-13 02:23:06"),    # a day later
+        message("maildir/a/sent/9.", "sent", body=body, date="2001-06-12 04:25:06"),     # not whole hours
+        message("maildir/a/sent/10.", "sent", body=body, date="2001-06-13 04:25:06"),    # a day later
         message("maildir/a/sent/11.", "sent", body="short", date="2001-06-11 01:00"),
         message("maildir/a/sent/12.", "sent", body="short", date="2001-06-11 04:00"),   # too short to judge
     ])
-    flags = flag_shifted_copies(frame, max_hours=8, min_chars=100)
+    flags = flag_shifted_copies(frame, max_hours=17, min_chars=100, tolerance_seconds=60)
     assert flags.iloc[1] == "maildir/salisbury-h/inbox/1079."
     assert flags.drop(index=1).isna().all()
+
+
+def test_shifts_past_eight_hours_and_dropped_seconds_are_flagged():
+    body = "The Bammel storage report is attached; please send comments before Monday's meeting. " * 2
+    frame = pd.DataFrame([
+        message("maildir/beck-s/sent/1.", "sent", body=body, date="2001-05-14 14:39:00"),
+        message("maildir/beck-s/sent_items/2.", "sent_items", body=body, date="2001-05-15 00:39:00"),  # 10 hours
+        message("maildir/benson-r/notes_inbox/3.", "notes_inbox", body=body, sender="b@enron.com",
+                date="2001-05-23 07:53:00"),
+        message("maildir/hodge-j/inbox/4.", "inbox", body=body, sender="b@enron.com",
+                date="2001-05-23 12:53:20"),                                                # 5 hours and 20 seconds
+        message("maildir/c/sent/5.", "sent", body=body, sender="c@enron.com", date="2001-05-01 08:00:00"),
+        message("maildir/c/sent/6.", "sent", body=body, sender="c@enron.com", date="2001-05-01 13:01:30"),  # 90 s off
+        message("maildir/c/sent/7.", "sent", body=body, sender="c@enron.com", date="2001-05-02 07:01:30"),  # 18 hours
+    ])
+    flags = flag_shifted_copies(frame, max_hours=17, min_chars=100, tolerance_seconds=60)
+    assert flags.iloc[1] == "maildir/beck-s/sent/1."
+    assert flags.iloc[3] == "maildir/benson-r/notes_inbox/3."
+    assert flags.drop(index=[1, 3]).isna().all()
+    assert pd.isna(flag_shifted_copies(frame, max_hours=8, min_chars=100, tolerance_seconds=60).iloc[1])
 
 
 def test_recipients_only_other_copies_list_are_kept_apart():

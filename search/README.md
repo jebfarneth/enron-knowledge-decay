@@ -55,9 +55,11 @@ The long shifts cluster at exactly 10 hours (1,200 pairs), then 11 (247), 12
 (187) and 14 (62). In 1,442 of the 1,729 pairs both messages are in the same
 custodian's mailbox, and in 710 both are in that custodian's sent folders (for
 example `sent` and `_sent_mail`), which points to two exports of one message
-rather than two sends. These are candidates, not labelled duplicates: raising
-the shift maximum is a Phase 3 change to check against labels before the main
-pipeline is rerun.
+rather than two sends. A labelled check confirmed them as copies of one message
+(one export a mailbox's Lotus Notes file, the other its Outlook file), and the
+main pipeline now flags shifts up to 17 hours (see the main README). The
+results above are from the frozen run, before that correction; rebuilding the
+embeddings, index and scan on the corrected run is pending.
 
 ## Run
 

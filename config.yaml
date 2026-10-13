@@ -29,9 +29,14 @@ ingest:
 dedupe:
   # A message is flagged as a probable time-shifted copy of an earlier one
   # with the same sender, subject, recipients and body (over min_body_chars
-  # characters) sent exactly 1 to max_shift_hours whole hours before it.
+  # characters) sent 1 to max_shift_hours whole hours before it, give or take
+  # less than shift_tolerance_seconds (some exports drop the seconds).
   # Flagged copies stay in the data but leave the network and text analysis.
-  max_shift_hours: 8
+  # The labelled check of Phase 3 (scripts/score_shift_labels.py) found
+  # copies of one message between a mailbox's Lotus Notes and Outlook exports
+  # up to 17 hours apart; the frozen run used 8 hours and no tolerance.
+  max_shift_hours: 17
+  shift_tolerance_seconds: 60
   min_body_chars: 100
 
 senders:

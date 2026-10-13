@@ -85,7 +85,7 @@ def build(tmp_path):
                    "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()},
         "paths": {"raw": raw, "interim": tmp_path / "interim", "processed": tmp_path / "processed"},
         "ingest": {"start": "1998-01-01", "end": "2002-12-31"},
-        "dedupe": {"max_shift_hours": 8, "min_body_chars": 100},
+        "dedupe": {"max_shift_hours": 17, "shift_tolerance_seconds": 60, "min_body_chars": 100},
         "senders": {"internal_domain": "enron.com", "min_messages": 50, "feed_share": 0.9, "top_templates": 3,
                     "routine_repeats": 10, "speech_act_words": 4},
         "identity": {"placeholder_addresses": ["no.address@enron.com"], "min_initial_support": 5, "initial_share": 2 / 3,

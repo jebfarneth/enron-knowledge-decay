@@ -17,8 +17,10 @@ resolves to a person who is not already a recipient under another spelling.
 Some copies of one message carry timestamps shifted by whole hours (the same
 numeric time zone, different wall-clock times, from different mailbox
 exports). They are not removed, only flagged: a later message with the same
-sender, subject, body (over `min_chars` characters) and recipients, exactly
-1 to `max_hours` hours after another, is a probable copy of it.
+sender, subject, body (over `min_chars` characters) and recipients, 1 to
+`max_hours` whole hours after another, is a probable copy of it. The gap may
+miss a whole number of hours by less than `tolerance_seconds`, because some
+exports drop the seconds from the time.
 """
 
 from __future__ import annotations
@@ -176,7 +178,7 @@ def deduplicate(messages: pd.DataFrame) -> tuple[pd.DataFrame, dict, pd.DataFram
     return kept.reset_index(drop=True), stats, copies.reset_index(drop=True)
 
 
-def flag_shifted_copies(messages: pd.DataFrame, max_hours: int, min_chars: int) -> pd.Series:
+def flag_shifted_copies(messages: pd.DataFrame, max_hours: int, min_chars: int, tolerance_seconds: int) -> pd.Series:
     """Path of the earlier message each probable time-shifted copy duplicates (None otherwise)."""
     bodies = messages["body"].map(normalize_body)
     recipients = ["\x1f".join(sorted(r)) for r in _recipients(messages)]
@@ -189,6 +191,7 @@ def flag_shifted_copies(messages: pd.DataFrame, max_hours: int, min_chars: int) 
     order = order.sort_values(["key", "date", "path"], kind="stable")
     same = order["key"].eq(order["key"].shift())
     gap = (order["date"] - order["date"].shift()).dt.total_seconds()
-    shifted = same & (gap % 3600 == 0) & gap.between(3600, max_hours * 3600)
+    hours = (gap / 3600).round()
+    shifted = same & hours.between(1, max_hours) & ((gap - hours * 3600).abs() < tolerance_seconds)
     first = order["path"].where(~shifted).ffill()
     return first.where(shifted).reindex(messages.index)

@@ -22,7 +22,9 @@ list how each finding was addressed and what remains open. After audit 5 the
 pipeline is frozen: the remaining questions (whether a name denotes the
 right person, whether text is authored or a signature, whether a link is
 the immediate reply) need blinded human labels, which are the first Phase 3
-task.
+task. One change has been made since the freeze, after a labelled check:
+time-shifted copies are now flagged up to 17 hours apart instead of 8
+([details](#phase-3-time-shifted-copies-a-correction-after-the-freeze)).
 
 ## Research question
 
@@ -63,8 +65,8 @@ a planned later phase; nothing in the current code measures it yet.
 | Dated 1998–2002 | 516,359 |
 | After removing duplicate copies (233 same-text messages to disjoint recipient lists kept as candidate separate sends) | 254,110 |
 | With estimated authored text | 234,295 |
-| Analysis set: internal senders, excluding 9,429 automated messages, 6,434 structured records and copied newsletters, 1,026 signature-only messages, 3,313 long routine messages and 1,531 probable time-shifted copies | 168,510 (6,326 sender addresses) |
-| Person text: analysis messages whose sender is attributed to a person | 165,431 (5,508 people) |
+| Analysis set: internal senders, excluding 9,429 automated messages, 6,434 structured records and copied newsletters, 1,026 signature-only messages, 3,313 long routine messages and 4,423 probable time-shifted copies | 166,310 (6,326 sender addresses) |
+| Person text: analysis messages whose sender is attributed to a person | 163,273 (5,508 people) |
 
 Authored text is an estimate: quoted material the cleaner misses stays in,
 and answers written inline inside a quote are lost. All flags are
@@ -99,8 +101,8 @@ does, low when the message is only addressed back. These are evidence
 categories, not calibrated probabilities: in audit 5's sample, 18 of 20
 high, 12 of 20 medium and 15 of 20 low links were direct replies. The
 stricter rules also dropped real replies: of the 2,282 reply links removed
-after audit 4, audit 5 estimates about 1,065 (690 to 1,457) were genuine. There are 34,762 links:
-26,902 replies and 7,860 forwards; 26,452 links are high confidence. On the
+after audit 4, audit 5 estimates about 1,065 (690 to 1,457) were genuine. There are 34,358 links:
+26,601 replies and 7,757 forwards; 26,258 links are high confidence. On the
 first audit's 60 labelled links, 24 of the 27 true direct replies are still
 linked as replies, and 24 of the 28 sampled links that keep their parent and
 are labelled replies (85.7%) are true direct replies; that sample informed
@@ -142,13 +144,13 @@ person.
 | Measure | Title proxy (6,235 pairs) | Gold standard (7,338 pairs) |
 |---|---:|---:|
 | Others mentioned to them (mention network) | 69.5% (62.0–75.9) | **92.2%** (87.5–94.9) |
-| People mentioned to them (mention network, primary) | 69.4% (62.0–75.7) | 91.3% (86.0–94.4) |
-| Mention-network degree | **73.4%** (66.5–79.6) | 90.5% (83.4–94.7) |
-| PageRank | 62.9% (55.7–70.1) | 91.7% (85.9–95.1) |
+| People mentioned to them (mention network, primary) | 69.2% (61.9–75.4) | 91.4% (86.1–94.4) |
+| Mention-network degree | **73.3%** (66.5–79.6) | 90.5% (83.4–94.7) |
+| PageRank | 62.7% (55.4–69.9) | 91.7% (85.9–95.1) |
 | Degree (distinct contacts) | 66.6% (59.0–73.4) | 89.6% (82.5–93.8) |
-| Email received (weighted) | 62.3% (55.4–68.7) | 88.8% (82.5–93.1) |
-| Betweenness (exact) | 58.3% (50.5–65.6) | 79.0% (67.4–87.4) |
-| Email sent (messages) | 52.9% (44.7–60.1) | 75.7% (67.6–83.1) |
+| Email received (weighted) | 62.2% (55.2–68.7) | 88.7% (82.3–93.0) |
+| Betweenness (exact) | 58.2% (50.4–65.6) | 79.0% (67.4–87.4) |
+| Email sent (messages) | 52.9% (44.7–60.2) | 75.7% (67.4–82.9) |
 | Custodian baseline (mailbox in the corpus) | — | 65.6% (53.5–77.2) |
 
 Among the email-only network measures, degree has the highest title-proxy point
@@ -181,9 +183,9 @@ name resolves, per recipient, to the compatible person closest to both
 sender and recipient in the email network. The main measures count only
 person-text messages and leave out every name that resolves to the sender
 (mostly signatures and contact lines, but also rosters and mixed contexts:
-323,002 of 988,281 resolved mentions), names after an office title on the same
-line ("Governor Davis", 6,019) and names before a company word on the same
-line ("Williams pipeline", 278). People mentioned to them was declared
+318,765 of 972,091 resolved mentions), names after an office title on the same
+line ("Governor Davis", 5,760) and names before a company word on the same
+line ("Williams pipeline", 258). People mentioned to them was declared
 the primary mention measure after the unfiltered results were known but
 before the filters were run, so the filtered comparison is exploratory; the
 unfiltered definition is kept for comparison. In audit 5's sample of 60 kept
@@ -191,25 +193,25 @@ mentions, 43 pointed to the right person, 11 to the wrong one and 6 were
 uncertain (for example Gray Davis resolved to an Enron Davis).
 
 The paper's Cc check (when exactly one compatible person is Cc'd, take them
-as the answer) agrees with the resolver on 70.7% of 19,037 cases: 84.7% when
-the name fits one person and 60.4% when it fits several. The resolver uses
+as the answer) agrees with the resolver on 70.7% of 18,594 cases: 84.6% when
+the name fits one person and 60.3% when it fits several. The resolver uses
 the same email network, Cc edges included, so this is a consistency check,
 not an independent accuracy (the paper reports 69.7% on its own graph).
 
 | Measure (gold standard, 7,338 pairs) | Accuracy | Minus degree (paired 95% interval) |
 |---|---:|---:|
-| People mentioned to them (primary) | 91.3% | +1.7 (−0.4 to +4.9) |
+| People mentioned to them (primary) | 91.4% | +1.8 (−0.3 to +5.1) |
 | Others mentioned to them (sender and recipients excluded) | 92.2% | +2.7 (+0.6 to +5.9) |
-| Mention-network degree | 90.5% | +0.9 (−1.2 to +2.9) |
-| People mentioned to them, unfiltered | 92.2% | +2.7 (+0.7 to +5.4) |
+| Mention-network degree | 90.5% | +1.0 (−1.2 to +3.0) |
+| People mentioned to them, unfiltered | 92.3% | +2.8 (+0.8 to +5.6) |
 
 With the filters, the primary measure's gain over degree is no longer
 distinguishable from zero on the main gold population; it is ahead of degree
-in every construction and scoring of the sensitivity runs (by 0.3 to 3.7
+in every construction and scoring of the sensitivity runs (by 0.3 to 3.9
 points) and on gold non-core pairs, whose employees' mailboxes were not
-collected (89.8% against 86.2%). On the title proxy, mention-network degree
-minus degree is +6.8 points (+2.8 to +11.2) and people mentioned to them
-minus degree is +2.8 (−0.9 to +6.9). Rosters, forwarded news and quoted headers still contribute
+collected (89.9% against 86.2%). On the title proxy, mention-network degree
+minus degree is +6.7 points (+2.8 to +11.1) and people mentioned to them
+minus degree is +2.6 (−1.0 to +6.6). Rosters, forwarded news and quoted headers still contribute
 names, and a person key is not verified employment. This is the first signal
 derived from what people write rather than whom they write to; Phase 3 text
 models must beat it on the same pairs.
@@ -253,11 +255,63 @@ the company-word filter removed 4 colleagues among 10 sampled rows; it affects
 278 of about 988,000 resolved mention rows. The labellers also found a few messages
 stored twice with different timestamps that the deduplication step missed.
 The label sheets and labels are kept outside git until the human check is
-done.
+done. These pilot results describe the frozen run, before the correction
+below.
+
+## Phase 3: time-shifted copies (a correction after the freeze)
+
+The semantic-search duplicate scan (next section) found pairs of messages
+from one sender with identical authored text, subject and recipients whose
+timestamps differ by a whole 9 to 17 hours, past the time-shifted-copy rule's
+8-hour maximum, and pairs about 5 hours apart whose gap misses a whole hour
+by under a minute. 75 pairs drawn with a fixed seed
+(`scripts/draw_shift_sample.py`) were labelled from their raw headers, every
+copy's folder and mailbox export, and quote headers in other messages, by one
+AI labeller (Claude, Opus 5.5) following guidelines written before any item
+was read; `scripts/score_shift_labels.py` scores them and checks every
+candidate pair. Ten controls whose gap is not near a whole number of hours
+were mixed in.
+
+| Frame | Pairs | Labelled | One message stored twice (95% interval) |
+|---|---:|---:|---|
+| A whole 9 to 17 hours apart (sampled by gap) | 1,729 | 50 | 50 (92.9 to 100%) |
+| Within a minute of a whole number of hours (107 of them about 5) | 113 | 15 | 15 (79.6 to 100%) |
+| Controls: further from a whole number of hours | 85 | 10 | 0 (all sent twice) |
+
+Every candidate pair, not only the sample, was also checked without labels.
+In none of the 1,729 long-shift pairs does one folder of one mailbox export
+hold both messages; in 1,723 the earlier message's copies all come from a
+Lotus Notes export (`.nsf`) and the later message's from an Outlook export
+(`.pst`). The gap follows daylight saving time: all 1,200 pairs exactly 10
+hours apart were sent in US daylight time, and 240 of the 247 pairs 11 hours
+apart in standard time. From the controls' gaps, two separate sends would put
+about one pair this close to a whole number of hours by chance, against 1,842
+observed. One folder of one export holds both messages in 28 of the 85
+controls.
+
+The rule now flags shifts of 1 to 17 whole hours, give or take under 60
+seconds (`max_shift_hours` and `shift_tolerance_seconds` in
+[`config.yaml`](config.yaml)). It flags 4,423 messages instead of 1,531,
+removing 2,200 from the analysis set; raising the maximum further to 48
+hours would add 7. It catches 1,538 of the 1,729 long-shift pairs and 64 of
+the 113 near-whole-hour pairs, and none of the controls. The pairs it misses
+differ outside the authored text (in quoted text below it, or in how the
+sender's address is written) or are too short for the rule, which compares
+whole bodies and addresses. Every pipeline output reported in this README,
+except the pilot above and the search section, is from the corrected run;
+audit and pilot samples were drawn from earlier runs, and the frozen run's
+outputs are kept outside the repository.
+
+Quote headers in other messages date 11 of the labelled copy pairs. In the 6
+long-shift pairs among them, the quoted send time falls between the two
+copies (in 5 of them within an hour of halfway): the Notes copy is early and
+the Outlook copy late. In the 5 near-whole-hour pairs, it matches the copy
+whose time includes seconds. Timestamps in some exports are therefore hours
+off, which matters for reply-timing measures; this is not corrected yet.
 
 ## Semantic search and near-duplicates (pgvector)
 
-[`search/`](search/) embeds the 165,431 person-text messages of the certified
+[`search/`](search/) embeds the 165,431 person-text messages of the frozen
 run with `all-MiniLM-L6-v2` (sentence-transformers, pinned revision) and
 stores them in PostgreSQL with pgvector: an HNSW index for cosine distance
 and B-tree indexes on sender and date, so similarity search combines with SQL
@@ -281,9 +335,10 @@ both messages are in one custodian's mailbox, and in 710 both are in that
 custodian's sent folders (`sent` and `_sent_mail`, for example), which points
 to two exports of one message. The other pairs differ in text (1,224),
 recipients (822), a gap that is not a whole number of hours (198), subject
-(111) or share a timestamp (94). These are candidates, not labelled
-duplicates; raising the shift maximum is a Phase 3 change to check against
-labels before the pipeline is rerun. Details:
+(111) or share a timestamp (94). A labelled check confirmed the shifted pairs
+as copies, and the rule now flags them (previous section). The index and
+these counts are still from the frozen run; rebuilding them on the corrected
+run is pending. Details:
 [`search/README.md`](search/README.md),
 [`search/results/near_duplicates.json`](search/results/near_duplicates.json).
 
