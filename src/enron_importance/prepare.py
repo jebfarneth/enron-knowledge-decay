@@ -66,7 +66,8 @@ def prepare(config: dict) -> dict:
     funnel.update({f"dropped_{key}" if key.startswith("duplicate") else key: value for key, value in removed.items()})
     funnel["unique_messages"] = len(messages)
     shifted = config["dedupe"]
-    messages["probable_copy_of"] = flag_shifted_copies(messages, shifted["max_shift_hours"], shifted["min_body_chars"])
+    messages["probable_copy_of"] = flag_shifted_copies(messages, shifted["max_shift_hours"], shifted["min_body_chars"],
+                                                       shifted["shift_tolerance_seconds"])
     messages["probable_copy"] = messages["probable_copy_of"].notna()
     funnel["probable_time_shifted_copies"] = int(messages["probable_copy"].sum())
 

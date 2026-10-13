@@ -3,42 +3,42 @@ variant,measure,pairs_type,pairs,accuracy,ci_low,ci_high,draws
 "all pairs, unmatched employees scored 0",degree,core,487,0.6930184805,0.3696945868,0.8977312715,1000.0000000000
 "all pairs, unmatched employees scored 0",degree,inter,5633,0.7353985443,0.4145464404,0.9385020745,1000.0000000000
 "all pairs, unmatched employees scored 0",degree,non-core,7121,0.8046622665,0.6783437442,0.9036339764,1000.0000000000
-"all pairs, unmatched employees scored 0",in_strength,all,13241,0.7489615588,0.5703262670,0.8776559023,1000.0000000000
-"all pairs, unmatched employees scored 0",in_strength,core,487,0.5657084189,0.3083154898,0.7589384996,1000.0000000000
-"all pairs, unmatched employees scored 0",in_strength,inter,5633,0.7273211433,0.4029671265,0.9306477280,1000.0000000000
-"all pairs, unmatched employees scored 0",in_strength,non-core,7121,0.7786125544,0.6364246887,0.8991072545,1000.0000000000
-"all pairs, unmatched employees scored 0",out_strength,all,13241,0.6448531078,0.5005104235,0.7792853129,1000.0000000000
-"all pairs, unmatched employees scored 0",out_strength,core,487,0.5000000000,0.2487243627,0.7645101385,1000.0000000000
-"all pairs, unmatched employees scored 0",out_strength,inter,5633,0.7079708859,0.4403021835,0.8856811981,1000.0000000000
-"all pairs, unmatched employees scored 0",out_strength,non-core,7121,0.6048307822,0.4520496575,0.7431333962,1000.0000000000
-"all pairs, unmatched employees scored 0",pagerank,all,13241,0.7756589381,0.5982985939,0.9034672475,1000.0000000000
-"all pairs, unmatched employees scored 0",pagerank,core,487,0.6211498973,0.3166779733,0.8239202402,1000.0000000000
-"all pairs, unmatched employees scored 0",pagerank,inter,5633,0.7342446299,0.4126066001,0.9395113231,1000.0000000000
-"all pairs, unmatched employees scored 0",pagerank,non-core,7121,0.8189860975,0.6883411706,0.9272521721,1000.0000000000
-"all pairs, unmatched employees scored 0",betweenness,all,13241,0.7107091609,0.5651022120,0.8304493998,1000.0000000000
-"all pairs, unmatched employees scored 0",betweenness,core,487,0.6047227926,0.2975701549,0.8069223828,1000.0000000000
-"all pairs, unmatched employees scored 0",betweenness,inter,5633,0.7804899698,0.5355309421,0.9319358226,1000.0000000000
-"all pairs, unmatched employees scored 0",betweenness,non-core,7121,0.6627580396,0.4969369625,0.8086671058,1000.0000000000
-"all pairs, unmatched employees scored 0",mention_degree,all,13241,0.7938599804,0.6134426974,0.9154092701,1000.0000000000
-"all pairs, unmatched employees scored 0",mention_degree,core,487,0.7094455852,0.3715688574,0.9209844831,1000.0000000000
+"all pairs, unmatched employees scored 0",in_strength,all,13241,0.7484328978,0.5702744302,0.8772074672,1000.0000000000
+"all pairs, unmatched employees scored 0",in_strength,core,487,0.5616016427,0.2999797844,0.7535277202,1000.0000000000
+"all pairs, unmatched employees scored 0",in_strength,inter,5633,0.7274986686,0.4029729095,0.9308511238,1000.0000000000
+"all pairs, unmatched employees scored 0",in_strength,non-core,7121,0.7777699761,0.6365134269,0.8990015034,1000.0000000000
+"all pairs, unmatched employees scored 0",out_strength,all,13241,0.6441356393,0.4989197490,0.7780513850,1000.0000000000
+"all pairs, unmatched employees scored 0",out_strength,core,487,0.4989733060,0.2487243627,0.7613574161,1000.0000000000
+"all pairs, unmatched employees scored 0",out_strength,inter,5633,0.7081484111,0.4403021835,0.8858203794,1000.0000000000
+"all pairs, unmatched employees scored 0",out_strength,non-core,7121,0.6034264850,0.4506413594,0.7414298400,1000.0000000000
+"all pairs, unmatched employees scored 0",pagerank,all,13241,0.7753568462,0.5986450588,0.9032971013,1000.0000000000
+"all pairs, unmatched employees scored 0",pagerank,core,487,0.6232032854,0.3175463848,0.8242033201,1000.0000000000
+"all pairs, unmatched employees scored 0",pagerank,inter,5633,0.7340671046,0.4115136206,0.9394981928,1000.0000000000
+"all pairs, unmatched employees scored 0",pagerank,non-core,7121,0.8184243786,0.6871477255,0.9272153679,1000.0000000000
+"all pairs, unmatched employees scored 0",betweenness,all,13241,0.7107846839,0.5654599046,0.8304098589,1000.0000000000
+"all pairs, unmatched employees scored 0",betweenness,core,487,0.6067761807,0.2994628044,0.8098198568,1000.0000000000
+"all pairs, unmatched employees scored 0",betweenness,inter,5633,0.7806674951,0.5355309421,0.9315086825,1000.0000000000
+"all pairs, unmatched employees scored 0",betweenness,non-core,7121,0.6626176099,0.4972899961,0.8088378082,1000.0000000000
+"all pairs, unmatched employees scored 0",mention_degree,all,13241,0.7944641643,0.6138309697,0.9158318577,1000.0000000000
+"all pairs, unmatched employees scored 0",mention_degree,core,487,0.7114989733,0.3730416671,0.9220840407,1000.0000000000
 "all pairs, unmatched employees scored 0",mention_degree,inter,5633,0.7472927392,0.4340544182,0.9471652379,1000.0000000000
-"all pairs, unmatched employees scored 0",mention_degree,non-core,7121,0.8364695970,0.7056145440,0.9304994391,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to,all,13241,0.8009969036,0.6321319079,0.9098210637,1000.0000000000
+"all pairs, unmatched employees scored 0",mention_degree,non-core,7121,0.8374526050,0.7071227251,0.9304513873,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to,all,13241,0.8026206480,0.6336663309,0.9114126766,1000.0000000000
 "all pairs, unmatched employees scored 0",mentioned_to,core,487,0.6437371663,0.3480518565,0.8470907497,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to,inter,5633,0.7408130659,0.4250829867,0.9370030592,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to,non-core,7121,0.8593596405,0.7613759640,0.9304731000,1000.0000000000
-"all pairs, unmatched employees scored 0",third_party_mentioned_to,all,13241,0.8112302696,0.6413698383,0.9178002809,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to,inter,5633,0.7413456418,0.4252234248,0.9377581283,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to,non-core,7121,0.8619575902,0.7641792451,0.9315065414,1000.0000000000
+"all pairs, unmatched employees scored 0",third_party_mentioned_to,all,13241,0.8113057926,0.6413719123,0.9179621556,1000.0000000000
 "all pairs, unmatched employees scored 0",third_party_mentioned_to,core,487,0.6478439425,0.3480518565,0.8515387184,1000.0000000000
-"all pairs, unmatched employees scored 0",third_party_mentioned_to,inter,5633,0.7500443813,0.4406767778,0.9422200393,1000.0000000000
-"all pairs, unmatched employees scored 0",third_party_mentioned_to,non-core,7121,0.8708046623,0.7710518728,0.9416420688,1000.0000000000
-"all pairs, unmatched employees scored 0",mention_degree_unfiltered,all,13241,0.7914810060,0.6080346722,0.9150167987,1000.0000000000
+"all pairs, unmatched employees scored 0",third_party_mentioned_to,inter,5633,0.7501331440,0.4406767778,0.9425101499,1000.0000000000
+"all pairs, unmatched employees scored 0",third_party_mentioned_to,non-core,7121,0.8708748771,0.7710518728,0.9417917994,1000.0000000000
+"all pairs, unmatched employees scored 0",mention_degree_unfiltered,all,13241,0.7918586210,0.6087326582,0.9150203297,1000.0000000000
 "all pairs, unmatched employees scored 0",mention_degree_unfiltered,core,487,0.7053388090,0.3703017539,0.9150732334,1000.0000000000
 "all pairs, unmatched employees scored 0",mention_degree_unfiltered,inter,5633,0.7456950115,0.4258555642,0.9467153878,1000.0000000000
-"all pairs, unmatched employees scored 0",mention_degree_unfiltered,non-core,7121,0.8335907878,0.6992108202,0.9301795217,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,all,13241,0.8068876973,0.6335886782,0.9165186086,1000.0000000000
+"all pairs, unmatched employees scored 0",mention_degree_unfiltered,non-core,7121,0.8342929364,0.7011297134,0.9303776832,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,all,13241,0.8083981572,0.6352120512,0.9174105093,1000.0000000000
 "all pairs, unmatched employees scored 0",mentioned_to_unfiltered,core,487,0.6581108830,0.3548750000,0.8600431813,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,inter,5633,0.7448961477,0.4228926045,0.9451446995,1000.0000000000
-"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,non-core,7121,0.8661002668,0.7702950282,0.9349481214,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,inter,5633,0.7450736730,0.4230660757,0.9452897068,1000.0000000000
+"all pairs, unmatched employees scored 0",mentioned_to_unfiltered,non-core,7121,0.8687684314,0.7742291181,0.9359201554,1000.0000000000
 "all pairs, unmatched employees scored 0",custodian,all,13241,0.6728343781,0.5547574415,0.7900870129,1000.0000000000
 "all pairs, unmatched employees scored 0",custodian,core,487,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 "all pairs, unmatched employees scored 0",custodian,inter,5633,0.9062666430,0.7427627155,0.9714620248,1000.0000000000
@@ -47,42 +47,42 @@ variant,measure,pairs_type,pairs,accuracy,ci_low,ci_high,draws
 "matched, including uncertain records",degree,core,288,0.8993055556,0.7419056153,0.9613694735,1000.0000000000
 "matched, including uncertain records",degree,inter,4110,0.9220194647,0.7699384795,0.9743581008,1000.0000000000
 "matched, including uncertain records",degree,non-core,6639,0.8007230005,0.6557584944,0.9087901507,1000.0000000000
-"matched, including uncertain records",in_strength,all,11037,0.8217812811,0.6925058349,0.9193377899,1000.0000000000
-"matched, including uncertain records",in_strength,core,288,0.6840277778,0.5289449728,0.8595165289,1000.0000000000
-"matched, including uncertain records",in_strength,inter,4110,0.9107055961,0.7604140892,0.9703104125,1000.0000000000
-"matched, including uncertain records",in_strength,non-core,6639,0.7727067329,0.5973972264,0.9054209693,1000.0000000000
-"matched, including uncertain records",out_strength,all,11037,0.6885929147,0.5462162281,0.8129815282,1000.0000000000
-"matched, including uncertain records",out_strength,core,288,0.5729166667,0.2515928026,0.8628396944,1000.0000000000
-"matched, including uncertain records",out_strength,inter,4110,0.8553527981,0.6903428851,0.9370313201,1000.0000000000
-"matched, including uncertain records",out_strength,non-core,6639,0.5903750565,0.4253545777,0.7298665080,1000.0000000000
-"matched, including uncertain records",pagerank,all,11037,0.8539458186,0.7372649737,0.9430654724,1000.0000000000
-"matched, including uncertain records",pagerank,core,288,0.7777777778,0.5833333333,0.8989091737,1000.0000000000
-"matched, including uncertain records",pagerank,inter,4110,0.9204379562,0.7640233742,0.9756768761,1000.0000000000
-"matched, including uncertain records",pagerank,non-core,6639,0.8160867601,0.6667744197,0.9350656095,1000.0000000000
-"matched, including uncertain records",betweenness,all,11037,0.7520159464,0.6078916966,0.8657898923,1000.0000000000
-"matched, including uncertain records",betweenness,core,288,0.7500000000,0.5105093610,0.8846250000,1000.0000000000
-"matched, including uncertain records",betweenness,inter,4110,0.9068126521,0.7332783608,0.9706667466,1000.0000000000
-"matched, including uncertain records",betweenness,non-core,6639,0.6562735352,0.4931734170,0.8011374405,1000.0000000000
-"matched, including uncertain records",mention_degree,all,11037,0.8739693757,0.7650649172,0.9506953381,1000.0000000000
-"matched, including uncertain records",mention_degree,core,288,0.9270833333,0.7697703376,0.9768797243,1000.0000000000
+"matched, including uncertain records",in_strength,all,11037,0.8211470508,0.6921301949,0.9185797675,1000.0000000000
+"matched, including uncertain records",in_strength,core,288,0.6770833333,0.5179644041,0.8456504904,1000.0000000000
+"matched, including uncertain records",in_strength,inter,4110,0.9109489051,0.7604140892,0.9706316159,1000.0000000000
+"matched, including uncertain records",in_strength,non-core,6639,0.7718029824,0.5968483276,0.9044096194,1000.0000000000
+"matched, including uncertain records",out_strength,all,11037,0.6877321736,0.5444780164,0.8126171491,1000.0000000000
+"matched, including uncertain records",out_strength,core,288,0.5711805556,0.2515928026,0.8606227010,1000.0000000000
+"matched, including uncertain records",out_strength,inter,4110,0.8555961071,0.6903428851,0.9370313201,1000.0000000000
+"matched, including uncertain records",out_strength,non-core,6639,0.5888688055,0.4233584595,0.7295840456,1000.0000000000
+"matched, including uncertain records",pagerank,all,11037,0.8535834013,0.7381430574,0.9434990909,1000.0000000000
+"matched, including uncertain records",pagerank,core,288,0.7812500000,0.5872043543,0.8989091737,1000.0000000000
+"matched, including uncertain records",pagerank,inter,4110,0.9201946472,0.7640233742,0.9753737184,1000.0000000000
+"matched, including uncertain records",pagerank,non-core,6639,0.8154842597,0.6621300722,0.9353443806,1000.0000000000
+"matched, including uncertain records",betweenness,all,11037,0.7521065507,0.6084363903,0.8661655440,1000.0000000000
+"matched, including uncertain records",betweenness,core,288,0.7534722222,0.5161914964,0.8846250000,1000.0000000000
+"matched, including uncertain records",betweenness,inter,4110,0.9070559611,0.7345940902,0.9705851975,1000.0000000000
+"matched, including uncertain records",betweenness,non-core,6639,0.6561229101,0.4931329353,0.7998806614,1000.0000000000
+"matched, including uncertain records",mention_degree,all,11037,0.8746942104,0.7656779982,0.9511202795,1000.0000000000
+"matched, including uncertain records",mention_degree,core,288,0.9305555556,0.7697703376,0.9778614078,1000.0000000000
 "matched, including uncertain records",mention_degree,inter,4110,0.9345498783,0.8148509226,0.9816312010,1000.0000000000
-"matched, including uncertain records",mention_degree,non-core,6639,0.8341617714,0.6919710276,0.9359801539,1000.0000000000
-"matched, including uncertain records",mentioned_to,all,11037,0.8822596720,0.8018577938,0.9390324181,1000.0000000000
+"matched, including uncertain records",mention_degree,non-core,6639,0.8352161470,0.6938585249,0.9362685588,1000.0000000000
+"matched, including uncertain records",mentioned_to,all,11037,0.8842076651,0.8051576742,0.9397955586,1000.0000000000
 "matched, including uncertain records",mentioned_to,core,288,0.8159722222,0.6874444797,0.9311952868,1000.0000000000
-"matched, including uncertain records",mentioned_to,inter,4110,0.9251824818,0.8064381607,0.9713314640,1000.0000000000
-"matched, including uncertain records",mentioned_to,non-core,6639,0.8585630366,0.7475148392,0.9321172875,1000.0000000000
-"matched, including uncertain records",third_party_mentioned_to,all,11037,0.8919996376,0.8102639774,0.9472518347,1000.0000000000
+"matched, including uncertain records",mentioned_to,inter,4110,0.9259124088,0.8076466026,0.9716503143,1000.0000000000
+"matched, including uncertain records",mentioned_to,non-core,6639,0.8613496008,0.7523811337,0.9333415595,1000.0000000000
+"matched, including uncertain records",third_party_mentioned_to,all,11037,0.8920902419,0.8102639774,0.9472518347,1000.0000000000
 "matched, including uncertain records",third_party_mentioned_to,core,288,0.8229166667,0.6956466564,0.9311952868,1000.0000000000
-"matched, including uncertain records",third_party_mentioned_to,inter,4110,0.9315085158,0.8151891525,0.9752792984,1000.0000000000
-"matched, including uncertain records",third_party_mentioned_to,non-core,6639,0.8705377316,0.7573663272,0.9434624758,1000.0000000000
-"matched, including uncertain records",mention_degree_unfiltered,all,11037,0.8721119870,0.7625865702,0.9482003090,1000.0000000000
+"matched, including uncertain records",third_party_mentioned_to,inter,4110,0.9316301703,0.8163489464,0.9752792984,1000.0000000000
+"matched, including uncertain records",third_party_mentioned_to,non-core,6639,0.8706130441,0.7573663272,0.9435971358,1000.0000000000
+"matched, including uncertain records",mention_degree_unfiltered,all,11037,0.8725650086,0.7631226238,0.9482003090,1000.0000000000
 "matched, including uncertain records",mention_degree_unfiltered,core,288,0.9201388889,0.7588947511,0.9711445113,1000.0000000000
 "matched, including uncertain records",mention_degree_unfiltered,inter,4110,0.9345498783,0.8111815298,0.9808651987,1000.0000000000
-"matched, including uncertain records",mention_degree_unfiltered,non-core,6639,0.8313752071,0.6876157505,0.9324336373,1000.0000000000
-"matched, including uncertain records",mentioned_to_unfiltered,all,11037,0.8904593640,0.8083792990,0.9472923772,1000.0000000000
+"matched, including uncertain records",mention_degree_unfiltered,non-core,6639,0.8321283326,0.6890259605,0.9324689208,1000.0000000000
+"matched, including uncertain records",mentioned_to_unfiltered,all,11037,0.8922714506,0.8116276524,0.9479279803,1000.0000000000
 "matched, including uncertain records",mentioned_to_unfiltered,core,288,0.8402777778,0.7261421446,0.9381706587,1000.0000000000
-"matched, including uncertain records",mentioned_to_unfiltered,inter,4110,0.9330900243,0.8071412243,0.9781429987,1000.0000000000
-"matched, including uncertain records",mentioned_to_unfiltered,non-core,6639,0.8662449164,0.7570763083,0.9385538242,1000.0000000000
+"matched, including uncertain records",mentioned_to_unfiltered,inter,4110,0.9333333333,0.8071579132,0.9782749978,1000.0000000000
+"matched, including uncertain records",mentioned_to_unfiltered,non-core,6639,0.8691067932,0.7604450919,0.9394901839,1000.0000000000
 "matched, including uncertain records",custodian,all,11037,0.6471414334,0.5334331071,0.7707794918,1000.0000000000
 "matched, including uncertain records",custodian,core,288,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 "matched, including uncertain records",custodian,inter,4110,0.8951338200,0.6935649818,0.9687542182,1000.0000000000
@@ -91,42 +91,42 @@ variant,measure,pairs_type,pairs,accuracy,ci_low,ci_high,draws
 "matched, no path through any uncertain record (strict)",degree,core,99,0.9090909091,0.6665254237,0.9914529915,1000.0000000000
 "matched, no path through any uncertain record (strict)",degree,inter,1695,0.9769911504,0.8908987603,0.9919060213,1000.0000000000
 "matched, no path through any uncertain record (strict)",degree,non-core,3145,0.9034976153,0.8385368485,0.9434216032,1000.0000000000
-"matched, no path through any uncertain record (strict)",in_strength,all,4939,0.9244786394,0.8705160278,0.9530953007,1000.0000000000
-"matched, no path through any uncertain record (strict)",in_strength,core,99,0.7777777778,0.5000000000,0.9473911071,1000.0000000000
+"matched, no path through any uncertain record (strict)",in_strength,all,4939,0.9230613485,0.8688987315,0.9519558580,1000.0000000000
+"matched, no path through any uncertain record (strict)",in_strength,core,99,0.7575757576,0.4705207771,0.9357159240,1000.0000000000
 "matched, no path through any uncertain record (strict)",in_strength,inter,1695,0.9793510324,0.8958547294,0.9935965533,1000.0000000000
-"matched, no path through any uncertain record (strict)",in_strength,non-core,3145,0.8995230525,0.8359707504,0.9416994899,1000.0000000000
-"matched, no path through any uncertain record (strict)",out_strength,all,4939,0.8345818992,0.7777424720,0.8768298611,1000.0000000000
+"matched, no path through any uncertain record (strict)",in_strength,non-core,3145,0.8979332273,0.8339418685,0.9413281510,1000.0000000000
+"matched, no path through any uncertain record (strict)",out_strength,all,4939,0.8349868394,0.7785297367,0.8775629635,1000.0000000000
 "matched, no path through any uncertain record (strict)",out_strength,core,99,0.6868686869,0.3331896552,0.9346528882,1000.0000000000
-"matched, no path through any uncertain record (strict)",out_strength,inter,1695,0.9392330383,0.8593951062,0.9801615437,1000.0000000000
-"matched, no path through any uncertain record (strict)",out_strength,non-core,3145,0.7828298887,0.7229360169,0.8229042838,1000.0000000000
-"matched, no path through any uncertain record (strict)",pagerank,all,4939,0.9390564892,0.8924621017,0.9641546650,1000.0000000000
+"matched, no path through any uncertain record (strict)",out_strength,inter,1695,0.9398230088,0.8594208794,0.9801615437,1000.0000000000
+"matched, no path through any uncertain record (strict)",out_strength,non-core,3145,0.7831478537,0.7242878411,0.8227720498,1000.0000000000
+"matched, no path through any uncertain record (strict)",pagerank,all,4939,0.9388540190,0.8924084856,0.9638212104,1000.0000000000
 "matched, no path through any uncertain record (strict)",pagerank,core,99,0.8585858586,0.5272265023,0.9675719268,1000.0000000000
 "matched, no path through any uncertain record (strict)",pagerank,inter,1695,0.9805309735,0.9066470588,0.9941802876,1000.0000000000
-"matched, no path through any uncertain record (strict)",pagerank,non-core,3145,0.9192368839,0.8615723581,0.9542245939,1000.0000000000
-"matched, no path through any uncertain record (strict)",betweenness,all,4939,0.8295201458,0.7181642821,0.8944220699,1000.0000000000
+"matched, no path through any uncertain record (strict)",pagerank,non-core,3145,0.9189189189,0.8603762728,0.9541491051,1000.0000000000
+"matched, no path through any uncertain record (strict)",betweenness,all,4939,0.8293176756,0.7181736842,0.8940406130,1000.0000000000
 "matched, no path through any uncertain record (strict)",betweenness,core,99,0.7575757576,0.3912918541,0.9318400350,1000.0000000000
 "matched, no path through any uncertain record (strict)",betweenness,inter,1695,0.9728613569,0.8778619293,0.9901136489,1000.0000000000
-"matched, no path through any uncertain record (strict)",betweenness,non-core,3145,0.7545310016,0.6274864795,0.8525565398,1000.0000000000
-"matched, no path through any uncertain record (strict)",mention_degree,all,4939,0.9440170075,0.9006870369,0.9668698952,1000.0000000000
+"matched, no path through any uncertain record (strict)",betweenness,non-core,3145,0.7542130366,0.6274607505,0.8517708658,1000.0000000000
+"matched, no path through any uncertain record (strict)",mention_degree,all,4939,0.9442194776,0.9011687563,0.9669416418,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree,core,99,0.8888888889,0.6000000000,0.9830613531,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree,inter,1695,0.9828908555,0.9166666667,0.9955439472,1000.0000000000
-"matched, no path through any uncertain record (strict)",mention_degree,non-core,3145,0.9248012719,0.8683047494,0.9581713683,1000.0000000000
-"matched, no path through any uncertain record (strict)",mentioned_to,all,4939,0.9429034217,0.9086633304,0.9616781110,1000.0000000000
+"matched, no path through any uncertain record (strict)",mention_degree,non-core,3145,0.9251192369,0.8687979750,0.9580643413,1000.0000000000
+"matched, no path through any uncertain record (strict)",mentioned_to,all,4939,0.9430046568,0.9086633304,0.9618786657,1000.0000000000
 "matched, no path through any uncertain record (strict)",mentioned_to,core,99,0.8383838384,0.5806290323,0.9661383417,1000.0000000000
-"matched, no path through any uncertain record (strict)",mentioned_to,inter,1695,0.9772861357,0.9227431700,0.9911510932,1000.0000000000
+"matched, no path through any uncertain record (strict)",mentioned_to,inter,1695,0.9775811209,0.9227431700,0.9911798446,1000.0000000000
 "matched, no path through any uncertain record (strict)",mentioned_to,non-core,3145,0.9276629571,0.8759568196,0.9566294986,1000.0000000000
-"matched, no path through any uncertain record (strict)",third_party_mentioned_to,all,4939,0.9444219478,0.9075914814,0.9632842224,1000.0000000000
+"matched, no path through any uncertain record (strict)",third_party_mentioned_to,all,4939,0.9445231828,0.9075914814,0.9635570223,1000.0000000000
 "matched, no path through any uncertain record (strict)",third_party_mentioned_to,core,99,0.8484848485,0.5881960784,0.9676161833,1000.0000000000
 "matched, no path through any uncertain record (strict)",third_party_mentioned_to,inter,1695,0.9793510324,0.9220298058,0.9911996016,1000.0000000000
-"matched, no path through any uncertain record (strict)",third_party_mentioned_to,non-core,3145,0.9286168521,0.8783314664,0.9582196166,1000.0000000000
+"matched, no path through any uncertain record (strict)",third_party_mentioned_to,non-core,3145,0.9287758347,0.8783314664,0.9582994235,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree_unfiltered,all,4939,0.9420935412,0.8982662917,0.9656322680,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree_unfiltered,core,99,0.8888888889,0.6000000000,0.9830613531,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree_unfiltered,inter,1695,0.9805309735,0.9099561231,0.9941206543,1000.0000000000
 "matched, no path through any uncertain record (strict)",mention_degree_unfiltered,non-core,3145,0.9230524642,0.8644579675,0.9576345855,1000.0000000000
-"matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,all,4939,0.9484713505,0.9118860912,0.9685934981,1000.0000000000
+"matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,all,4939,0.9490787609,0.9134310605,0.9686538755,1000.0000000000
 "matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,core,99,0.8787878788,0.6470113852,0.9833356354,1000.0000000000
 "matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,inter,1695,0.9852507375,0.9268245598,0.9960281786,1000.0000000000
-"matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,non-core,3145,0.9308426073,0.8802213209,0.9603293443,1000.0000000000
+"matched, no path through any uncertain record (strict)",mentioned_to_unfiltered,non-core,3145,0.9317965024,0.8822622638,0.9606765121,1000.0000000000
 "matched, no path through any uncertain record (strict)",custodian,all,4939,0.6618748735,0.5334114318,0.7816993962,1000.0000000000
 "matched, no path through any uncertain record (strict)",custodian,core,99,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 "matched, no path through any uncertain record (strict)",custodian,inter,1695,0.9716814159,0.8594288870,0.9929656406,1000.0000000000
@@ -135,42 +135,42 @@ variant,measure,pairs_type,pairs,accuracy,ci_low,ci_high,draws
 "matched, mixed-position endpoints excluded only (earlier main)",degree,core,209,0.9234449761,0.6999242424,0.9819065126,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",degree,inter,3223,0.9052125349,0.6723607961,0.9725332357,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",degree,non-core,6609,0.8023906794,0.6599570937,0.9164260448,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",in_strength,all,10041,0.8110745942,0.6725907262,0.9211970812,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",in_strength,core,209,0.7416267943,0.5471112557,0.9013384503,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",in_strength,all,10041,0.8102778608,0.6727212822,0.9198973737,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",in_strength,core,209,0.7320574163,0.5333333333,0.8961371961,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",in_strength,inter,3223,0.8951287620,0.6430108751,0.9681804012,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",in_strength,non-core,6609,0.7722802239,0.6014449382,0.9120906730,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",out_strength,all,10041,0.6641768748,0.5253344043,0.7989094861,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",out_strength,core,209,0.5263157895,0.1939867968,0.8889166667,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",out_strength,inter,3223,0.8208191126,0.5687331483,0.9172200548,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",out_strength,non-core,6609,0.5921470722,0.4257677208,0.7353199585,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",pagerank,all,10041,0.8446369883,0.7185695210,0.9458978396,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",in_strength,non-core,6609,0.7713723710,0.6002074471,0.9101706609,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",out_strength,all,10041,0.6632805497,0.5238006027,0.7982358005,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",out_strength,core,209,0.5215311005,0.1939867968,0.8775634644,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",out_strength,inter,3223,0.8211293826,0.5687331483,0.9172200548,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",out_strength,non-core,6609,0.5907852928,0.4250371696,0.7344461315,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",pagerank,all,10041,0.8440394383,0.7174921995,0.9455751923,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",pagerank,core,209,0.8516746411,0.5686163102,0.9375080959,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",pagerank,inter,3223,0.9031957803,0.6570035823,0.9717740406,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",pagerank,non-core,6609,0.8158571645,0.6605609632,0.9395405872,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",betweenness,all,10041,0.7342894134,0.5847759268,0.8559868480,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",pagerank,inter,3223,0.9028855104,0.6570035823,0.9717546657,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",pagerank,non-core,6609,0.8151006204,0.6567883293,0.9395834513,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",betweenness,all,10041,0.7343890051,0.5842822471,0.8554595360,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",betweenness,core,209,0.7990430622,0.4313025210,0.9127567730,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",betweenness,inter,3223,0.8867514738,0.6274160648,0.9643592276,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",betweenness,non-core,6609,0.6578907550,0.4960176700,0.8006662458,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mention_degree,all,10041,0.8635594064,0.7424165289,0.9487225971,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",betweenness,inter,3223,0.8873720137,0.6301940176,0.9648442377,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",betweenness,non-core,6609,0.6577394462,0.4963162580,0.8009675790,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mention_degree,all,10041,0.8641569565,0.7431534297,0.9489840613,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mention_degree,core,209,0.9234449761,0.6538333333,0.9803935261,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mention_degree,inter,3223,0.9193298169,0.7108116918,0.9775762907,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mention_degree,non-core,6609,0.8344681495,0.6906685979,0.9380034782,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,all,10041,0.8744646948,0.7797267065,0.9384615266,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mention_degree,non-core,6609,0.8353760024,0.6917561885,0.9385780704,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,all,10041,0.8766059157,0.7832213689,0.9390102192,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,core,209,0.8181818182,0.6405123746,0.9444553806,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,inter,3223,0.9095563140,0.7094614891,0.9651658849,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,non-core,6609,0.8591314874,0.7477001816,0.9348297172,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,all,10041,0.8849716164,0.7856559221,0.9473007741,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,inter,3223,0.9104871238,0.7129459486,0.9651773757,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to,non-core,6609,0.8619307006,0.7513426630,0.9358399350,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,all,10041,0.8850712080,0.7856578514,0.9473807451,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,core,209,0.8277511962,0.6496159610,0.9449205568,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,inter,3223,0.9176233323,0.7272618550,0.9705151260,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,non-core,6609,0.8708579210,0.7485435341,0.9458022635,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,all,10041,0.8616173688,0.7394065914,0.9484058988,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,inter,3223,0.9177784673,0.7278780956,0.9705184322,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",third_party_mentioned_to,non-core,6609,0.8709335754,0.7485435341,0.9460002369,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,all,10041,0.8621153272,0.7403410843,0.9484076509,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,core,209,0.9138755981,0.6529846939,0.9764419414,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,inter,3223,0.9199503568,0.7161011144,0.9778366690,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,non-core,6609,0.8315176275,0.6835092594,0.9352766537,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,all,10041,0.8832785579,0.7895997706,0.9480297824,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mention_degree_unfiltered,non-core,6609,0.8322741716,0.6852329582,0.9356543698,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,all,10041,0.8852703914,0.7930610955,0.9493029527,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,core,209,0.8516746411,0.6913468013,0.9545901151,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,inter,3223,0.9190195470,0.7209749383,0.9754574447,1000.0000000000
-"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,non-core,6609,0.8668482373,0.7581837105,0.9415970556,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,inter,3223,0.9193298169,0.7216006898,0.9754698435,1000.0000000000
+"matched, mixed-position endpoints excluded only (earlier main)",mentioned_to_unfiltered,non-core,6609,0.8697231049,0.7626983274,0.9436880681,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",custodian,all,10041,0.6189622548,0.5083681778,0.7544400406,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",custodian,core,209,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 "matched, mixed-position endpoints excluded only (earlier main)",custodian,inter,3223,0.8706174372,0.5667079396,0.9627100940,1000.0000000000
@@ -179,42 +179,42 @@ name+address matches only,degree,all,4328,0.8948706100,0.8136259382,0.9386419727
 name+address matches only,degree,core,142,0.9295774648,0.7036643026,0.9931124634,1000.0000000000
 name+address matches only,degree,inter,1742,0.9532146958,0.8386973283,0.9818655327,1000.0000000000
 name+address matches only,degree,non-core,2444,0.8512684124,0.7391142828,0.9182780479,1000.0000000000
-name+address matches only,in_strength,all,4328,0.8890942699,0.8208715683,0.9298887891,1000.0000000000
-name+address matches only,in_strength,core,142,0.7394366197,0.4642170330,0.9054773303,1000.0000000000
+name+address matches only,in_strength,all,4328,0.8867837338,0.8174969851,0.9268430172,1000.0000000000
+name+address matches only,in_strength,core,142,0.7253521127,0.4573141611,0.8950603668,1000.0000000000
 name+address matches only,in_strength,inter,1742,0.9483352468,0.8143031780,0.9817129870,1000.0000000000
-name+address matches only,in_strength,non-core,2444,0.8555646481,0.7523404184,0.9164652645,1000.0000000000
-name+address matches only,out_strength,all,4328,0.7256238447,0.6269938825,0.8262627585,1000.0000000000
-name+address matches only,out_strength,core,142,0.6056338028,0.2211715408,0.8923799127,1000.0000000000
-name+address matches only,out_strength,inter,1742,0.8716991963,0.7399695244,0.9564133681,1000.0000000000
-name+address matches only,out_strength,non-core,2444,0.6284779051,0.5504771602,0.7190470861,1000.0000000000
-name+address matches only,pagerank,all,4328,0.9288354898,0.8815873022,0.9550219807,1000.0000000000
+name+address matches only,in_strength,non-core,2444,0.8522913257,0.7515435449,0.9142610825,1000.0000000000
+name+address matches only,out_strength,all,4328,0.7252772643,0.6266814898,0.8257793003,1000.0000000000
+name+address matches only,out_strength,core,142,0.5985915493,0.2211715408,0.8838172561,1000.0000000000
+name+address matches only,out_strength,inter,1742,0.8722732491,0.7407705961,0.9564133681,1000.0000000000
+name+address matches only,out_strength,non-core,2444,0.6278641571,0.5507318410,0.7172703958,1000.0000000000
+name+address matches only,pagerank,all,4328,0.9283733826,0.8804227270,0.9546975598,1000.0000000000
 name+address matches only,pagerank,core,142,0.8380281690,0.6190259740,0.9290458882,1000.0000000000
 name+address matches only,pagerank,inter,1742,0.9563719862,0.8410777202,0.9844570491,1000.0000000000
-name+address matches only,pagerank,non-core,2444,0.9144844517,0.8455912892,0.9544049850,1000.0000000000
-name+address matches only,betweenness,all,4328,0.7869685767,0.6394549869,0.8802451595,1000.0000000000
+name+address matches only,pagerank,non-core,2444,0.9136661211,0.8446846696,0.9537073760,1000.0000000000
+name+address matches only,betweenness,all,4328,0.7869685767,0.6411569037,0.8799877171,1000.0000000000
 name+address matches only,betweenness,core,142,0.7887323944,0.3888605442,0.9439491500,1000.0000000000
-name+address matches only,betweenness,inter,1742,0.9437428243,0.8056396165,0.9800622573,1000.0000000000
-name+address matches only,betweenness,non-core,2444,0.6751227496,0.5100704604,0.8186951823,1000.0000000000
-name+address matches only,mention_degree,all,4328,0.9020332717,0.8094262992,0.9521711058,1000.0000000000
+name+address matches only,betweenness,inter,1742,0.9443168772,0.8087975884,0.9801956736,1000.0000000000
+name+address matches only,betweenness,non-core,2444,0.6747135843,0.5094069322,0.8191066854,1000.0000000000
+name+address matches only,mention_degree,all,4328,0.9024953789,0.8090653656,0.9530963373,1000.0000000000
 name+address matches only,mention_degree,core,142,0.9295774648,0.7142857143,0.9919386841,1000.0000000000
 name+address matches only,mention_degree,inter,1742,0.9437428243,0.7776721014,0.9861049742,1000.0000000000
-name+address matches only,mention_degree,non-core,2444,0.8707037643,0.7407098841,0.9410382158,1000.0000000000
-name+address matches only,mentioned_to,all,4328,0.9048059150,0.8323418385,0.9444582829,1000.0000000000
+name+address matches only,mention_degree,non-core,2444,0.8715220949,0.7407064577,0.9425159074,1000.0000000000
+name+address matches only,mentioned_to,all,4328,0.9060767098,0.8341443661,0.9456203319,1000.0000000000
 name+address matches only,mentioned_to,core,142,0.8239436620,0.5687880054,0.9708807879,1000.0000000000
-name+address matches only,mentioned_to,inter,1742,0.9388633754,0.8023949475,0.9764763588,1000.0000000000
-name+address matches only,mentioned_to,non-core,2444,0.8852291326,0.7762474974,0.9433065382,1000.0000000000
-name+address matches only,third_party_mentioned_to,all,4328,0.9194778189,0.8625542208,0.9500104306,1000.0000000000
+name+address matches only,mentioned_to,inter,1742,0.9400114811,0.8033167518,0.9770872333,1000.0000000000
+name+address matches only,mentioned_to,non-core,2444,0.8866612111,0.7784739977,0.9442677366,1000.0000000000
+name+address matches only,third_party_mentioned_to,all,4328,0.9195933457,0.8625542208,0.9501039465,1000.0000000000
 name+address matches only,third_party_mentioned_to,core,142,0.8309859155,0.5799329897,0.9708807879,1000.0000000000
 name+address matches only,third_party_mentioned_to,inter,1742,0.9474741676,0.8253891269,0.9796722803,1000.0000000000
-name+address matches only,third_party_mentioned_to,non-core,2444,0.9046644845,0.8180214731,0.9518625327,1000.0000000000
+name+address matches only,third_party_mentioned_to,non-core,2444,0.9048690671,0.8180214731,0.9520876671,1000.0000000000
 name+address matches only,mention_degree_unfiltered,all,4328,0.9046903882,0.8171633937,0.9517786979,1000.0000000000
 name+address matches only,mention_degree_unfiltered,core,142,0.9154929577,0.6955685619,0.9860139860,1000.0000000000
 name+address matches only,mention_degree_unfiltered,inter,1742,0.9494833525,0.8051042846,0.9855769687,1000.0000000000
 name+address matches only,mention_degree_unfiltered,non-core,2444,0.8721358429,0.7504836338,0.9415556490,1000.0000000000
-name+address matches only,mentioned_to_unfiltered,all,4328,0.9200554529,0.8521056621,0.9558141348,1000.0000000000
+name+address matches only,mentioned_to_unfiltered,all,4328,0.9217883549,0.8546931638,0.9565066003,1000.0000000000
 name+address matches only,mentioned_to_unfiltered,core,142,0.8661971831,0.6378918495,0.9829131653,1000.0000000000
-name+address matches only,mentioned_to_unfiltered,inter,1742,0.9552238806,0.8271886845,0.9861368829,1000.0000000000
-name+address matches only,mentioned_to_unfiltered,non-core,2444,0.8981178396,0.7994613120,0.9515507994,1000.0000000000
+name+address matches only,mentioned_to_unfiltered,inter,1742,0.9557979334,0.8314080713,0.9861368829,1000.0000000000
+name+address matches only,mentioned_to_unfiltered,non-core,2444,0.9007774141,0.8052205490,0.9524581265,1000.0000000000
 name+address matches only,custodian,all,4328,0.6753696858,0.5417158492,0.7895362261,1000.0000000000
 name+address matches only,custodian,core,142,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 name+address matches only,custodian,inter,1742,0.9357060850,0.7590211047,0.9831063935,1000.0000000000
@@ -223,30 +223,30 @@ without Lay and Skilling,degree,all,5377,0.8578203459,0.7954940082,0.9085621875,
 without Lay and Skilling,degree,core,130,0.8769230769,0.6051315789,0.9678990098,1000.0000000000
 without Lay and Skilling,degree,inter,1610,0.9276397516,0.7820440574,0.9701919539,1000.0000000000
 without Lay and Skilling,degree,non-core,3637,0.8262304097,0.7563394078,0.8847713743,1000.0000000000
-without Lay and Skilling,in_strength,all,5377,0.8545657430,0.7923479894,0.9075503115,1000.0000000000
-without Lay and Skilling,in_strength,core,130,0.8000000000,0.4726278409,0.9230769231,1000.0000000000
+without Lay and Skilling,in_strength,all,5377,0.8528919472,0.7910484060,0.9068887769,1000.0000000000
+without Lay and Skilling,in_strength,core,130,0.7846153846,0.4544494238,0.9174980186,1000.0000000000
 without Lay and Skilling,in_strength,inter,1610,0.9322981366,0.7666598361,0.9744436350,1000.0000000000
-without Lay and Skilling,in_strength,non-core,3637,0.8221061314,0.7545686083,0.8774056406,1000.0000000000
-without Lay and Skilling,out_strength,all,5377,0.7421424586,0.6444454634,0.8378809464,1000.0000000000
-without Lay and Skilling,out_strength,core,130,0.7692307692,0.4323359073,0.9013181060,1000.0000000000
+without Lay and Skilling,in_strength,non-core,3637,0.8201814682,0.7520241441,0.8744576392,1000.0000000000
+without Lay and Skilling,out_strength,all,5377,0.7414915380,0.6406757362,0.8375471326,1000.0000000000
+without Lay and Skilling,out_strength,core,130,0.7615384615,0.4323359073,0.8933776224,1000.0000000000
 without Lay and Skilling,out_strength,inter,1610,0.9267080745,0.7600759002,0.9721395475,1000.0000000000
-without Lay and Skilling,out_strength,non-core,3637,0.6594720924,0.5778319338,0.7462596020,1000.0000000000
-without Lay and Skilling,pagerank,all,5377,0.8891575228,0.8361558222,0.9308248191,1000.0000000000
+without Lay and Skilling,out_strength,non-core,3637,0.6587847127,0.5779322736,0.7458011400,1000.0000000000
+without Lay and Skilling,pagerank,all,5377,0.8891575228,0.8357709948,0.9310941348,1000.0000000000
 without Lay and Skilling,pagerank,core,130,0.8076923077,0.4820611167,0.9277323580,1000.0000000000
 without Lay and Skilling,pagerank,inter,1610,0.9360248447,0.7765182325,0.9762369930,1000.0000000000
-without Lay and Skilling,pagerank,non-core,3637,0.8713225186,0.8077953246,0.9208977485,1000.0000000000
-without Lay and Skilling,betweenness,all,5377,0.7184303515,0.6203610836,0.8165280430,1000.0000000000
+without Lay and Skilling,pagerank,non-core,3637,0.8713225186,0.8097884179,0.9208961410,1000.0000000000
+without Lay and Skilling,betweenness,all,5377,0.7184303515,0.6216424334,0.8165541264,1000.0000000000
 without Lay and Skilling,betweenness,core,130,0.7615384615,0.3286560533,0.9266454952,1000.0000000000
 without Lay and Skilling,betweenness,inter,1610,0.9273291925,0.7666033926,0.9722140535,1000.0000000000
-without Lay and Skilling,betweenness,non-core,3637,0.6244157272,0.5538707478,0.7006238381,1000.0000000000
-without Lay and Skilling,mention_degree,all,5377,0.8705597917,0.8029943269,0.9236343822,1000.0000000000
+without Lay and Skilling,betweenness,non-core,3637,0.6244157272,0.5543811163,0.7005060645,1000.0000000000
+without Lay and Skilling,mention_degree,all,5377,0.8709317463,0.8030892341,0.9236296285,1000.0000000000
 without Lay and Skilling,mention_degree,core,130,0.8769230769,0.5415396341,0.9683643196,1000.0000000000
 without Lay and Skilling,mention_degree,inter,1610,0.9229813665,0.7516623449,0.9757775161,1000.0000000000
-without Lay and Skilling,mention_degree,non-core,3637,0.8471267528,0.7711780399,0.9097900263,1000.0000000000
-without Lay and Skilling,mentioned_to,all,5377,0.8913892505,0.8368212503,0.9345890160,1000.0000000000
+without Lay and Skilling,mention_degree,non-core,3637,0.8476766566,0.7728108667,0.9104054035,1000.0000000000
+without Lay and Skilling,mentioned_to,all,5377,0.8927840803,0.8378649721,0.9353494236,1000.0000000000
 without Lay and Skilling,mentioned_to,core,130,0.8692307692,0.5859456635,0.9615421456,1000.0000000000
-without Lay and Skilling,mentioned_to,inter,1610,0.9335403727,0.7967588374,0.9782444757,1000.0000000000
-without Lay and Skilling,mentioned_to,non-core,3637,0.8735221336,0.8075727842,0.9243700993,1000.0000000000
+without Lay and Skilling,mentioned_to,inter,1610,0.9341614907,0.7968119723,0.9782760362,1000.0000000000
+without Lay and Skilling,mentioned_to,non-core,3637,0.8753093209,0.8102033177,0.9256115208,1000.0000000000
 without Lay and Skilling,third_party_mentioned_to,all,5377,0.9018969686,0.8543481673,0.9388885784,1000.0000000000
 without Lay and Skilling,third_party_mentioned_to,core,130,0.8692307692,0.5859456635,0.9615421456,1000.0000000000
 without Lay and Skilling,third_party_mentioned_to,inter,1610,0.9381987578,0.8181778793,0.9771141588,1000.0000000000
@@ -255,10 +255,10 @@ without Lay and Skilling,mention_degree_unfiltered,all,5377,0.8710247350,0.80440
 without Lay and Skilling,mention_degree_unfiltered,core,130,0.8615384615,0.5384146341,0.9592969666,1000.0000000000
 without Lay and Skilling,mention_degree_unfiltered,inter,1610,0.9273291925,0.7743168605,0.9740889455,1000.0000000000
 without Lay and Skilling,mention_degree_unfiltered,non-core,3637,0.8464393731,0.7702724480,0.9094242891,1000.0000000000
-without Lay and Skilling,mentioned_to_unfiltered,all,5377,0.8978984564,0.8474752633,0.9389344978,1000.0000000000
+without Lay and Skilling,mentioned_to_unfiltered,all,5377,0.8996652408,0.8495484412,0.9399487756,1000.0000000000
 without Lay and Skilling,mentioned_to_unfiltered,core,130,0.8846153846,0.6086568323,0.9729872730,1000.0000000000
-without Lay and Skilling,mentioned_to_unfiltered,inter,1610,0.9378881988,0.8108192037,0.9791943528,1000.0000000000
-without Lay and Skilling,mentioned_to_unfiltered,non-core,3637,0.8806708826,0.8203936209,0.9278572884,1000.0000000000
+without Lay and Skilling,mentioned_to_unfiltered,inter,1610,0.9385093168,0.8128954373,0.9792406413,1000.0000000000
+without Lay and Skilling,mentioned_to_unfiltered,non-core,3637,0.8830079736,0.8233711710,0.9306882682,1000.0000000000
 without Lay and Skilling,custodian,all,5377,0.6290682537,0.5281838397,0.7292545036,1000.0000000000
 without Lay and Skilling,custodian,core,130,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 without Lay and Skilling,custodian,inter,1610,0.9310559006,0.7665630048,0.9753359676,1000.0000000000
@@ -267,42 +267,42 @@ cycle arcs removed before closure,degree,all,9996,0.8371848739,0.7103470139,0.93
 cycle arcs removed before closure,degree,core,209,0.9234449761,0.6734359317,0.9821487571,1000.0000000000
 cycle arcs removed before closure,degree,inter,3219,0.9050947499,0.6710402236,0.9718690807,1000.0000000000
 cycle arcs removed before closure,degree,non-core,6568,0.8011571255,0.6648965661,0.9116770110,1000.0000000000
-cycle arcs removed before closure,in_strength,all,9996,0.8102240896,0.6693070412,0.9213930004,1000.0000000000
-cycle arcs removed before closure,in_strength,core,209,0.7416267943,0.5509772923,0.8889194139,1000.0000000000
+cycle arcs removed before closure,in_strength,all,9996,0.8094237695,0.6698150233,0.9203971579,1000.0000000000
+cycle arcs removed before closure,in_strength,core,209,0.7320574163,0.5249955674,0.8823661897,1000.0000000000
 cycle arcs removed before closure,in_strength,inter,3219,0.8949984467,0.6446053709,0.9683788769,1000.0000000000
-cycle arcs removed before closure,in_strength,non-core,6568,0.7708587089,0.6125937621,0.9045692497,1000.0000000000
-cycle arcs removed before closure,out_strength,all,9996,0.6635654262,0.5212914018,0.7971365634,1000.0000000000
-cycle arcs removed before closure,out_strength,core,209,0.5263157895,0.2020712304,0.8815181467,1000.0000000000
-cycle arcs removed before closure,out_strength,inter,3219,0.8205964585,0.5739023776,0.9085001190,1000.0000000000
-cycle arcs removed before closure,out_strength,non-core,6568,0.5909713764,0.4353272394,0.7406210451,1000.0000000000
-cycle arcs removed before closure,pagerank,all,9996,0.8439375750,0.7150468198,0.9457420994,1000.0000000000
+cycle arcs removed before closure,in_strength,non-core,6568,0.7699451888,0.6107903987,0.9036487692,1000.0000000000
+cycle arcs removed before closure,out_strength,all,9996,0.6626650660,0.5199006055,0.7971211484,1000.0000000000
+cycle arcs removed before closure,out_strength,core,209,0.5215311005,0.2020712304,0.8710020590,1000.0000000000
+cycle arcs removed before closure,out_strength,inter,3219,0.8209071140,0.5739023776,0.9085001190,1000.0000000000
+cycle arcs removed before closure,out_strength,non-core,6568,0.5896010962,0.4320902857,0.7420060186,1000.0000000000
+cycle arcs removed before closure,pagerank,all,9996,0.8433373349,0.7156007563,0.9455367798,1000.0000000000
 cycle arcs removed before closure,pagerank,core,209,0.8516746411,0.5572724102,0.9315068493,1000.0000000000
-cycle arcs removed before closure,pagerank,inter,3219,0.9030754893,0.6668876694,0.9721792975,1000.0000000000
-cycle arcs removed before closure,pagerank,non-core,6568,0.8147076736,0.6726771708,0.9349943047,1000.0000000000
-cycle arcs removed before closure,betweenness,all,9996,0.7339935974,0.5759890560,0.8634320222,1000.0000000000
+cycle arcs removed before closure,pagerank,inter,3219,0.9027648338,0.6668876694,0.9719398767,1000.0000000000
+cycle arcs removed before closure,pagerank,non-core,6568,0.8139464068,0.6721463437,0.9350205503,1000.0000000000
+cycle arcs removed before closure,betweenness,all,9996,0.7340936375,0.5763617829,0.8640689334,1000.0000000000
 cycle arcs removed before closure,betweenness,core,209,0.7990430622,0.4285714286,0.9121095943,1000.0000000000
-cycle arcs removed before closure,betweenness,inter,3219,0.8866107487,0.6168962349,0.9656668101,1000.0000000000
-cycle arcs removed before closure,betweenness,non-core,6568,0.6571254568,0.5015048935,0.8098628417,1000.0000000000
-cycle arcs removed before closure,mention_degree,all,9996,0.8629451781,0.7512746293,0.9467035127,1000.0000000000
+cycle arcs removed before closure,betweenness,inter,3219,0.8872320596,0.6175368394,0.9656668101,1000.0000000000
+cycle arcs removed before closure,betweenness,non-core,6568,0.6569732034,0.5014949208,0.8087584758,1000.0000000000
+cycle arcs removed before closure,mention_degree,all,9996,0.8635454182,0.7523293369,0.9469415283,1000.0000000000
 cycle arcs removed before closure,mention_degree,core,209,0.9234449761,0.6282885856,0.9813858696,1000.0000000000
 cycle arcs removed before closure,mention_degree,inter,3219,0.9192295744,0.7096638989,0.9754362255,1000.0000000000
-cycle arcs removed before closure,mention_degree,non-core,6568,0.8334348356,0.6931533385,0.9382541653,1000.0000000000
-cycle arcs removed before closure,mentioned_to,all,9996,0.8739995998,0.7867166580,0.9368809362,1000.0000000000
+cycle arcs removed before closure,mention_degree,non-core,6568,0.8343483557,0.6944352430,0.9379573623,1000.0000000000
+cycle arcs removed before closure,mentioned_to,all,9996,0.8761504602,0.7908584772,0.9378644401,1000.0000000000
 cycle arcs removed before closure,mentioned_to,core,209,0.8181818182,0.6290547678,0.9431818182,1000.0000000000
-cycle arcs removed before closure,mentioned_to,inter,3219,0.9097545822,0.7228498922,0.9619315418,1000.0000000000
-cycle arcs removed before closure,mentioned_to,non-core,6568,0.8582521315,0.7527240672,0.9334391294,1000.0000000000
-cycle arcs removed before closure,third_party_mentioned_to,all,9996,0.8844537815,0.7944588311,0.9465761984,1000.0000000000
+cycle arcs removed before closure,mentioned_to,inter,3219,0.9106865486,0.7229477396,0.9636231802,1000.0000000000
+cycle arcs removed before closure,mentioned_to,non-core,6568,0.8610688185,0.7562680268,0.9351634550,1000.0000000000
+cycle arcs removed before closure,third_party_mentioned_to,all,9996,0.8845538215,0.7945488794,0.9467486594,1000.0000000000
 cycle arcs removed before closure,third_party_mentioned_to,core,209,0.8277511962,0.6379949805,0.9431818182,1000.0000000000
-cycle arcs removed before closure,third_party_mentioned_to,inter,3219,0.9175209692,0.7379336469,0.9702123855,1000.0000000000
-cycle arcs removed before closure,third_party_mentioned_to,non-core,6568,0.8700517661,0.7571484210,0.9453701167,1000.0000000000
-cycle arcs removed before closure,mention_degree_unfiltered,all,9996,0.8609943978,0.7482950688,0.9464035857,1000.0000000000
+cycle arcs removed before closure,third_party_mentioned_to,inter,3219,0.9176762970,0.7379476290,0.9703009574,1000.0000000000
+cycle arcs removed before closure,third_party_mentioned_to,non-core,6568,0.8701278928,0.7571500075,0.9453701167,1000.0000000000
+cycle arcs removed before closure,mention_degree_unfiltered,all,9996,0.8614945978,0.7491348235,0.9464239357,1000.0000000000
 cycle arcs removed before closure,mention_degree_unfiltered,core,209,0.9138755981,0.6071282201,0.9778698623,1000.0000000000
 cycle arcs removed before closure,mention_degree_unfiltered,inter,3219,0.9198508854,0.7228460906,0.9750628274,1000.0000000000
-cycle arcs removed before closure,mention_degree_unfiltered,non-core,6568,0.8304658952,0.6915777481,0.9380104921,1000.0000000000
-cycle arcs removed before closure,mentioned_to_unfiltered,all,9996,0.8827531012,0.7967670688,0.9469713074,1000.0000000000
+cycle arcs removed before closure,mention_degree_unfiltered,non-core,6568,0.8312271620,0.6932573279,0.9382166756,1000.0000000000
+cycle arcs removed before closure,mentioned_to_unfiltered,all,9996,0.8847539016,0.7986368345,0.9483334525,1000.0000000000
 cycle arcs removed before closure,mentioned_to_unfiltered,core,209,0.8516746411,0.6572356215,0.9574493175,1000.0000000000
-cycle arcs removed before closure,mentioned_to_unfiltered,inter,3219,0.9189189189,0.7341184929,0.9729392635,1000.0000000000
-cycle arcs removed before closure,mentioned_to_unfiltered,non-core,6568,0.8660170524,0.7620517797,0.9405637003,1000.0000000000
+cycle arcs removed before closure,mentioned_to_unfiltered,inter,3219,0.9192295744,0.7355462601,0.9731109594,1000.0000000000
+cycle arcs removed before closure,mentioned_to_unfiltered,non-core,6568,0.8689098660,0.7669262420,0.9420610406,1000.0000000000
 cycle arcs removed before closure,custodian,all,9996,0.6192977191,0.5067686568,0.7558991053,1000.0000000000
 cycle arcs removed before closure,custodian,core,209,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 cycle arcs removed before closure,custodian,inter,3219,0.8704566636,0.5632403424,0.9638719750,1000.0000000000
@@ -311,42 +311,42 @@ positions closed before mapping,degree,all,6608,0.9458232446,0.8927700283,0.9685
 positions closed before mapping,degree,core,191,0.9319371728,0.7000000000,0.9883818918,1000.0000000000
 positions closed before mapping,degree,inter,2485,0.9672032193,0.8710680374,0.9895377314,1000.0000000000
 positions closed before mapping,degree,non-core,3932,0.9329857579,0.8528520683,0.9628268382,1000.0000000000
-positions closed before mapping,in_strength,all,6608,0.9309927361,0.8834654091,0.9552010517,1000.0000000000
-positions closed before mapping,in_strength,core,191,0.7486910995,0.5399831461,0.9189648139,1000.0000000000
+positions closed before mapping,in_strength,all,6608,0.9296307506,0.8815110874,0.9545765504,1000.0000000000
+positions closed before mapping,in_strength,core,191,0.7382198953,0.5311762972,0.9126211642,1000.0000000000
 positions closed before mapping,in_strength,inter,2485,0.9557344064,0.8131609341,0.9892855962,1000.0000000000
-positions closed before mapping,in_strength,non-core,3932,0.9242115972,0.8442391468,0.9588336978,1000.0000000000
-positions closed before mapping,out_strength,all,6608,0.7837469734,0.7222494691,0.8606559768,1000.0000000000
-positions closed before mapping,out_strength,core,191,0.5130890052,0.1813124633,0.9032515443,1000.0000000000
-positions closed before mapping,out_strength,inter,2485,0.8617706237,0.6507393524,0.9565227655,1000.0000000000
-positions closed before mapping,out_strength,non-core,3932,0.7475839268,0.6984319525,0.8085073546,1000.0000000000
-positions closed before mapping,pagerank,all,6608,0.9517251816,0.9091157972,0.9704619965,1000.0000000000
+positions closed before mapping,in_strength,non-core,3932,0.9224313327,0.8406839993,0.9575401111,1000.0000000000
+positions closed before mapping,out_strength,all,6608,0.7845792978,0.7243076617,0.8601216751,1000.0000000000
+positions closed before mapping,out_strength,core,191,0.5078534031,0.1813124633,0.8889100127,1000.0000000000
+positions closed before mapping,out_strength,inter,2485,0.8621730382,0.6507393524,0.9565227655,1000.0000000000
+positions closed before mapping,out_strength,non-core,3932,0.7489827060,0.7005045278,0.8085242085,1000.0000000000
+positions closed before mapping,pagerank,all,6608,0.9515738499,0.9091292092,0.9701499435,1000.0000000000
 positions closed before mapping,pagerank,core,191,0.8691099476,0.5833022388,0.9440078886,1000.0000000000
-positions closed before mapping,pagerank,inter,2485,0.9657947686,0.8567727108,0.9912948130,1000.0000000000
-positions closed before mapping,pagerank,non-core,3932,0.9468463886,0.8757241880,0.9721913366,1000.0000000000
-positions closed before mapping,betweenness,all,6608,0.8373184019,0.7042023614,0.9123060281,1000.0000000000
+positions closed before mapping,pagerank,inter,2485,0.9653923541,0.8510453685,0.9912948130,1000.0000000000
+positions closed before mapping,pagerank,non-core,3932,0.9468463886,0.8748806483,0.9722647307,1000.0000000000
+positions closed before mapping,betweenness,all,6608,0.8373940678,0.7041743786,0.9117667863,1000.0000000000
 positions closed before mapping,betweenness,core,191,0.8010471204,0.4237990884,0.9095361360,1000.0000000000
-positions closed before mapping,betweenness,inter,2485,0.9432595573,0.7612145329,0.9874295538,1000.0000000000
-positions closed before mapping,betweenness,non-core,3932,0.7721261445,0.6335323689,0.8822921077,1000.0000000000
-positions closed before mapping,mention_degree,all,6608,0.9583081114,0.9154589291,0.9761493556,1000.0000000000
+positions closed before mapping,betweenness,inter,2485,0.9440643863,0.7648645350,0.9874295538,1000.0000000000
+positions closed before mapping,betweenness,non-core,3932,0.7717446592,0.6341990996,0.8818561384,1000.0000000000
+positions closed before mapping,mention_degree,all,6608,0.9584594431,0.9159803515,0.9762015161,1000.0000000000
 positions closed before mapping,mention_degree,core,191,0.9267015707,0.6393026847,0.9845787865,1000.0000000000
 positions closed before mapping,mention_degree,inter,2485,0.9722334004,0.8798405385,0.9923862775,1000.0000000000
-positions closed before mapping,mention_degree,non-core,3932,0.9510427263,0.8851071912,0.9737818425,1000.0000000000
-positions closed before mapping,mentioned_to,all,6608,0.9487742131,0.9141902544,0.9628404292,1000.0000000000
+positions closed before mapping,mention_degree,non-core,3932,0.9512970498,0.8862844389,0.9737192903,1000.0000000000
+positions closed before mapping,mentioned_to,all,6608,0.9490768765,0.9142520749,0.9629508892,1000.0000000000
 positions closed before mapping,mentioned_to,core,191,0.8219895288,0.6594510858,0.9547608576,1000.0000000000
-positions closed before mapping,mentioned_to,inter,2485,0.9561368209,0.8638393707,0.9798698046,1000.0000000000
+positions closed before mapping,mentioned_to,inter,2485,0.9569416499,0.8646366190,0.9800293870,1000.0000000000
 positions closed before mapping,mentioned_to,non-core,3932,0.9502797558,0.8879819969,0.9710653979,1000.0000000000
-positions closed before mapping,third_party_mentioned_to,all,6608,0.9536168281,0.9174803377,0.9676766405,1000.0000000000
+positions closed before mapping,third_party_mentioned_to,all,6608,0.9536924939,0.9174803377,0.9677746735,1000.0000000000
 positions closed before mapping,third_party_mentioned_to,core,191,0.8324607330,0.6666666667,0.9547608576,1000.0000000000
 positions closed before mapping,third_party_mentioned_to,inter,2485,0.9645875252,0.8769178082,0.9856600709,1000.0000000000
-positions closed before mapping,third_party_mentioned_to,non-core,3932,0.9525686673,0.8877887507,0.9744157881,1000.0000000000
+positions closed before mapping,third_party_mentioned_to,non-core,3932,0.9526958291,0.8877887507,0.9746492767,1000.0000000000
 positions closed before mapping,mention_degree_unfiltered,all,6608,0.9577784504,0.9139192138,0.9755854336,1000.0000000000
 positions closed before mapping,mention_degree_unfiltered,core,191,0.9214659686,0.6393026847,0.9830532280,1000.0000000000
 positions closed before mapping,mention_degree_unfiltered,inter,2485,0.9734406439,0.8888810531,0.9919988165,1000.0000000000
 positions closed before mapping,mention_degree_unfiltered,non-core,3932,0.9496439471,0.8823239228,0.9730152126,1000.0000000000
-positions closed before mapping,mentioned_to_unfiltered,all,6608,0.9575514528,0.9192412817,0.9725040024,1000.0000000000
+positions closed before mapping,mentioned_to_unfiltered,all,6608,0.9578541162,0.9199607909,0.9726518381,1000.0000000000
 positions closed before mapping,mentioned_to_unfiltered,core,191,0.8586387435,0.7064512882,0.9716647499,1000.0000000000
 positions closed before mapping,mentioned_to_unfiltered,inter,2485,0.9698189135,0.8810361042,0.9896062277,1000.0000000000
-positions closed before mapping,mentioned_to_unfiltered,non-core,3932,0.9546032553,0.8910151692,0.9762681329,1000.0000000000
+positions closed before mapping,mentioned_to_unfiltered,non-core,3932,0.9551119023,0.8934462468,0.9764083586,1000.0000000000
 positions closed before mapping,custodian,all,6608,0.6594279661,0.5199823712,0.8153618659,1000.0000000000
 positions closed before mapping,custodian,core,191,0.5000000000,0.5000000000,0.5000000000,1000.0000000000
 positions closed before mapping,custodian,inter,2485,0.9239436620,0.6466479088,0.9897974313,1000.0000000000
@@ -356,13 +356,13 @@ positions closed before mapping,custodian,non-core,3932,0.5000000000,0.500000000
 "all pairs, raw-address degree over windowed, deduplicated mail, max over release addresses",raw_address_degree,inter,5633,0.9281022546,0.8242475177,0.9751457568,1000.0000000000
 "all pairs, raw-address degree over windowed, deduplicated mail, max over release addresses",raw_address_degree,non-core,7121,0.7536160652,0.5527334976,0.8954861579,1000.0000000000
 macro average over dominant employees,degree,all,7338,0.7627413927,,,
-macro average over dominant employees,in_strength,all,7338,0.7909262931,,,
-macro average over dominant employees,out_strength,all,7338,0.7278734409,,,
-macro average over dominant employees,pagerank,all,7338,0.7987993301,,,
-macro average over dominant employees,betweenness,all,7338,0.6305462357,,,
-macro average over dominant employees,mention_degree,all,7338,0.7811933875,,,
-macro average over dominant employees,mentioned_to,all,7338,0.7975377967,,,
-macro average over dominant employees,third_party_mentioned_to,all,7338,0.7952928218,,,
+macro average over dominant employees,in_strength,all,7338,0.7881243610,,,
+macro average over dominant employees,out_strength,all,7338,0.7279389605,,,
+macro average over dominant employees,pagerank,all,7338,0.7992999347,,,
+macro average over dominant employees,betweenness,all,7338,0.6307035641,,,
+macro average over dominant employees,mention_degree,all,7338,0.7846689366,,,
+macro average over dominant employees,mentioned_to,all,7338,0.7977142322,,,
+macro average over dominant employees,third_party_mentioned_to,all,7338,0.7952947451,,,
 macro average over dominant employees,mention_degree_unfiltered,all,7338,0.7745466385,,,
-macro average over dominant employees,mentioned_to_unfiltered,all,7338,0.7967110291,,,
+macro average over dominant employees,mentioned_to_unfiltered,all,7338,0.7973442215,,,
 macro average over dominant employees,custodian,all,7338,0.5269894324,,,
