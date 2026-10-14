@@ -49,3 +49,45 @@ def messages_with_people(source: Path) -> pd.DataFrame:
     people = pd.read_parquet(source / "sender_people.parquet", columns=["path", "sender_person"])
     merged = messages.merge(people, on="path", how="inner", validate="one_to_one")
     return merged[~merged["probable_copy"]].drop(columns="probable_copy").reset_index(drop=True)
+
+
+MAIL_SOURCES = ("processed/messages.parquet", "processed/sender_people.parquet", "processed/identities.parquet",
+                "processed/links.parquet")
+LOCAL_TIME = "America/Chicago"
+
+
+def person_mail(source: Path) -> pd.DataFrame:
+    """Person-text messages with their sender and their To and Cc recipients as people.
+
+    One row per message: path, date (UTC), local (Houston wall-clock time,
+    naive), sender_person, to_people and cc_people (person keys, the sender
+    and duplicates removed, unresolved addresses dropped).
+    """
+    messages = pd.read_parquet(source / "messages.parquet", columns=["path", "date", "to", "cc"])
+    people = pd.read_parquet(source / "sender_people.parquet", columns=["path", "sender_person", "person_text"])
+    identities = pd.read_parquet(source / "identities.parquet", columns=["address", "person_key", "entity_type"])
+    person_of = dict(zip(identities.loc[identities["entity_type"] == "person", "address"].str.lower(),
+                         identities.loc[identities["entity_type"] == "person", "person_key"]))
+    mail = messages.merge(people, on="path", how="inner", validate="one_to_one")
+    mail = mail[mail["person_text"]].drop(columns="person_text").reset_index(drop=True)
+
+    def resolve(addresses, sender):
+        out = []
+        for address in addresses if addresses is not None else []:
+            person = person_of.get(str(address).strip().lower())
+            if person and person != sender and person not in out:
+                out.append(person)
+        return out
+
+    mail["to_people"] = [resolve(t, s) for t, s in zip(mail["to"], mail["sender_person"])]
+    mail["cc_people"] = [[p for p in resolve(c, s) if p not in t] for c, s, t in
+                         zip(mail["cc"], mail["sender_person"], mail["to_people"])]
+    mail["local"] = mail["date"].dt.tz_convert(LOCAL_TIME).dt.tz_localize(None)
+    return mail.drop(columns=["to", "cc"])
+
+
+def replies(source: Path) -> pd.DataFrame:
+    """Inferred replies: (path of the reply, path of the message it answers, seconds between them)."""
+    links = pd.read_parquet(source / "links.parquet", columns=["path", "parent_path", "link_kind", "link_confidence",
+                                                               "response_seconds", "thread"])
+    return links[links["link_kind"] == "reply"].reset_index(drop=True)

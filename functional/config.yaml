@@ -32,3 +32,8 @@ absence_check:
   sample_size: 100
   # Items a person labels as well, for agreement with the AI labeller.
   human_subset_size: 25
+
+referral_check:
+  # Detected referrals drawn for the blind check (guidelines in labels/).
+  sample_size: 100
+  seed: 20261016

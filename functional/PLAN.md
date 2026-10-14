@@ -160,3 +160,20 @@ the plan above leaves them open.
    two measures, betweenness and constraint, so the model has five away ×
    signal coefficients and Holm adjusts across five. This is more
    conservative than four.
+2. **Absences need mail on both sides** (written into `analysis.py` before
+   any outcome was computed, but missing from the decisions above; disclosed
+   on 2026-10-14, after the run). An absence enters the analysis only when
+   someone emailed the person (To) both during the absence and during at
+   least one of its control windows, so each comparison is within person.
+   Of the 326 main absences, 165 of 83 people qualify: 136 had no such mail
+   in any window, 23 only in control windows and 2 only during the absence.
+3. **Three models not estimable** (2026-10-14, after the run). The model with
+   formal rank (32 people; named as backup is non-zero for 3 of their
+   absences and separates the outcome, so the fit does not converge at 100
+   or at 1,000 iterations), the automatic-replies-only run (8 people; two
+   signals constant) and the year-end run (6 people). They are reported as
+   not estimable. Nothing was refitted or changed to make them converge.
+4. **Sparse signals** (noted on 2026-10-14, after the run). In the main
+   sample, being pointed to is non-zero for 9 of 165 absences (8 people) and
+   named as backup for 7 (6 people), so their tests rest on a handful of
+   people and have little power.
