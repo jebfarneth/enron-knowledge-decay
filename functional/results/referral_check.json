@@ -1,0 +1,13 @@
+{
+  "items": 100,
+  "answers": {
+    "yes": 96,
+    "no": 4
+  },
+  "of_decided": 100,
+  "precision": 0.96,
+  "interval_95": [
+    0.9016,
+    0.9843
+  ]
+}

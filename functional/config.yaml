@@ -1,0 +1,39 @@
+# Functional importance over the main pipeline's certified run. This
+# sub-project only reads the main pipeline's outputs; it never writes to
+# them, so the certified run in ../data/processed stays valid.
+
+paths:
+  # The main pipeline's certified outputs (read only).
+  source: ../data/processed
+  data: data
+  results: results
+
+absences:
+  # A notice's stated absence must start no more than this many days before
+  # the notice (an automatic reply sent partway through) and no more than
+  # this many days after it (an announcement made ahead of time).
+  max_days_before_notice: 31
+  max_days_after_notice: 62
+  # Longest absence kept, in calendar days from the first day away to the
+  # day back.
+  max_length_days: 31
+  # Notices from one person whose windows overlap or are at most this many
+  # days apart are one absence.
+  merge_gap_days: 1
+
+absence_check:
+  # Kept notices drawn for the labelled check (guidelines in labels/).
+  # Each round checks the rules as they stand on notices nobody has read yet.
+  round: 3
+  seeds: {1: 20261013, 2: 20261014, 3: 20261015}
+  # Calendar days for rounds 1 and 2 (fixed before they were labelled); working days from round 3 on,
+  # fixed before round 3 was drawn. Round 3 is the last.
+  primary_score: {1: calendar_days, 2: calendar_days, 3: working_days}
+  sample_size: 100
+  # Items a person labels as well, for agreement with the AI labeller.
+  human_subset_size: 25
+
+referral_check:
+  # Detected referrals drawn for the blind check (guidelines in labels/).
+  sample_size: 100
+  seed: 20261016

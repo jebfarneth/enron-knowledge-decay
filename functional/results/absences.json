@@ -1,0 +1,47 @@
+{
+  "max_days_before_notice": 31,
+  "max_days_after_notice": 62,
+  "max_length_days": 31,
+  "merge_gap_days": 1,
+  "notices_found": 1978,
+  "notices_by_kind": {
+    "announcement": 1625,
+    "auto-reply": 353
+  },
+  "notices_by_status": {
+    "kept": 1213,
+    "no date": 453,
+    "sender not a person": 105,
+    "part day": 99,
+    "weekday disagrees with date": 37,
+    "no day back": 36,
+    "too long": 14,
+    "weekend only": 12,
+    "day back not after first day": 6,
+    "too far from the notice": 3
+  },
+  "notices_kept": 1213,
+  "kept_by_kind": {
+    "announcement": 973,
+    "auto-reply": 240
+  },
+  "kept_with_weekday_mismatch": 0,
+  "absences": 985,
+  "people": 558,
+  "absences_by_days": {
+    "1": 326,
+    "2-3": 182,
+    "4-7": 312,
+    "8-14": 133,
+    "15-31": 32
+  },
+  "absences_by_year": {
+    "1999": 19,
+    "2000": 277,
+    "2001": 585,
+    "2002": 104
+  },
+  "absences_from_conflicting_notices": 77,
+  "absences_with_named_backup": 179,
+  "notices_naming_someone": 385
+}

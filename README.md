@@ -340,6 +340,24 @@ a note sent twice minutes apart was stored twice per send (4). Details:
 [`search/README.md`](search/README.md),
 [`search/results/near_duplicates.json`](search/results/near_duplicates.json).
 
+## Follow-up studies (October 2026)
+
+- **How much does the collection decide?** ([`collection/`](collection/), the
+  paper's Section 7.) Rebuilding the measures from random subsets of the 150
+  mailboxes moves degree's accuracy from 74.3% to 91.1% at 25 mailboxes (16.8
+  points, six times the gap between leading measures) and lifts whoever was
+  collected in the rankings; a count of the people who talk about someone in
+  messages that person is not on varies over 5.5 points. Both plans were
+  committed before running.
+- **Does work wait when someone is away?** ([`functional/`](functional/).)
+  985 dated absences from out-of-office notices, 89% correct on working days in
+  a blind check. A plan committed before any outcome was computed tested
+  whether mail to absent people goes unanswered: it was answered as often as in
+  their ordinary weeks (12.6% against 12.7%), and no signal measured beforehand
+  predicted a drop.
+- **The paper.** [`paper/`](paper/) builds the draft *Can Email Reveal Who
+  Outranks Whom?* from the results files (`.venv/bin/python paper/build.py`).
+
 ## Independent check of the cleaning
 
 Quote removal was compared with `email_reply_parser` (Zapier's Python port of

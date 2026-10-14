@@ -19,3 +19,7 @@ data/processed/
 __pycache__/
 .pytest_cache/
 data/labels/
+
+# Paper drafts are built from paper.html.tmpl and build.py; the PDF and build output stay out of git until posted.
+paper/build/
+paper/*.pdf

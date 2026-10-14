@@ -1,0 +1,948 @@
+{
+  "full_corpus_accuracy": {
+    "degree": 0.8955,
+    "pagerank": 0.917,
+    "anchored_degree": 0.8821,
+    "anchored_strength": 0.8254,
+    "talked_about": 0.8876
+  },
+  "by_size": {
+    "10": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8433,
+          "range_95": [
+            0.601,
+            0.9133
+          ]
+        },
+        "bias": {
+          "median": 0.0891,
+          "range_95": [
+            0.0254,
+            0.1774
+          ]
+        },
+        "spearman": {
+          "median": 0.695,
+          "range_95": [
+            0.5773,
+            0.7929
+          ]
+        },
+        "top20": {
+          "median": 0.35,
+          "range_95": [
+            0.2,
+            0.5513
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.8438,
+          "range_95": [
+            0.6065,
+            0.9245
+          ]
+        },
+        "bias": {
+          "median": 0.045,
+          "range_95": [
+            -0.0458,
+            0.1042
+          ]
+        },
+        "spearman": {
+          "median": 0.6775,
+          "range_95": [
+            0.5693,
+            0.7621
+          ]
+        },
+        "top20": {
+          "median": 0.2,
+          "range_95": [
+            0.05,
+            0.4
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.7482,
+          "range_95": [
+            0.5602,
+            0.8676
+          ]
+        },
+        "bias": {
+          "median": -0.1149,
+          "range_95": [
+            -0.4011,
+            0.0264
+          ]
+        },
+        "spearman": {
+          "median": 0.5727,
+          "range_95": [
+            0.4259,
+            0.689
+          ]
+        },
+        "top20": {
+          "median": 0.5,
+          "range_95": [
+            0.1988,
+            0.6513
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.7381,
+          "range_95": [
+            0.5452,
+            0.8605
+          ]
+        },
+        "bias": {
+          "median": -0.1061,
+          "range_95": [
+            -0.3743,
+            0.0745
+          ]
+        },
+        "spearman": {
+          "median": 0.5364,
+          "range_95": [
+            0.4004,
+            0.6445
+          ]
+        },
+        "top20": {
+          "median": 0.25,
+          "range_95": [
+            0.05,
+            0.45
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.8419,
+          "range_95": [
+            0.7597,
+            0.8711
+          ]
+        },
+        "bias": {
+          "median": -0.0785,
+          "range_95": [
+            -0.2901,
+            0.0753
+          ]
+        },
+        "spearman": {
+          "median": 0.5953,
+          "range_95": [
+            0.4329,
+            0.7256
+          ]
+        },
+        "top20": {
+          "median": 0.45,
+          "range_95": [
+            0.25,
+            0.75
+          ]
+        }
+      }
+    },
+    "25": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8695,
+          "range_95": [
+            0.7433,
+            0.9109
+          ]
+        },
+        "bias": {
+          "median": 0.068,
+          "range_95": [
+            0.0308,
+            0.1147
+          ]
+        },
+        "spearman": {
+          "median": 0.8151,
+          "range_95": [
+            0.7446,
+            0.8839
+          ]
+        },
+        "top20": {
+          "median": 0.5,
+          "range_95": [
+            0.3,
+            0.6513
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.874,
+          "range_95": [
+            0.7019,
+            0.9249
+          ]
+        },
+        "bias": {
+          "median": 0.0429,
+          "range_95": [
+            0.0139,
+            0.0693
+          ]
+        },
+        "spearman": {
+          "median": 0.7916,
+          "range_95": [
+            0.7227,
+            0.8446
+          ]
+        },
+        "top20": {
+          "median": 0.3,
+          "range_95": [
+            0.1,
+            0.4513
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.8225,
+          "range_95": [
+            0.6342,
+            0.8822
+          ]
+        },
+        "bias": {
+          "median": -0.0409,
+          "range_95": [
+            -0.1482,
+            0.0223
+          ]
+        },
+        "spearman": {
+          "median": 0.7585,
+          "range_95": [
+            0.66,
+            0.8278
+          ]
+        },
+        "top20": {
+          "median": 0.7,
+          "range_95": [
+            0.4988,
+            0.85
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.7909,
+          "range_95": [
+            0.5964,
+            0.8645
+          ]
+        },
+        "bias": {
+          "median": -0.0341,
+          "range_95": [
+            -0.1286,
+            0.0383
+          ]
+        },
+        "spearman": {
+          "median": 0.7099,
+          "range_95": [
+            0.6142,
+            0.7862
+          ]
+        },
+        "top20": {
+          "median": 0.35,
+          "range_95": [
+            0.15,
+            0.5
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.8608,
+          "range_95": [
+            0.833,
+            0.888
+          ]
+        },
+        "bias": {
+          "median": -0.0271,
+          "range_95": [
+            -0.1103,
+            0.0456
+          ]
+        },
+        "spearman": {
+          "median": 0.7622,
+          "range_95": [
+            0.6551,
+            0.8393
+          ]
+        },
+        "top20": {
+          "median": 0.65,
+          "range_95": [
+            0.4488,
+            0.85
+          ]
+        }
+      }
+    },
+    "50": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8828,
+          "range_95": [
+            0.8104,
+            0.912
+          ]
+        },
+        "bias": {
+          "median": 0.0474,
+          "range_95": [
+            0.0285,
+            0.078
+          ]
+        },
+        "spearman": {
+          "median": 0.9032,
+          "range_95": [
+            0.8492,
+            0.9441
+          ]
+        },
+        "top20": {
+          "median": 0.6,
+          "range_95": [
+            0.4488,
+            0.8
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.8942,
+          "range_95": [
+            0.8196,
+            0.9264
+          ]
+        },
+        "bias": {
+          "median": 0.0322,
+          "range_95": [
+            0.0185,
+            0.0514
+          ]
+        },
+        "spearman": {
+          "median": 0.877,
+          "range_95": [
+            0.8307,
+            0.9127
+          ]
+        },
+        "top20": {
+          "median": 0.45,
+          "range_95": [
+            0.25,
+            0.6
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.8547,
+          "range_95": [
+            0.7751,
+            0.8915
+          ]
+        },
+        "bias": {
+          "median": -0.0093,
+          "range_95": [
+            -0.0503,
+            0.0183
+          ]
+        },
+        "spearman": {
+          "median": 0.8797,
+          "range_95": [
+            0.8131,
+            0.9139
+          ]
+        },
+        "top20": {
+          "median": 0.8,
+          "range_95": [
+            0.6488,
+            0.9
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.8031,
+          "range_95": [
+            0.717,
+            0.8617
+          ]
+        },
+        "bias": {
+          "median": -0.0107,
+          "range_95": [
+            -0.0544,
+            0.0281
+          ]
+        },
+        "spearman": {
+          "median": 0.8354,
+          "range_95": [
+            0.7704,
+            0.8846
+          ]
+        },
+        "top20": {
+          "median": 0.45,
+          "range_95": [
+            0.2988,
+            0.65
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.8733,
+          "range_95": [
+            0.8487,
+            0.8939
+          ]
+        },
+        "bias": {
+          "median": -0.009,
+          "range_95": [
+            -0.0551,
+            0.034
+          ]
+        },
+        "spearman": {
+          "median": 0.8766,
+          "range_95": [
+            0.81,
+            0.9247
+          ]
+        },
+        "top20": {
+          "median": 0.75,
+          "range_95": [
+            0.55,
+            0.9
+          ]
+        }
+      }
+    },
+    "75": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8879,
+          "range_95": [
+            0.8564,
+            0.9097
+          ]
+        },
+        "bias": {
+          "median": 0.0313,
+          "range_95": [
+            0.0198,
+            0.0498
+          ]
+        },
+        "spearman": {
+          "median": 0.9431,
+          "range_95": [
+            0.9057,
+            0.9662
+          ]
+        },
+        "top20": {
+          "median": 0.7,
+          "range_95": [
+            0.5,
+            0.85
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.9045,
+          "range_95": [
+            0.8448,
+            0.9282
+          ]
+        },
+        "bias": {
+          "median": 0.0244,
+          "range_95": [
+            0.0146,
+            0.035
+          ]
+        },
+        "spearman": {
+          "median": 0.9227,
+          "range_95": [
+            0.8887,
+            0.9472
+          ]
+        },
+        "top20": {
+          "median": 0.55,
+          "range_95": [
+            0.3488,
+            0.75
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.8671,
+          "range_95": [
+            0.8212,
+            0.8915
+          ]
+        },
+        "bias": {
+          "median": -0.003,
+          "range_95": [
+            -0.0259,
+            0.0145
+          ]
+        },
+        "spearman": {
+          "median": 0.9339,
+          "range_95": [
+            0.9015,
+            0.9559
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.75,
+            0.95
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.8118,
+          "range_95": [
+            0.7431,
+            0.851
+          ]
+        },
+        "bias": {
+          "median": -0.0031,
+          "range_95": [
+            -0.0341,
+            0.0258
+          ]
+        },
+        "spearman": {
+          "median": 0.9015,
+          "range_95": [
+            0.8609,
+            0.937
+          ]
+        },
+        "top20": {
+          "median": 0.55,
+          "range_95": [
+            0.35,
+            0.75
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.8787,
+          "range_95": [
+            0.861,
+            0.8949
+          ]
+        },
+        "bias": {
+          "median": -0.0045,
+          "range_95": [
+            -0.0301,
+            0.0279
+          ]
+        },
+        "spearman": {
+          "median": 0.932,
+          "range_95": [
+            0.8931,
+            0.9625
+          ]
+        },
+        "top20": {
+          "median": 0.8,
+          "range_95": [
+            0.65,
+            0.9
+          ]
+        }
+      }
+    },
+    "100": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8934,
+          "range_95": [
+            0.8722,
+            0.9084
+          ]
+        },
+        "bias": {
+          "median": 0.0187,
+          "range_95": [
+            0.0089,
+            0.0307
+          ]
+        },
+        "spearman": {
+          "median": 0.971,
+          "range_95": [
+            0.9486,
+            0.9856
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.65,
+            0.95
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.9129,
+          "range_95": [
+            0.8689,
+            0.9265
+          ]
+        },
+        "bias": {
+          "median": 0.0153,
+          "range_95": [
+            0.0096,
+            0.0224
+          ]
+        },
+        "spearman": {
+          "median": 0.9589,
+          "range_95": [
+            0.9336,
+            0.9762
+          ]
+        },
+        "top20": {
+          "median": 0.7,
+          "range_95": [
+            0.5,
+            0.9
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.877,
+          "range_95": [
+            0.846,
+            0.8909
+          ]
+        },
+        "bias": {
+          "median": -0.0019,
+          "range_95": [
+            -0.0191,
+            0.0145
+          ]
+        },
+        "spearman": {
+          "median": 0.9661,
+          "range_95": [
+            0.9479,
+            0.978
+          ]
+        },
+        "top20": {
+          "median": 0.9,
+          "range_95": [
+            0.8,
+            1.0
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.8234,
+          "range_95": [
+            0.7693,
+            0.8528
+          ]
+        },
+        "bias": {
+          "median": -0.0018,
+          "range_95": [
+            -0.0243,
+            0.0198
+          ]
+        },
+        "spearman": {
+          "median": 0.9497,
+          "range_95": [
+            0.9135,
+            0.971
+          ]
+        },
+        "top20": {
+          "median": 0.7,
+          "range_95": [
+            0.5,
+            0.85
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.8849,
+          "range_95": [
+            0.8692,
+            0.8929
+          ]
+        },
+        "bias": {
+          "median": -0.004,
+          "range_95": [
+            -0.0288,
+            0.0185
+          ]
+        },
+        "spearman": {
+          "median": 0.9658,
+          "range_95": [
+            0.9308,
+            0.9836
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.75,
+            0.95
+          ]
+        }
+      }
+    },
+    "125": {
+      "degree": {
+        "accuracy": {
+          "median": 0.8944,
+          "range_95": [
+            0.8801,
+            0.9062
+          ]
+        },
+        "bias": {
+          "median": 0.0088,
+          "range_95": [
+            0.0034,
+            0.0156
+          ]
+        },
+        "spearman": {
+          "median": 0.9876,
+          "range_95": [
+            0.9704,
+            0.9954
+          ]
+        },
+        "top20": {
+          "median": 0.9,
+          "range_95": [
+            0.75,
+            1.0
+          ]
+        }
+      },
+      "pagerank": {
+        "accuracy": {
+          "median": 0.9152,
+          "range_95": [
+            0.8818,
+            0.9244
+          ]
+        },
+        "bias": {
+          "median": 0.0078,
+          "range_95": [
+            0.0031,
+            0.0128
+          ]
+        },
+        "spearman": {
+          "median": 0.9808,
+          "range_95": [
+            0.9644,
+            0.9923
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.65,
+            1.0
+          ]
+        }
+      },
+      "anchored_degree": {
+        "accuracy": {
+          "median": 0.8797,
+          "range_95": [
+            0.8658,
+            0.8885
+          ]
+        },
+        "bias": {
+          "median": -0.0008,
+          "range_95": [
+            -0.0089,
+            0.0081
+          ]
+        },
+        "spearman": {
+          "median": 0.9863,
+          "range_95": [
+            0.9767,
+            0.9922
+          ]
+        },
+        "top20": {
+          "median": 0.95,
+          "range_95": [
+            0.85,
+            1.0
+          ]
+        }
+      },
+      "anchored_strength": {
+        "accuracy": {
+          "median": 0.8234,
+          "range_95": [
+            0.801,
+            0.8443
+          ]
+        },
+        "bias": {
+          "median": -0.0004,
+          "range_95": [
+            -0.0117,
+            0.0133
+          ]
+        },
+        "spearman": {
+          "median": 0.9766,
+          "range_95": [
+            0.9546,
+            0.9911
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.6987,
+            0.95
+          ]
+        }
+      },
+      "talked_about": {
+        "accuracy": {
+          "median": 0.887,
+          "range_95": [
+            0.8725,
+            0.8925
+          ]
+        },
+        "bias": {
+          "median": -0.002,
+          "range_95": [
+            -0.0133,
+            0.0108
+          ]
+        },
+        "spearman": {
+          "median": 0.9855,
+          "range_95": [
+            0.967,
+            0.9955
+          ]
+        },
+        "top20": {
+          "median": 0.9,
+          "range_95": [
+            0.8,
+            0.95
+          ]
+        }
+      }
+    }
+  },
+  "expectations": {
+    "F1_anchored_degree_bias_closer_to_zero_than_degree": {
+      "10": false,
+      "25": true,
+      "50": true,
+      "75": true,
+      "100": true,
+      "125": true
+    },
+    "F1_met": false,
+    "F2_talked_about_bias_closer_to_zero_than_degree": {
+      "10": true,
+      "25": true,
+      "50": true,
+      "75": true,
+      "100": true,
+      "125": true
+    },
+    "F2_met": true,
+    "F3_range_at_25_points": {
+      "anchored_degree": 24.8,
+      "degree": 16.76
+    },
+    "F3_met": false
+  }
+}

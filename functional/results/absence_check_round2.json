@@ -1,0 +1,87 @@
+{
+  "round": 2,
+  "primary_score": "calendar_days",
+  "all": {
+    "items": 100,
+    "absent": {
+      "yes": 97,
+      "no": 2,
+      "unclear": 1
+    },
+    "of_decided": 99,
+    "calendar_days": {
+      "correct": 83,
+      "share": 0.8384,
+      "interval_95": [
+        0.7535,
+        0.898
+      ],
+      "exact": 75,
+      "first_day_off": 10,
+      "day_back_off": 5
+    },
+    "working_days": {
+      "correct": 86,
+      "share": 0.8687,
+      "interval_95": [
+        0.7882,
+        0.9216
+      ]
+    }
+  },
+  "announcement": {
+    "items": 74,
+    "absent": {
+      "yes": 72,
+      "unclear": 1,
+      "no": 1
+    },
+    "of_decided": 73,
+    "calendar_days": {
+      "correct": 61,
+      "share": 0.8356,
+      "interval_95": [
+        0.7343,
+        0.9034
+      ],
+      "exact": 53,
+      "first_day_off": 9,
+      "day_back_off": 3
+    },
+    "working_days": {
+      "correct": 64,
+      "share": 0.8767,
+      "interval_95": [
+        0.782,
+        0.9338
+      ]
+    }
+  },
+  "auto-reply": {
+    "items": 26,
+    "absent": {
+      "yes": 25,
+      "no": 1
+    },
+    "of_decided": 26,
+    "calendar_days": {
+      "correct": 22,
+      "share": 0.8462,
+      "interval_95": [
+        0.6647,
+        0.9385
+      ],
+      "exact": 22,
+      "first_day_off": 1,
+      "day_back_off": 2
+    },
+    "working_days": {
+      "correct": 22,
+      "share": 0.8462,
+      "interval_95": [
+        0.6647,
+        0.9385
+      ]
+    }
+  }
+}
