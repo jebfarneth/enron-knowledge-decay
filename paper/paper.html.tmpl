@@ -4,39 +4,45 @@
 <meta charset="utf-8">
 <title>Can Email Reveal Who Outranks Whom? Re-examining the Enron Hierarchy Benchmark</title>
 <style>
-@page { size: Letter; margin: 0.95in 1in 0.9in 1in;
-  @bottom-center { content: counter(page); font-family: "Times New Roman", Times, serif; font-size: 10pt; color: #333; } }
-html { font-family: "Times New Roman", Times, serif; font-size: 11pt; line-height: 1.32; color: #000; }
+/* Two-column proceedings layout after the LREC/ACL style: A4, Times, 10 pt body, numbered centred section heads. */
+@page { size: A4; margin: 2.2cm 1.9cm 2.4cm 1.9cm;
+  @bottom-center { content: counter(page); font-family: "Times New Roman", Times, serif; font-size: 10pt; } }
+html { font-family: "Times New Roman", Times, serif; font-size: 10pt; line-height: 1.22; color: #000; }
 body { margin: 0; }
-h1 { font-size: 15pt; line-height: 1.25; text-align: center; margin: 0 0 0.5em; font-weight: bold; }
-.author { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 0.2em; }
-.affil { text-align: center; font-size: 11pt; color: #333; margin-bottom: 1.2em; }
-.draft { text-align: center; font-size: 8.5pt; color: #8a2a0a; letter-spacing: 0.04em; margin-bottom: 1.4em; }
-.abstract { margin: 0 0.45in 1.4em; font-size: 10pt; text-align: justify; hyphens: auto; }
-.abstract h2 { text-align: center; font-size: 12pt; margin: 0 0 0.4em; }
-h2 { font-size: 12pt; margin: 1.35em 0 0.45em; break-after: avoid; }
-h3 { font-size: 11pt; margin: 1.05em 0 0.3em; break-after: avoid; }
-p { margin: 0 0 0.62em; text-align: justify; hyphens: auto; orphans: 3; widows: 3; }
-ul, ol { margin: 0 0 0.7em; padding-left: 1.5em; }
-li { margin-bottom: 0.25em; text-align: justify; hyphens: auto; }
-figure { margin: 1.1em 0 1.2em; break-inside: avoid; }
+h1 { font-size: 16pt; line-height: 1.2; text-align: center; margin: 0 0 0.55em; font-weight: bold; }
+.author { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 0.25em; }
+.affil { text-align: center; font-size: 10pt; margin-bottom: 0.15em; }
+.mono, .affil .mono a { font-family: "Courier New", Courier, monospace; font-size: 9.5pt; }
+.draft { text-align: center; font-size: 8pt; color: #8a2a0a; letter-spacing: 0.04em; margin: 0.6em 0 1.1em; }
+.abstract { margin: 0 0 0.4em; font-size: 10pt; text-align: justify; hyphens: auto; }
+.abstract h2 { text-align: center; font-size: 11pt; margin: 0 0 0.3em; }
+.abstract p { text-indent: 0; }
+.keywords { font-size: 10pt; margin: 0 0 1.2em; text-indent: 0 !important; }
+.columns { column-count: 2; column-gap: 0.65cm; }
+h2 { font-size: 12pt; text-align: center; margin: 1.1em 0 0.45em; break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 0.9em 0 0.3em; break-after: avoid; }
+p { margin: 0; text-align: justify; hyphens: auto; orphans: 3; widows: 3; }
+p + p, ul + p, ol + p, .tbl + p, figure + p { text-indent: 1.2em; }
+ul, ol { margin: 0.3em 0 0.4em; padding-left: 1.3em; }
+li { margin-bottom: 0.2em; text-align: justify; hyphens: auto; }
+figure { margin: 0.8em 0 0.9em; break-inside: avoid; }
 figure img { width: 100%; display: block; }
-figcaption, .tcap { font-size: 10pt; line-height: 1.25; margin-top: 0.45em; text-align: justify; hyphens: auto; }
-.tcap { margin: 0 0 0.45em; }
-.tbl { margin: 1.1em 0 1.2em; break-inside: avoid; }
-table { border-collapse: collapse; width: 100%; font-size: 10pt; line-height: 1.25; font-variant-numeric: tabular-nums; }
-th { text-align: left; font-weight: bold; border-top: 1.2px solid #111; border-bottom: 0.7px solid #111; padding: 3px 5px; }
-td { padding: 2.2px 5px; vertical-align: top; }
+.wide { column-span: all; }
+figcaption, .tcap { font-size: 9pt; line-height: 1.2; margin-top: 0.4em; text-align: justify; hyphens: auto; }
+.tbl { margin: 0.8em 0 0.9em; break-inside: avoid; }
+table { border-collapse: collapse; width: 100%; font-size: 9pt; line-height: 1.2; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: bold; border-top: 1.2px solid #111; border-bottom: 0.7px solid #111; padding: 2.5px 5px; }
+td { padding: 2px 5px; vertical-align: top; }
 td:not(:first-child), th:not(:first-child) { text-align: right; }
 table.text td, table.text th { text-align: left; }
 table.text td:last-child { white-space: nowrap; }
 tr:last-child td { border-bottom: 1.2px solid #111; }
 tr.group td { border-top: 0.5px solid #999; }
-.ci { color: #444; font-size: 9pt; }
-.refs p { padding-left: 1.6em; text-indent: -1.6em; font-size: 10pt; text-align: left; margin-bottom: 0.35em; }
-code { font-family: Menlo, monospace; font-size: 8.8pt; }
-.small { font-size: 10pt; }
-a { color: #1d4f91; text-decoration: none; }
+.ci { color: #444; font-size: 8pt; }
+.refs p { padding-left: 1.4em; text-indent: -1.4em !important; font-size: 9pt; text-align: left; margin-bottom: 0.3em; }
+code { font-family: "Courier New", Courier, monospace; font-size: 9pt; }
+.small { font-size: 9pt; }
+a { color: #000; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -44,7 +50,8 @@ a { color: #1d4f91; text-decoration: none; }
 <h1>Can Email Reveal Who Outranks Whom?<br>Re-examining the Enron Hierarchy Benchmark</h1>
 <div class="author">Jeb Farneth</div>
 <div class="affil">Gabelli School of Business, Fordham University, New York, NY<br>
-<a href="mailto:jf167@fordham.edu">jf167@fordham.edu</a> &middot; Code: <a href="https://github.com/jebfarneth/enron-knowledge-decay">github.com/jebfarneth/enron-knowledge-decay</a></div>
+<span class="mono"><a href="mailto:jf167@fordham.edu">jf167@fordham.edu</a></span><br>
+Code: <span class="mono"><a href="https://github.com/jebfarneth/enron-knowledge-decay">github.com/jebfarneth/enron-knowledge-decay</a></span></div>
 <div class="draft">WORKING DRAFT &middot; OCTOBER 2026 &middot; NOT FOR CIRCULATION</div>
 
 <div class="abstract">
@@ -71,8 +78,12 @@ the rankings. A count of the people who talk about someone in messages that pers
 ${cor_talk25_width}-point range) at a cost of ${cor_talk_cost} points on the full corpus. The pipeline, tests and results
 are public.</p>
 </div>
+<p class="keywords"><b>Keywords:</b> Enron email corpus, organizational hierarchy, benchmark evaluation, electronic
+discovery, custodian selection, social network analysis, named-entity recognition</p>
 
-<h2>1&ensp;Introduction</h2>
+<div class="columns">
+
+<h2>1.&ensp;Introduction</h2>
 
 <p>Email records who works with whom, and researchers have long asked whether it also records who is in charge. The
 Enron corpus, released during the federal investigation of the company and distributed by Carnegie Mellon University
@@ -113,7 +124,7 @@ from each of two export formats. We confirm this with a labelled sample and corp
 deduplication rule.</li>
 </ol>
 
-<h2>2&ensp;Related work</h2>
+<h2>2.&ensp;Related work</h2>
 
 <p><b>Hierarchy from email networks.</b> Diesner and Carley (2005) and Diesner, Frantz and Carley (2005) described the
 structure of the Enron communication network and how it changed during the company's collapse. Creamer (2022) ranks
@@ -132,16 +143,16 @@ use but that later work on the same pipeline will.</p>
 studies use as a seniority label. It is undated, gives rank level rather than reporting lines, and contains duplicate
 rows with conflicting titles (Diesner and Carley 2005). We use it as a secondary, noisy proxy.</p>
 
-<h2>3&ensp;Data and pipeline</h2>
+<h2>3.&ensp;Data and pipeline</h2>
 
 <figure>
 <img src="figures/funnel.svg" alt="Data funnel">
-<figcaption><b>Figure 1.</b> From the raw corpus to the analysis set. Percentages are of the ${f_parsed_files} files in
+<figcaption>Figure 1: From the raw corpus to the analysis set. Percentages are of the ${f_parsed_files} files in
 the CMU release. The release stores a separate file for each folder and mailbox that held a message, so removing
 duplicate copies roughly halves the corpus.</figcaption>
 </figure>
 
-<h3>3.1&ensp;Corpus and deduplication</h3>
+<h3>3.1.&ensp;Corpus and deduplication</h3>
 <p>We use the CMU release of May 7, 2015, checked against a pinned SHA-256 on every run. All ${f_parsed_files} files
 parse; ${f_in_window} are dated 1998 to 2002 (Figure 1). The same message is stored many times, once in each folder
 and mailbox that held it, usually under different Message-IDs. Removing copies with the same sender, timestamp,
@@ -151,7 +162,7 @@ it. A second rule flags <em>time-shifted copies</em>, the same message stored wi
 number of hours. Section 7 shows that this artifact is larger than the original rule assumed, and the corrected rule
 flags ${f_probable_time_shifted_copies} messages, which are kept in the data but excluded from every analysis.</p>
 
-<h3>3.2&ensp;Authored text and exclusions</h3>
+<h3>3.2.&ensp;Authored text and exclusions</h3>
 <p>Measures computed from text should read what the sender wrote, not quoted earlier messages. The pipeline estimates
 each message's authored text by removing quoted replies, forwarded messages, Lotus Notes and Outlook quote headers and
 legal disclaimers; ${f_with_authored_text} messages keep some authored text. We compared the cleaner with
@@ -167,7 +178,7 @@ messages, ${f_routine_messages_excluded_from_text} long messages that their send
 time-shifted copies. It holds ${f_analysis_messages} messages from ${f_analysis_senders} sender addresses. All flags
 are rules, not a trained classifier.</p>
 
-<h3>3.3&ensp;Senders and the communication graph</h3>
+<h3>3.3.&ensp;Senders and the communication graph</h3>
 <p>Each message's sender is attributed from its own display name and address. Aliases merge on shared directory
 identifiers or a go-by middle name; shared, numbered and departmental mailboxes become role keys rather than people.
 ${f_person_text} analysis messages (from ${f_people} people) have a sender attributed to a person. The communication
@@ -175,7 +186,7 @@ graph has a directed edge from a sender to each internal To and Cc recipient. A 
 recipients adds 1/<i>n</i> to each of its edges, so broadcasts count less in the weighted measures; degree counts
 distinct contacts and still credits broadcasts in full.</p>
 
-<h3>3.4&ensp;Reproducibility</h3>
+<h3>3.4.&ensp;Reproducibility</h3>
 <p>One command (<code>make all</code>) runs every stage from download to figures. Every parameter is in one
 configuration file, every random draw is seeded, and every stage records the checksums of its inputs, outputs, code
 and configuration in a manifest; corpus-level checks pass only for one complete run built by the current code. The
@@ -183,15 +194,15 @@ pipeline has ${unit_tests} unit tests and ${corpus_checks} checks against the re
 independent audits by an AI code reviewer (Codex, OpenAI) before the analysis was frozen; the audit reports and the
 responses to each finding are in the repository.</p>
 
-<h2>4&ensp;Labels</h2>
+<h2>4.&ensp;Labels</h2>
 
-<h3>4.1&ensp;Title proxy</h3>
+<h3>4.1.&ensp;Title proxy</h3>
 <p>Seniority levels from the Shetty and Adibi (2004) list (CEO 6 down to trader or employee 0) are matched to
 ${tpeople} people in the corpus, giving ${tpairs} pairs at different levels. Two duplicate rows with conflicting titles
 are dropped, following Diesner and Carley (2005), and four labels contradicted by the list's own notes or the person's
 signature are flagged for a sensitivity run.</p>
 
-<h3>4.2&ensp;Gold standard</h3>
+<h3>4.2.&ensp;Gold standard</h3>
 <p>The gold standard comes from a release that the authors of Agarwal et al. (2012) share on request: org-chart
 positions joined through organizational units. An employee dominates another when a chain of units leads from one of
 their positions to one of the other's; the dominance pairs are the transitive closure of these relations, restricted
@@ -210,14 +221,14 @@ several people. The <b>main population</b> is the ${main_pairs} pairs whose two 
 dominance does not start, end or run through one of the ${mixed_records} merged records. A stricter population that
 also excludes the multi-person records has ${strict_pairs} pairs.</p>
 
-<h3>4.3&ensp;Pair types</h3>
+<h3>4.3.&ensp;Pair types</h3>
 <p>Following Agarwal et al. (2012), pairs are split by whether the two employees are <i>custodians</i>, people whose
 mailboxes were collected: <i>core</i> pairs join two custodians, <i>inter</i> pairs a custodian and a non-custodian,
 and <i>non-core</i> pairs two non-custodians. Over all ${gold_pairs} reconstructed pairs the split is ${full_core} /
 ${full_inter} / ${full_noncore} (the paper reports ${paper_core} / ${paper_inter} / ${paper_noncore}); in the main
 population it is ${gpairs_core} / ${gpairs_inter} / ${gpairs_noncore}.</p>
 
-<h2>5&ensp;Measures and evaluation</h2>
+<h2>5.&ensp;Measures and evaluation</h2>
 
 <p><b>Network measures.</b> Degree (distinct contacts, undirected), weighted email received (in-strength), messages
 sent (out-strength), PageRank on the weighted directed graph (Brin and Page 1998; damping 0.85) and exact betweenness
@@ -245,33 +256,33 @@ not pairs, since pairs that share a person are not independent; measures are com
 same resamples. These intervals cover sampling of people only, not matching, label or graph-construction choices,
 which the sensitivity runs address.</p>
 
-<h2>6&ensp;Results</h2>
+<h2>6.&ensp;Results</h2>
 
-<h3>6.1&ensp;Reproducing the baseline</h3>
+<h3>6.1.&ensp;Reproducing the baseline</h3>
 <p>Agarwal et al. (2012) computed degree over a graph in which aliases were merged into people. Computing degree over
 raw addresses in our windowed, deduplicated mail, taking each employee's highest-degree release address, over all
 ${gold_pairs} pairs gives ${raw_degree}, against the published
 ${published_degree}. Given the differences in pair construction, we take this as a successful reproduction of the
 baseline's level.</p>
 
-<h3>6.2&ensp;Main results</h3>
+<h3>6.2.&ensp;Main results</h3>
 
-<figure>
+<figure class="wide">
 <img src="figures/main.svg" alt="Accuracy by measure on two label sets">
-<figcaption><b>Figure 2.</b> Share of pairs each measure orders correctly, on the title proxy (left) and the main
+<figcaption>Figure 2: Share of pairs each measure orders correctly, on the title proxy (left) and the main
 gold-standard population (right), with 95% person-bootstrap intervals. Blue: email-network measures; orange:
 mention-network measures; grey: the custodian baseline, which uses no communication. The dashed line is chance. The
 best measure differs between the two label sets.</figcaption>
 </figure>
 
-<div class="tbl">
-<div class="tcap"><b>Table 1.</b> Accuracy by measure. Title proxy: ${tpairs} pairs among ${tpeople} people. Gold
-standard: main population of ${gpairs_all} pairs, then by pair type (core ${gpairs_core}, inter ${gpairs_inter},
-non-core ${gpairs_noncore} pairs). Intervals are 95% person-bootstrap intervals.</div>
+<div class="tbl wide">
 <table>
 <tr><th>Measure</th><th>Title proxy</th><th>Gold standard</th><th>Core</th><th>Inter</th><th>Non-core</th></tr>
 ${table_results}
 </table>
+<div class="tcap">Table 1: Accuracy by measure. Title proxy: ${tpairs} pairs among ${tpeople} people. Gold
+standard: main population of ${gpairs_all} pairs, then by pair type (core ${gpairs_core}, inter ${gpairs_inter},
+non-core ${gpairs_noncore} pairs). Intervals are 95% person-bootstrap intervals.</div>
 </div>
 
 <p>Table 1 and Figure 2 give the main results. On the gold standard, PageRank (${g_pagerank_all}) and the three mention
@@ -280,11 +291,11 @@ and betweenness and messages sent trail. The title proxy orders the measures dif
 at ${t_mention_degree} (paired difference with degree ${td_mention_degree_degree} points,
 ${tdci_mention_degree_degree}), while PageRank (${t_pagerank}) falls below degree. Which measure is &ldquo;best&rdquo; therefore depends on the label set.</p>
 
-<h3>6.3&ensp;Much of the task is which mailboxes were collected</h3>
+<h3 style="break-before: column">6.3.&ensp;Much of the task is which mailboxes were collected</h3>
 
-<figure>
+<figure class="wide">
 <img src="figures/pair_types.svg" alt="Accuracy by pair type">
-<figcaption><b>Figure 3.</b> Accuracy by pair type in the main gold population. When one employee's mailbox was
+<figcaption>Figure 3: Accuracy by pair type in the main gold population. When one employee's mailbox was
 collected and the other's was not (middle), knowing whose mailbox was collected (grey) orders pairs about as well as
 degree. When neither or both were collected, the custodian baseline cannot separate the pair and scores 50%.</figcaption>
 </figure>
@@ -297,16 +308,16 @@ sent scores between ${inter_lo} and ${inter_hi} (Figure 3, Table 1). The informa
 population), where neither mailbox was collected and each person appears only through others' mail. There degree falls
 to ${g_degree_noncore}, and the measures separate. Section 7 varies the collection itself.</p>
 
-<div class="tbl">
-<div class="tcap"><b>Table 2.</b> Each measure minus degree on the main gold population, in percentage points, with
-95% intervals from paired person resamples. Positive values favour the measure.</div>
+<div class="tbl wide">
 <table>
 <tr><th>Measure</th><th>All pairs</th><th>Inter</th><th>Non-core</th></tr>
 ${table_paired}
 </table>
+<div class="tcap">Table 2: Each measure minus degree on the main gold population, in percentage points, with
+95% intervals from paired person resamples. Positive values favour the measure.</div>
 </div>
 
-<h3>6.4&ensp;Two executives carry a quarter of the pairs</h3>
+<h3>6.4.&ensp;Two executives carry a quarter of the pairs</h3>
 <p>Dominance pairs are the transitive closure of an org chart, so a person near the top dominates everyone below
 them. Kenneth Lay and Jeffrey Skilling take part in ${ls_pairs} of the ${main_pairs} main pairs (${ls_share}). Every
 measure ranks them near the top, so they inflate accuracy. Dropping the pairs that involve them lowers degree from
@@ -314,7 +325,7 @@ ${g_degree_all} to ${no_ls_degree}. Averaging accuracy over dominant employees, 
 lowers it to ${macro_degree} (PageRank ${macro_pagerank}, people mentioned to them ${macro_mentioned_to}). These shifts
 are larger than any difference between the leading measures.</p>
 
-<h3>6.5&ensp;Language against network</h3>
+<h3>6.5.&ensp;Language against network</h3>
 <p>On the main population, the primary mention measure's difference from degree is ${d_mentioned_to_all} points
 (${dci_mentioned_to_all}) and mention-network degree's is ${d_mention_degree_all} (${dci_mention_degree_all}); neither
 is distinguishable from zero. For others mentioned to them, which removes the sender and recipients, it is
@@ -329,11 +340,11 @@ before the filters for signatures, office titles and company names were run; the
 exploratory. Without the filters, people mentioned to them scores ${g_mentioned_to_unfiltered_all}, a difference from
 degree of ${d_mentioned_to_unfiltered_all} (${dci_mentioned_to_unfiltered_all}).</p>
 
-<h3>6.6&ensp;Sensitivity</h3>
+<h3>6.6.&ensp;Sensitivity</h3>
 
-<figure>
+<figure class="wide">
 <img src="figures/sensitivity.svg" alt="Sensitivity to population and scoring">
-<figcaption><b>Figure 4.</b> Accuracy of degree, PageRank, people mentioned to them and the custodian baseline under
+<figcaption>Figure 4: Accuracy of degree, PageRank, people mentioned to them and the custodian baseline under
 each gold-standard population and scoring (pairs in parentheses). The shaded row is the main population. The same
 measure moves across a range far wider than the gaps between degree, PageRank and people mentioned to them within any
 row.</figcaption>
@@ -347,7 +358,7 @@ runs, by ${sens_gap_min} to ${sens_gap_max} points. On the title proxy, degree m
 and presidents removed) and ${t_degree_people_only} (people-only graph); building the graph only from messages with at
 most 10 recipients gives ${t_degree_max10}, so broadcasts account for part of degree's signal.</p>
 
-<h2>7&ensp;How much does the collection decide?</h2>
+<h2>7.&ensp;How much does the collection decide?</h2>
 
 <p>Section 6.3 showed that knowing whose mailbox was collected orders most of the pairs that cross the collection
 boundary. The corpus itself is one collection: the ${col_mailboxes} or so mailboxes that investigators gathered. To ask how much a
@@ -355,7 +366,7 @@ different collection would change the results, we rebuilt every measure from cho
 design, outcomes and expectations below were written down and committed to the project's repository before any of
 them was computed (<code>collection/PLAN.md</code> and <code>collection/PLAN_corrections.md</code>).</p>
 
-<h3>7.1&ensp;Design</h3>
+<h3>7.1.&ensp;Design</h3>
 <p>A collection keeps every message that has at least one stored copy in one of its mailboxes, counting exact
 duplicates and time-shifted copies, and nothing else. Degree, PageRank and the mention measures are rebuilt from those
 messages with the rules of Sections 3 and 5 (betweenness is left out for time) and scored on the fixed main population
@@ -367,7 +378,7 @@ working from the org chart might choose) and the most junior first, ${col_collec
 accuracy, we measured collection bias, the change in collected employees' percentile rank compared with the full
 corpus, and how many of the full corpus's 20 highest-ranked employees stay in a collection's top 20.</p>
 
-<h3>7.2&ensp;Which mailboxes are collected matters more than which measure is used</h3>
+<h3>7.2.&ensp;Which mailboxes are collected matters more than which measure is used</h3>
 <p>With 25 random mailboxes, degree orders between ${col_deg25_lo} and ${col_deg25_hi} of pairs depending on which 25
 were drawn (95% range; median ${col_deg25_median}), a spread of ${col_deg25_width} points, ${col_ratio} times the largest
 difference between leading measures on the full corpus (${lead_gap} points). With 10 mailboxes it ranges from
@@ -380,16 +391,16 @@ ${col_spear10} at 10 mailboxes to ${col_spear125} at 125. Choosing senior custod
 collection at ${col_senior_sizes} of 6 sizes (${col_senior10} against ${col_random10} at 10 mailboxes) but not at 100
 (${col_senior100} against ${col_random100}), so that expectation is not met (Table 3).</p>
 
-<figure>
+<figure class="wide">
 <img src="figures/collection.svg" alt="Accuracy and rank shift by number of mailboxes collected">
-<figcaption><b>Figure 5.</b> Measures rebuilt from random collections of the 150 mailboxes (${col_draws} draws per
+<figcaption>Figure 5: Measures rebuilt from random collections of the 150 mailboxes (${col_draws} draws per
 size; lines are medians, bands 95% ranges; the point at 150 is the full corpus). (a) Accuracy on the ${main_pairs}
 main pairs. (b) Collection bias: the median change in collected employees' percentile rank compared with the same
 measure on the full corpus. Degree and PageRank lift the collected; anchored degree and talked about do not, and talked
 about's accuracy varies least.</figcaption>
 </figure>
 
-<h3>7.3&ensp;Measures that resist the collection</h3>
+<h3>7.3.&ensp;Measures that resist the collection</h3>
 <p>The cause is visibility: a collected employee's mail is seen in full, an uncollected employee's only through the
 collected. We tested three measures built so that being collected adds nothing. <b>Anchored degree</b> counts the
 distinct collection owners a person exchanged mail with; every message with an owner on it is in the collection, so
@@ -409,24 +420,25 @@ degree and ${cor_top20_25_pagerank} for PageRank. Its cost on the full corpus is
 (${cor_full_talked} against ${cor_full_degree}). Anchored strength is less accurate throughout (${cor_full_strength}
 on the full corpus).</p>
 
-<div class="tbl">
-<div class="tcap"><b>Table 3.</b> The expectations stated before the experiment, and whether the results met them.
-E1 to E3 concern the collection effect; F1 to F3 the measures designed to resist it.</div>
+<div class="tbl wide">
 <table class="text">
 <tr><th></th><th>Expectation</th><th>Result</th><th></th></tr>
 ${table_collection}
 </table>
+<div class="tcap">Table 3: The expectations stated before the experiment, and whether the results met them.
+E1 to E3 concern the collection effect; F1 to F3 the measures designed to resist it.</div>
 </div>
 
-<h3>7.4&ensp;Implications for collected corpora</h3>
+<h3>7.4.&ensp;Implications for collected corpora</h3>
 <p>Every corpus assembled for an investigation or a lawsuit is a collection. In electronic discovery the parties
-choose custodians, and any analysis of the produced mail inherits that choice. On this benchmark, a different choice of
+choose whose data to preserve and collect (The Sedona Conference 2018), and every later analysis of the collected
+mail, including technology-assisted review (Grossman and Cormack 2011), inherits that choice. On this benchmark, a different choice of
 25 custodians moves a standard measure of rank over a ${col_deg25_width}-point range and replaces half or more of the 20
 people it ranks highest, while a count of who is talked about, rather than who emails whom, moves over ${cor_talk25_width} points.
 Results computed on a collected corpus should report how they change when custodians are resampled, and measures that
 do not depend on a person's own mailbox are the safer basis for conclusions about who mattered.</p>
 
-<h2>8&ensp;Time-shifted copies: one message, two clocks</h2>
+<h2>8.&ensp;Time-shifted copies: one message, two clocks</h2>
 
 <p>While building a semantic search over the corpus (sentence embeddings from <code>all-MiniLM-L6-v2</code>; Reimers
 and Gurevych 2019; stored in PostgreSQL with pgvector), we ran an exact similarity join over pairs of messages from the
@@ -436,21 +448,25 @@ time-shifted-copy rule, and ${sh_near_pairs} pairs whose gap misses a whole numb
 (${sh_near_5} of them about 5 hours). Labellers in an earlier pilot had also flagged a few such pairs. Were these two
 messages, or one message stored twice?</p>
 
-<div class="tbl">
-<div class="tcap"><b>Table 4.</b> Labelled check of candidate pairs. Pairs were drawn with a fixed seed (long-shift
-pairs stratified by gap), and each was judged from its raw headers, the folder and export file of every copy, and
-quote headers in other messages that cite it. Ten controls, same-sender pairs whose gap is not near a whole number of
-hours, were mixed in. Intervals are Wilson 95% intervals (Wilson 1927).</div>
+<div class="tbl wide">
 <table>
 <tr><th>Frame</th><th>Pairs</th><th>Labelled</th><th>One message stored twice</th><th>One export folder holds both</th></tr>
 <tr><td>A whole 9 to 17 hours apart</td><td>${sh_long_pairs}</td><td>${sh_long_n}</td><td>${sh_long_k} <span class=ci>(${sh_long_ci})</span></td><td>${sh_long_both}</td></tr>
 <tr><td>Within a minute of whole hours</td><td>${sh_near_pairs}</td><td>${sh_near_n}</td><td>${sh_near_k} <span class=ci>(${sh_near_ci})</span></td><td>${sh_near_both}</td></tr>
 <tr><td>Controls</td><td>${sh_control_pairs}</td><td>${sh_control_n}</td><td>${sh_control_k} <span class=ci>(${sh_control_ci})</span></td><td>${sh_control_both}</td></tr>
 </table>
+<div class="tcap">Table 4: Labelled check of candidate pairs. Pairs were drawn with a fixed seed (long-shift
+pairs stratified by gap), and each was judged from its raw headers, the folder and export file of every copy, and
+quote headers in other messages that cite it. Ten controls, same-sender pairs whose gap is not near a whole number of
+hours, were mixed in. Intervals are Wilson 95% intervals (Wilson 1927).</div>
 </div>
 
 <p>All ${sh_labelled_shifted} sampled shifted pairs were judged to be one message stored twice, and all ten controls two
-separate sends (Table 4). Checks over every candidate pair, not only the sample, point the same way.</p>
+separate sends (Table 4). Checks over every candidate pair, not only the sample, point the same way. The author then labelled ${hu_items} of the pairs blind, following the same written guidelines, with
+no frame and no AI label shown: all ${hu_shifted_one} of the ${hu_shifted} shifted pairs as
+one message stored twice, agreeing with the AI labeller on each, and ${hu_controls_two} of the ${hu_controls} controls as two
+sends. The other two controls are hard cases: a meeting invitation present in two people's calendars, and a cross
+pair joining one of two sends a minute apart to the stored copy of the other.</p>
 <ul>
 <li><b>Two exports.</b> The CMU release stores each mailbox's mail from one or more export files: Lotus Notes
 (<code>.nsf</code>) or Outlook (<code>.pst</code>). In none of the ${sh_long_pairs} long-shift pairs does one folder of
@@ -465,9 +481,9 @@ about ${sh_chance_whole} times (on whole hours) or ${sh_chance_near} times (with
 ${sh_observed} pairs observed.</li>
 </ul>
 
-<figure>
+<figure class="wide">
 <img src="figures/shift.svg" alt="Time-shifted pairs by gap and clock">
-<figcaption><b>Figure 6.</b> Candidate time-shifted pairs by the gap between their two timestamps, split by whether the
+<figcaption>Figure 6: Candidate time-shifted pairs by the gap between their two timestamps, split by whether the
 message was sent during US daylight time (orange) or standard time (blue). Exact 10-hour gaps occur only in daylight
 time and 11-hour gaps almost only in standard time.</figcaption>
 </figure>
@@ -488,12 +504,13 @@ halfway: the Notes copy is early and the Outlook copy late. In the ${q_near} nea
 timestamp includes seconds. Timestamps in some exports are therefore hours off. This does not affect the
 counts-based measures here, but it matters for any measure of reply timing, and it is not yet corrected.</p>
 
-<h2>9&ensp;Limitations</h2>
+<h2>9.&ensp;Limitations</h2>
 <ul>
 <li><b>Labels from AI labellers.</b> The time-shifted copy check was labelled by one AI labeller (Claude, Anthropic)
-following written guidelines, and a pilot check of other pipeline components (below) by two AI agents (Codex, OpenAI)
-that settled their disagreements from the evidence. Labellers built on the same model can share blind spots; these
-are estimates until a human-labelled subset confirms them.</li>
+following written guidelines, with a blind human check of ${hu_items} pairs by the author that agreed on ${hu_agree} (Section 8),
+and a pilot check of other pipeline components (below) by two AI agents (Codex, OpenAI) that settled their
+disagreements from the evidence. Labellers built on the same model can share blind spots, and the pilot's estimates
+have no human check yet.</li>
 <li><b>Pipeline accuracy.</b> In that pilot, on the run before the copy correction, the parent of a reply link was
 correct for ${p_high} of high-confidence links (n=${p_high_n}), ${p_medium} of medium (n=${p_medium_n}) and ${p_low} of
 low (n=${p_low_n}), about ${p_precision} weighted by link counts. Names in the mention measures resolved to the right
@@ -512,7 +529,7 @@ accuracy is not independent of them. Talked about's stability was observed, not 
 on macOS only.</li>
 </ul>
 
-<h2>10&ensp;Conclusion</h2>
+<h2>10.&ensp;Conclusion</h2>
 <p>Email does reveal who outranks whom at Enron: every reasonable measure orders most dominance pairs correctly. But
 the benchmark's headline accuracies say less about communication than they appear to. In the main population,
 ${inter_share} of pairs cross the collection boundary and can be ordered by knowing whose mailbox was collected, ${ls_share} involve two
@@ -530,8 +547,7 @@ person, as separate quantities; a companion study of employees' absences is in p
 <h2>Acknowledgments</h2>
 <p class="small">We thank Owen Rambow and Apoorv Agarwal for sharing the gold-standard release. Code and audits were
 developed with AI coding assistants (Claude, Anthropic; Codex, OpenAI); AI labellers were used as described in Section
-9. This manuscript was drafted with Claude (Anthropic) from the repository's results files, and every number in it is
-generated from those files; the author reviewed and revised the text and is responsible for its content.</p>
+9.</p>
 
 <h2>Data and code availability</h2>
 <p class="small">The pipeline, tests, audit reports and result tables are at
@@ -555,13 +571,16 @@ reported here.</p>
 <p>Diesner, J., Frantz, T. L., and Carley, K. M. (2005). Communication networks from the Enron email corpus. <i>Computational and Mathematical Organization Theory</i>, 11(3), 201&ndash;228.</p>
 <p>Freeman, L. C. (1977). A set of measures of centrality based on betweenness. <i>Sociometry</i>, 40(1), 35&ndash;41.</p>
 <p>Gilbert, E. (2012). Phrases that signal workplace hierarchy. In <i>Proceedings of the ACM 2012 Conference on Computer Supported Cooperative Work</i>.</p>
+<p>Grossman, M. R., and Cormack, G. V. (2011). Technology-assisted review in e-discovery can be more effective and more efficient than exhaustive manual review. <i>Richmond Journal of Law and Technology</i>, 17(3), Article 11.</p>
 <p>Honnibal, M., Montani, I., Van Landeghem, S., and Boyd, A. (2020). spaCy: Industrial-strength natural language processing in Python. Zenodo.</p>
 <p>Klimt, B., and Yang, Y. (2004). The Enron corpus: A new dataset for email classification research. In <i>Machine Learning: ECML 2004</i>, Lecture Notes in Computer Science 3201, 217&ndash;226.</p>
 <p>Prabhakaran, V., and Rambow, O. (2014). Predicting power relations between participants in written dialog from a single thread. In <i>Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)</i>.</p>
 <p>Reimers, N., and Gurevych, I. (2019). Sentence-BERT: Sentence embeddings using Siamese BERT-networks. In <i>Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing</i>.</p>
+<p>The Sedona Conference (2018). The Sedona Principles, third edition: Best practices, recommendations and principles for addressing electronic document production. <i>The Sedona Conference Journal</i>, 19(1), 1.</p>
 <p>Shetty, J., and Adibi, J. (2004). The Enron email dataset: Database schema and brief statistical report. Technical report, Information Sciences Institute, University of Southern California.</p>
 <p>Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. <i>Journal of the American Statistical Association</i>, 22(158), 209&ndash;212.</p>
 </div>
 
+</div>
 </body>
 </html>

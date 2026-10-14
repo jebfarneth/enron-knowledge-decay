@@ -121,6 +121,7 @@ def load() -> dict:
         "person_text": json.loads((p / "person_text.json").read_text()),
         "links": json.loads((p / "links.json").read_text()),
         "shift": json.loads((lab / "shifted_copies/scores.json").read_text()),
+        "shift_human": json.loads((lab / "shifted_copies/human_scores.json").read_text()),
         "pilot": json.loads((lab / "phase3_pilot/scores.json").read_text()),
     }
 
@@ -264,6 +265,13 @@ def numbers(d: dict) -> dict[str, str]:
     n["sh_chance_near"] = f"{ch['expected_two_send_pairs_near_whole_hours']:.2f}"
     n["sh_observed"] = comma(ch["observed_long_and_near_pairs"])
     n["sh_labelled_shifted"] = str(lab["long"]["one_message"]["n"] + lab["near"]["one_message"]["n"])
+    human = d["shift_human"]
+    n["hu_items"] = str(human["items"])
+    n["hu_shifted"] = str(human["shifted_items"])
+    n["hu_shifted_one"] = str(human["shifted_person_verdicts"].get("one_message", 0))
+    n["hu_controls"] = str(human["control_items"])
+    n["hu_controls_two"] = str(human["control_person_verdicts"].get("two_sends", 0))
+    n["hu_agree"] = str(human["agree_with_ai"])
     long_between = lab["long"]["time_supported"].get("neither", 0)
     near_dated = lab["near"]["time_supported"].get("earlier", 0) + lab["near"]["time_supported"].get("later", 0)
     n["q_long"], n["q_near"], n["q_dated"] = str(long_between), str(near_dated), str(long_between + near_dated)
@@ -321,22 +329,22 @@ def finish_axis(ax, lo: float, hi: float, xlabel: str | None = None) -> None:
 
 
 def fig_funnel(d: dict, path: Path) -> None:
+    """Single-column figure (about 3.3 in wide in the two-column layout)."""
     f, pt = d["funnel"], d["person_text"]
     steps = [("Files in the corpus", f["parsed_files"]), ("Dated 1998–2002", f["in_window"]),
-             ("After removing duplicate copies", f["unique_messages"]),
-             ("With estimated authored text", f["with_authored_text"]),
-             ("Analysis set (internal, not automated,\nrecords, signatures, routine or copies)", f["analysis_messages"]),
-             ("Sender attributed to a person", pt["person_text_messages"])]
-    with plt.rc_context(RC):
-        fig, ax = plt.subplots(figsize=(6.3, 2.5))
+             ("Duplicate copies removed", f["unique_messages"]),
+             ("With authored text", f["with_authored_text"]),
+             ("Analysis set", f["analysis_messages"]),
+             ("Sender is a person", pt["person_text_messages"])]
+    with plt.rc_context(RC | {"font.size": 7.5}):
+        fig, ax = plt.subplots(figsize=(3.4, 2.1))
         labels, values = zip(*steps[::-1])
         ax.barh(range(len(values)), values, color=BLUE, height=0.62)
         for i, v in enumerate(values):
-            ax.text(v + 6000, i, f"{v:,}  ({v / f['parsed_files']:.0%})", va="center", fontsize=7.5)
+            ax.text(v + 8000, i, f"{v / 1000:,.0f}k ({v / f['parsed_files']:.0%})", va="center", fontsize=6.8)
         ax.set_yticks(range(len(values)), labels)
-        ax.xaxis.set_major_formatter(lambda v, _: f"{v / 1000:.0f}k")
-        ax.set_xlim(0, 640000)
-        finish_axis(ax, 0, 640000, "Messages")
+        finish_axis(ax, 0, 700000, "Messages")
+        ax.set_xticks([0, 200000, 400000, 600000])
         ax.xaxis.set_major_formatter(lambda v, _: f"{v / 1000:.0f}k")
         fig.savefig(path, bbox_inches="tight")
         plt.close(fig)
