@@ -1,0 +1,23 @@
+{
+  "items": 25,
+  "same_absent_answer": 24,
+  "both_away": 24,
+  "same_working_days": 23,
+  "same_working_days_interval_95": [
+    0.7976,
+    0.9926
+  ],
+  "same_calendar_days": 16,
+  "round1_detector_vs_person": {
+    "correct_working_days": 20,
+    "of_decided": 25,
+    "interval_95": [
+      0.6087,
+      0.9114
+    ]
+  },
+  "disagreements": [
+    7,
+    59
+  ]
+}
