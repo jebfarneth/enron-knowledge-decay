@@ -2,8 +2,9 @@
 
 The main pipeline removes copies with the same sender, timestamp, subject and
 body, and flags time-shifted copies (same sender, subject, recipients and a
-body over 100 characters, 1 to 8 whole hours apart). The Phase 3 labelling
-pilot still found messages stored twice. This check looks for them by
+body over 100 characters, 1 to 17 whole hours apart, give or take under a
+minute). The Phase 3 labelling pilot found messages stored twice that the
+frozen run's 8-hour rule missed. This check looks for them by
 meaning: pairs of person-text messages from the same sender person, sent
 within `window_hours` of each other, whose authored texts both have at least
 `min_chars` characters and whose embeddings have cosine similarity of at
@@ -17,11 +18,13 @@ why deduplication kept it:
   subject differs           subjects differ without Re:/Fw: prefixes, ignoring case
   recipients differ         To and Cc address sets differ
   same time                 identical timestamps (separate sends to disjoint lists are kept on purpose)
-  shift not whole hours     the time gap is not a whole number of hours
-  shift over 8 hours        a whole-hour gap longer than the flagging rule's maximum
+  shift not whole hours     the time gap is under an hour or a minute or more off a whole number of hours
+  shift over 17 hours       a whole-hour gap longer than the flagging rule's maximum
   matches on authored text  none of the above; the flagging rule compares sender addresses and full
-                            bodies (quoted text included), so one person writing from two addresses,
-                            or the same note above different quoted text, escapes it
+                            bodies (quoted text included), needs a full body over 100 characters
+                            and compares each copy only with the one before it, so one person
+                            writing from two addresses, the same note above different quoted text,
+                            or a short note can escape it
 Candidates are not confirmed duplicates: a sender can send the same text
 twice on purpose. They are the frame for a labelled check.
 
@@ -57,7 +60,10 @@ WHERE length(a.body) >= %(min_chars)s
 ORDER BY a.id, b.id
 """
 _SPACE = re.compile(r"\s+")
-MAX_SHIFT_HOURS = 8
+# The main pipeline's flagging rule (dedupe in ../config.yaml).
+MAX_SHIFT_HOURS = 17
+TOLERANCE_SECONDS = 60
+FROZEN_MAX_SHIFT_HOURS = 8
 SENT_FOLDERS = {"sent", "_sent_mail", "sent_items"}
 
 
@@ -84,10 +90,11 @@ def reason(first: dict, second: dict) -> str:
     seconds = (second["date"] - first["date"]).total_seconds()
     if seconds == 0:
         return "same time"
-    if seconds % 3600:
+    hours = round(seconds / 3600)
+    if hours < 1 or abs(seconds - hours * 3600) >= TOLERANCE_SECONDS:
         return "shift not whole hours"
-    if seconds > MAX_SHIFT_HOURS * 3600:
-        return "shift over 8 hours"
+    if hours > MAX_SHIFT_HOURS:
+        return "shift over 17 hours"
     return "matches on authored text"
 
 
@@ -106,13 +113,18 @@ def describe(pairs: pd.DataFrame, rows: pd.DataFrame) -> pd.DataFrame:
 
 
 def long_shifts(described: pd.DataFrame) -> dict:
-    """Pairs identical on authored text, subject and recipients but shifted by more than 8 whole hours."""
-    pairs = described[described["reason"] == "shift over 8 hours"]
+    """Pairs identical on authored text, subject and recipients, shifted by whole hours beyond the frozen run's 8.
+
+    The corrected rule covers these gaps, so pairs left here escaped it on the full body, its length or the
+    order of copies.
+    """
+    hours = described["gap_hours"].round()
+    pairs = described[(described["reason"] == "matches on authored text") & (hours > FROZEN_MAX_SHIFT_HOURS)]
     # Paths are maildir/<custodian>/<folder>/...
     first, second = pairs["first_path"].str.split("/"), pairs["second_path"].str.split("/")
     same = first.str[1] == second.str[1]
     sent = first.str[2].isin(SENT_FOLDERS) & second.str[2].isin(SENT_FOLDERS)
-    gaps = pairs["gap_hours"].value_counts().sort_index()
+    gaps = pairs["gap_hours"].round().value_counts().sort_index()
     return {"pairs": len(pairs), "gap_hours": {f"{hours:g}": int(count) for hours, count in gaps.items()},
             "same_custodian": int(same.sum()), "same_custodian_two_sent_folders": int((same & sent).sum())}
 
