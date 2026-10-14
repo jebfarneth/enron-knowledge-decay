@@ -1,7 +1,7 @@
 # Semantic search over the Enron person-text messages
 
-Sentence embeddings of the 165,431 person-text messages from the main
-pipeline's certified run, stored in PostgreSQL with
+Sentence embeddings of the 163,273 person-text messages from the main
+pipeline's certified run (after the time-shifted-copy correction), stored in PostgreSQL with
 [pgvector](https://github.com/pgvector/pgvector) and searched by cosine
 similarity through an HNSW index, alone or combined with SQL filters on the
 sender and date. The same table supports exact similarity joins, used here to
@@ -29,37 +29,43 @@ revision, 384 dimensions, unit-normalized. Settings are in
 
 ## Results
 
-**Index.** 165,431 messages loaded and indexed in 1.9 minutes on a 2020
-dual-core laptop (table and indexes 721 MB). For 200 messages drawn with a
+**Index.** 163,273 messages loaded and indexed in 1.7 minutes on a 2020
+dual-core laptop (table and indexes 716 MB). For 200 messages drawn with a
 fixed seed and used as queries, the HNSW index (m 16, ef_construction 64,
-ef_search 100) returned 96.1% of the exact top 10 computed in NumPy from the
-same vectors, at a median 10.9 ms per query. Exact ties between identical
+ef_search 100) returned 96.2% of the exact top 10 computed in NumPy from the
+same vectors, at a median 10.0 ms per query. Exact ties between identical
 vectors count as misses when the two searches order them differently.
 
 **Near-duplicates the deduplication kept.** Pairs of person-text messages
 from the same sender person, sent within 48 hours of each other, both with at
 least 100 characters of authored text and with cosine similarity of at least
-0.98: 4,180 pairs among 6,235 messages from 765 senders.
+0.98: 2,475 pairs among 3,132 messages from 522 senders.
 
 | Why the exact rule kept the pair | Pairs |
 |---|---:|
-| Identical text, subject and recipients, shifted by a whole 9 to 17 hours (over the rule's 8-hour maximum) | 1,729 |
-| Authored text differs (edits, added lines) | 1,224 |
-| To and Cc recipients differ | 822 |
-| Time gap is not a whole number of hours | 198 |
-| Subject differs | 111 |
-| Same timestamp | 94 |
-| Matches on authored text (different sender addresses or quoted text) | 2 |
+| Authored text differs (edits, added lines) | 1,195 |
+| To and Cc recipients differ | 752 |
+| Matches on authored text, subject, recipients and a whole-hour gap (see below) | 241 |
+| Subject differs | 109 |
+| Same timestamp | 92 |
+| Time gap is under an hour, or a minute or more off a whole number of hours | 85 |
+| Whole-hour gap over the rule's 17-hour maximum | 1 |
 
-The long shifts cluster at exactly 10 hours (1,200 pairs), then 11 (247), 12
-(187) and 14 (62). In 1,442 of the 1,729 pairs both messages are in the same
-custodian's mailbox, and in 710 both are in that custodian's sent folders (for
-example `sent` and `_sent_mail`), which points to two exports of one message
-rather than two sends. A labelled check confirmed them as copies of one message
-(one export a mailbox's Lotus Notes file, the other its Outlook file), and the
-main pipeline now flags shifts up to 17 hours (see the main README). The
-results above are from the frozen run, before that correction; rebuilding the
-embeddings, index and scan on the corrected run is pending.
+The frozen run's scan, under the 8-hour rule, found 4,180 pairs, 1,729 of
+them identical on authored text, subject and recipients and a whole 9 to 17
+hours apart. A labelled check confirmed those as copies of one message (one
+export a mailbox's Lotus Notes file, the other its Outlook file), and the main
+pipeline now flags shifts up to 17 hours, give or take under a minute (see the
+main README). On the corrected run 191 such pairs remain, 9 to 14 hours apart
+(130 at exactly 10); 179 are in one custodian's mailbox and 87 in that
+custodian's sent folders. Checked against the raw bodies, 174 differ outside
+the authored text, in the full bodies the rule compares; 13 have
+bodies at or under the rule's 100-character minimum; and 4 come from a note
+sent twice minutes apart with each send stored twice, which the rule misses
+because it compares each copy only with the one before it. The other 50
+pairs that match on authored text are 1 to 7 hours apart (45 at 5): in 49 the
+sender's address is written differently, and 1 differs outside the authored
+text.
 
 ## Run
 

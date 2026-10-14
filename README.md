@@ -297,8 +297,10 @@ hours would add 7. It catches 1,538 of the 1,729 long-shift pairs and 64 of
 the 113 near-whole-hour pairs, and none of the controls. The pairs it misses
 differ outside the authored text (in quoted text below it, or in how the
 sender's address is written) or are too short for the rule, which compares
-whole bodies and addresses. Every pipeline output reported in this README,
-except the pilot above and the search section, is from the corrected run;
+whole bodies and addresses; 4 are a note sent twice minutes apart with each
+send stored twice, and the rule compares each copy only with the one before
+it. Every pipeline output reported in this README,
+except the pilot above, is from the corrected run;
 audit and pilot samples were drawn from earlier runs, and the frozen run's
 outputs are kept outside the repository.
 
@@ -311,34 +313,30 @@ off, which matters for reply-timing measures; this is not corrected yet.
 
 ## Semantic search and near-duplicates (pgvector)
 
-[`search/`](search/) embeds the 165,431 person-text messages of the frozen
+[`search/`](search/) embeds the 163,273 person-text messages of the corrected
 run with `all-MiniLM-L6-v2` (sentence-transformers, pinned revision) and
 stores them in PostgreSQL with pgvector: an HNSW index for cosine distance
 and B-tree indexes on sender and date, so similarity search combines with SQL
 filters. It is a separate project with its own lockfile that reads
 `data/processed` only after checking the files against the manifest, so the
-frozen pipeline's certification is unaffected.
+pipeline's certification is unaffected.
 
 | Check | Result |
 |---|---|
-| HNSW recall@10 against exact search (200 seeded queries, ef_search 100) | 96.1% |
-| Median query time on a dual-core laptop | 10.9 ms |
-| Load and index build | 1.9 minutes, 721 MB |
+| HNSW recall@10 against exact search (200 seeded queries, ef_search 100) | 96.2% |
+| Median query time on a dual-core laptop | 10.0 ms |
+| Load and index build | 1.7 minutes, 716 MB |
 
 An exact similarity join over pairs from the same sender person, sent within
 48 hours, both with at least 100 characters of authored text and cosine
-similarity of at least 0.98, finds 4,180 candidate pairs among 6,235
-messages. In 1,729 of them the authored text, subject and recipients are
-identical and the timestamps differ by a whole 9 to 17 hours (1,200 pairs by
-exactly 10), beyond the 8-hour maximum of the time-shifted-copy rule; in 1,442
-both messages are in one custodian's mailbox, and in 710 both are in that
-custodian's sent folders (`sent` and `_sent_mail`, for example), which points
-to two exports of one message. The other pairs differ in text (1,224),
-recipients (822), a gap that is not a whole number of hours (198), subject
-(111) or share a timestamp (94). A labelled check confirmed the shifted pairs
-as copies, and the rule now flags them (previous section). The index and
-these counts are still from the frozen run; rebuilding them on the corrected
-run is pending. Details:
+similarity of at least 0.98, finds 2,475 candidate pairs among 3,132
+messages (4,180 among 6,235 in the frozen run). Most differ in text (1,195),
+recipients (752) or subject (109), or share a timestamp (92). On the frozen
+run, 1,729 pairs had identical authored text, subject and recipients and
+timestamps a whole 9 to 17 hours apart; they led to the correction in the
+previous section. 191 such pairs remain, which the rule misses because their
+full bodies differ (174), their bodies are at or under 100 characters (13), or
+a note sent twice minutes apart was stored twice per send (4). Details:
 [`search/README.md`](search/README.md),
 [`search/results/near_duplicates.json`](search/results/near_duplicates.json).
 

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from enron_search.duplicates import candidate_pairs, describe, reason, summary
+from enron_search.duplicates import candidate_pairs, describe, long_shifts, reason, summary
 from enron_search.store import connect, ensure_database, load
 
 DSN = os.environ.get("ENRON_SEARCH_TEST_DSN")
@@ -24,7 +24,10 @@ def message(date, authored=BODY, subject="Storage report", to=("a@enron.com",), 
     (message("2001-05-01 13:30", to=("b@enron.com",)), "recipients differ"),
     (message("2001-05-01 13:30", to=("A@enron.com ",)), "matches on authored text"),
     (message("2001-05-01 12:30"), "same time"),
-    (message("2001-05-01 22:30"), "shift over 8 hours"),
+    (message("2001-05-01 12:30:30"), "shift not whole hours"),
+    (message("2001-05-01 22:30"), "matches on authored text"),
+    (message("2001-05-01 22:29:30"), "matches on authored text"),
+    (message("2001-05-02 07:30"), "shift over 17 hours"),
     (message("2001-05-01 14:10", authored="  " + BODY.replace(". ", ".\n\n")), "shift not whole hours"),
 ])
 def test_reason_names_the_first_failed_condition(second, expected):
@@ -66,3 +69,16 @@ def test_pairs_come_from_one_sender_inside_the_window():
     report = summary(described, {})
     assert report["pairs"] == 1 and report["messages_in_pairs"] == 2 and report["pairs_by_reason"] == {
         "matches on authored text": 1}
+
+
+def test_long_shifts_counts_pairs_beyond_the_frozen_limit():
+    described = pd.DataFrame([
+        {"first_path": "maildir/ann/sent/1.", "second_path": "maildir/ann/_sent_mail/1.", "gap_hours": 9.9917,
+         "reason": "matches on authored text"},
+        {"first_path": "maildir/ann/sent/2.", "second_path": "maildir/bob/inbox/2.", "gap_hours": 3,
+         "reason": "matches on authored text"},
+        {"first_path": "maildir/ann/sent/3.", "second_path": "maildir/ann/inbox/3.", "gap_hours": 10,
+         "reason": "text differs"},
+    ])
+    assert long_shifts(described) == {"pairs": 1, "gap_hours": {"10": 1}, "same_custodian": 1,
+                                      "same_custodian_two_sent_folders": 1}

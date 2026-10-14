@@ -3,15 +3,15 @@
   "k": 10,
   "ef_search": 100,
   "seed": 20261013,
-  "recall_at_10": 0.9605,
-  "median_query_ms": 10.87,
-  "messages": 165431,
+  "recall_at_10": 0.962,
+  "median_query_ms": 10.04,
+  "messages": 163273,
   "hnsw_m": 16,
   "hnsw_ef_construction": 64,
-  "table_size": "721 MB",
+  "table_size": "716 MB",
   "embedding": {
     "model": "sentence-transformers/all-MiniLM-L6-v2",
     "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
-    "embeddings_sha256": "54a80ed9656da3d64317f001194670fdffc70f56348db62f0e02fc916147ce72"
+    "embeddings_sha256": "38f61a787ddb65ec0f345affc095883fdbf3507b76faa7b9e68662a3723e5241"
   }
 }
