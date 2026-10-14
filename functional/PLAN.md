@@ -104,6 +104,59 @@ the ~150 mailboxes collected, so non-custodians' mail is partial. Absences are
 announced, not observed, and the detector's errors are measured by the
 labelled check.
 
+## Implementation decisions
+
+Made on 2026-10-13 while writing the code, before any outcome was computed;
+the plan above leaves them open.
+
+1. **Messages.** "Internal" mail is person-text mail (`person_text` in
+   `sender_people.parquet`) from an @enron.com sender address. Recipients are
+   resolved to people through `identities.parquet`; unresolved addresses are
+   dropped.
+2. **Times.** A window runs from Houston midnight of its first day to Houston
+   midnight of its day back. "At least 24 hours before the day back" means
+   sent no later than the day back's midnight minus 24 hours.
+3. **Replies.** A message is answered when `links.parquet` holds a row of kind
+   "reply" whose parent is that message, sent within 24 hours after it. A
+   reply by the absent person counts.
+4. **Scales.** Counts (betweenness, being pointed to, named as backup, mail
+   received and sent, degree) enter as log(1 + x); shares (topic ownership)
+   and Burt's constraint as they are. Every signal and baseline is then
+   standardized over the included absences.
+5. **Graph.** People only. Betweenness on the undirected graph with edge
+   length 1/weight, as in the main pipeline; Burt's constraint on the same
+   undirected weighted graph (igraph).
+6. **Topics.** scikit-learn `KMeans`, k = 100, `random_state` 20261013,
+   `n_init` 1 (k-means++), on the 163,273 unit-length search embeddings,
+   after checking their stamp against the main pipeline's manifest.
+7. **Control windows** leave out windows that overlap any detected absence of
+   the person (every kept notice), not only included absences.
+8. **Being pointed to** is a third-party mention (the person is neither the
+   sender nor a recipient) with a referral cue ("ask", "check with", "talk
+   to", "contact", "get with", "X will know", "X can help" and similar),
+   using the main pipeline's resolved mentions. Its rules are frozen and then
+   checked in one blind round of 100 detected referrals, labelled as the
+   absences were; its precision is reported.
+9. **Named as backup** counts notices by other people naming the person in the
+   56 days before, following the section heading.
+10. **Rank** has formal titles for few people, so it enters a second H1 model
+    fitted on the people matched to the title list, not the main one.
+11. **H2**: a notice "names a backup" when any notice of the absence names
+    someone, resolved to a person or not.
+12. **H3**: a person's away effect is the difference of answered shares
+    (absence windows minus control windows, pooled over their absences),
+    for people with at least 10 messages in each; it is shrunk with a
+    normal–normal empirical Bayes estimate (method of moments).
+13. **Placebo**: for each absence, the control window 2 weeks before plays
+    "away" against the other three.
+14. **Bootstrap**: people are resampled with replacement, 1,000 draws,
+    seed 20261013. Two-sided p = 2 × min(share of draws ≤ 0, share ≥ 0);
+    Holm adjusts those p-values; 95% percentile intervals are reported as
+    they are, beside the Holm-adjusted p.
+
 ## Deviations
 
-None yet.
+1. **Five tests, not four** (2026-10-13, before any outcome). Brokerage has
+   two measures, betweenness and constraint, so the model has five away ×
+   signal coefficients and Holm adjusts across five. This is more
+   conservative than four.
