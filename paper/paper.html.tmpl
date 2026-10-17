@@ -158,7 +158,7 @@ and mailbox that held it, usually under different Message-IDs. Removing copies w
 normalized subject and normalized body, or the same Message-ID, leaves ${f_unique_messages} messages; ${f_candidate_separate_sends} messages with the same text sent to disjoint recipient
 lists are kept as candidate separate sends. Recipients that appear in only some copies of a message are merged into
 it. A second rule flags <em>time-shifted copies</em>, the same message stored with a timestamp shifted by a whole
-number of hours. Section 7 shows that this artifact is larger than the original rule assumed, and the corrected rule
+number of hours. Section 8 shows that this artifact is larger than the original rule assumed, and the corrected rule
 flags ${f_probable_time_shifted_copies} messages, which are kept in the data but excluded from every analysis.</p>
 
 <h3>3.2.&ensp;Authored text and exclusions</h3>
@@ -363,7 +363,8 @@ matched an outside person to an employee were one-word names; full names resolve
 ${hc_pilot_full_n} sampled cases, against ${hc_pilot_word_k} of ${hc_pilot_word_n} for one-word names. Keeping only
 full names (${hc_full_share} of the links), people mentioned to them leads degree on non-core pairs by ${hc_nc_full}
 points (${hc_nc_full_ci}), against ${hc_nc_all} with all links; keeping only names with one compatible person gives
-${hc_nc_one} (${hc_nc_one_ci}). Talked about rises from ${hc_talk_all} to ${hc_talk_full} with full names only.</p>
+${hc_nc_one} (${hc_nc_one_ci}). Talked about (the number of people who mention someone in messages that person is not
+on, Section 7.3) rises from ${hc_talk_all} to ${hc_talk_full} with full names only.</p>
 
 <h2>7.&ensp;How much does the collection decide?</h2>
 
@@ -392,7 +393,7 @@ difference between leading measures on the full corpus (${lead_gap} points). Wit
 ${col_deg10_lo} to ${col_deg10_hi} (Figure 5a). The collection also changes who looks important. Collected employees
 rank higher by PageRank in their collection than in the full corpus in ${col_bias_share10} of 10-mailbox draws and
 ${col_bias_share25} of 25-mailbox draws, by a median ${col_pr_bias10} percentile points at 10 mailboxes (Figure 5b). A
-typical 25-mailbox collection keeps ${col_top20_25} of the full corpus's 20 highest-ranked employees in its own top 20
+typical 25-mailbox collection keeps ${col_top20_25} of the full corpus's 20 highest-ranked employees by PageRank in its own top 20
 (${col_top20_50} at 50 mailboxes, ${col_top20_100} at 100), and the rank correlation with the full corpus rises from
 ${col_spear10} at 10 mailboxes to ${col_spear125} at 125. Choosing senior custodians first beats the median random
 collection at ${col_senior_sizes} of 6 sizes (${col_senior10} against ${col_random10} at 10 mailboxes) but not at 100
@@ -531,7 +532,8 @@ graph relies on rules, and the release cannot be redistributed, so others need t
 <li><b>The title proxy</b> is undated and gives rank level only.</li>
 <li><b>The collection experiment</b> resamples the investigators' mailboxes, not the company's full mail. ${lim_resolution} collection owners are inferred from the mail (the weakest inference covers ${owner_weakest} of its mailbox's
 messages); betweenness was left out; and the senior-first collections are chosen with the gold labels, so their
-accuracy is not independent of them. Talked about's stability was observed, not predicted in advance.</li>
+accuracy is not independent of them. Talked about's stability was observed, not predicted, in the original
+experiment; the re-resolution check stated it in advance (Section 7.3), and it held.</li>
 <li><b>Scope.</b> One company, 1998 to 2002, a small spaCy model in place of the original tagger, and runs reproduced
 on macOS only.</li>
 </ul>
