@@ -105,4 +105,15 @@ redone. The pilot precision comes from the run before the copy correction.
 
 ## Deviations
 
-None yet.
+Recorded after the run; none changes what is computed or how it is judged.
+
+1. **Saving and resuming.** `resolution.py` was changed after the plan was
+   committed to save each finished collection and resume from it, after the
+   first run had to be stopped. Each collection's result does not depend on
+   the order or the number of workers.
+2. **Workers.** The run started with 3 worker processes and was restarted with
+   2 after the machine began swapping; the finished collections were kept.
+3. **Pilot scoring.** The pilot precision by subset leaves out labels marked
+   "cannot tell," as `scripts/score_pilot_labels.py` does for the figure the
+   paper reports (77 of 98); the first version of `confident_names.py`
+   counted them (77 of 100).

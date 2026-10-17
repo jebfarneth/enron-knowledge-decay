@@ -18,7 +18,9 @@ them against Part 1's and Part 2's results, so the collections are the same.
 The spaCy tags are read from the run's tag cache (`mention_tags.parquet`,
 through `cached_mentions`), so nothing is tagged again.
 
-Writes collection/results/resolution.csv and resolution_summary.json.
+Writes collection/results/resolution.csv and resolution_summary.json. Finished
+collections are kept in resolution.partial.csv while it runs, so a stopped run
+resumes where it left off (the reproduction checks run again first).
 
 Usage: .venv/bin/python collection/resolution.py [--workers 3] [--limit N]
 """
@@ -48,6 +50,7 @@ MEASURES = ["mention_degree", "mentioned_to", "third_party_mentioned_to", "talke
 ALL_DRAWS = {10, 25}    # sizes run with all 200 random draws; larger sizes run the first LARGE_DRAWS (PLAN, scope)
 LARGE_DRAWS = 50
 CTX: dict = {}
+PARTIAL = ex.OUT / "resolution.partial.csv"
 
 
 def tagged_messages(config: dict) -> pd.DataFrame:
@@ -303,21 +306,33 @@ def main() -> None:
             row = run_one(item)
             print(f"{item[0]} k={item[1]}: {row['links']:,} links, {time.time() - t:.1f} s", flush=True)
         return
-    rows = []
+    # Each finished collection is appended to a partial file, so an interrupted run resumes where it stopped.
+    keys = ["policy", "mailboxes", "draw"]
+    done = set()
+    if PARTIAL.exists():
+        done = set(map(tuple, pd.read_csv(PARTIAL)[keys].itertuples(index=False)))
+    todo = [p for p in plan if (p[0], p[1], p[2]) not in done]
+    print(f"{len(done)} collections already done, {len(todo)} to go", flush=True)
     for name in ("messages", "senders"):   # not needed by run_one; less memory to share with the workers
         CTX.pop(name, None)
     gc.collect()
     gc.freeze()   # keeps the workers from copying shared objects when the collector runs
     with mp.get_context("fork").Pool(args.workers) as pool:
-        for n, row in enumerate(pool.imap(run_one, plan, chunksize=4), start=1):
-            rows.append(row)
+        for n, row in enumerate(pool.imap_unordered(run_one, todo), start=len(done) + 1):
+            pd.DataFrame([row]).to_csv(PARTIAL, mode="a", header=not PARTIAL.exists(), index=False, float_format="%.6f")
             if n % 50 == 0 or n == len(plan):
                 print(f"{n} of {len(plan)} collections, {time.time() - started:.0f} s", flush=True)
-    results = pd.DataFrame(rows)
+    order = {(p[0], p[1], p[2]): i for i, p in enumerate(plan)}
+    results = pd.read_csv(PARTIAL)
+    results = results.iloc[sorted(range(len(results)), key=lambda i: order[tuple(results.loc[i, keys])])]
+    results = results.reset_index(drop=True)
+    if len(results) != len(plan):
+        raise SystemExit(f"{len(results)} collections in {PARTIAL.name}, expected {len(plan)}")
     check_against_parts(results)
     results.to_csv(ex.OUT / "resolution.csv", index=False, float_format="%.6f")
     summary = summarize(results)
     (ex.OUT / "resolution_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    PARTIAL.unlink()
     print(json.dumps(summary["expectations"], indent=2))
 
 

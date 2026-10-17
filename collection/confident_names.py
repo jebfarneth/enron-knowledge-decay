@@ -74,8 +74,8 @@ def pilot_precision(index: dict) -> dict:
     key = json.loads((Path(__file__).resolve().parents[1] / "data" / "processed" / "phase3_pilot_key_private.json").read_text())
     for label in labels:
         name = label.get("item")
-        if name not in items or key["items"].get(name, {}).get("frame") != "main":
-            continue
+        if name not in items or key["items"].get(name, {}).get("frame") != "main" or label["referent"] == "cannot_tell":
+            continue   # scored as scripts/score_pilot_labels.py scores them: "cannot tell" is left out
         mention = items[name]["mention"]
         rows.append({"kind": kind(mention), "one_candidate": len(compatible(mention, index)) == 1,
                      "correct": label["referent"] == "resolved_person", "outside": label["referent"] == "outside_person"})

@@ -5,9 +5,10 @@ rebuilds Paper 1's hierarchy measures from chosen subsets of those mailboxes,
 to see how much a different collection would change the benchmark's results
 and who looks important. It is Section 7 of the paper (`../paper/`).
 
-Both plans were committed before any result was computed:
-[`PLAN.md`](PLAN.md) (the collection experiment) and
-[`PLAN_corrections.md`](PLAN_corrections.md) (measures built to resist it).
+All three plans were committed before any of their results was computed:
+[`PLAN.md`](PLAN.md) (the collection experiment),
+[`PLAN_corrections.md`](PLAN_corrections.md) (measures built to resist it) and
+[`PLAN_resolution.md`](PLAN_resolution.md) (name resolution checks).
 
 ## Design
 
@@ -34,6 +35,40 @@ Described, not predicted: talked about (how many people mention someone in
 messages that person is not on) varies least, 83.3% to 88.8% at 25 mailboxes,
 and costs 0.8 points of accuracy on the full corpus (88.8% against 89.6%).
 
+## Parts 3 and 4: name resolution checks
+
+Added after a review of the paper draft and planned before any result was
+computed ([`PLAN_resolution.md`](PLAN_resolution.md)). Both check results
+that were already known, so they are robustness checks, not new tests.
+
+**Part 3 (`resolution.py`): names resolved inside each collection.** Parts 1
+and 2 used Paper 1's name links, which were resolved with the whole corpus.
+Here every name is resolved again with only the collection's own people and
+network distances, on 619 collections (all random draws at 10
+and 25 mailboxes, the first 50 at each larger size, and the ordered ones).
+Resolving inside the full collection reproduces `mentions.parquet` row for
+row. Fewer candidates leave fewer ties, so slightly more names resolve (a
+median 8.1% more links at 25 mailboxes).
+
+| Expectation (stated in advance) | Result | |
+|---|---|---|
+| R1. At 25 mailboxes, talked about's accuracy range is narrower than degree's | 83.0% to 88.9% (5.9 points) against 16.8 | Met |
+| R2. Talked about's collection bias is closer to zero than degree's at every size | Closer at every size | Met |
+
+At 10 mailboxes talked about's range widens, from 76.0% to 87.1%
+with full-corpus resolution to 70.6% to 87.0% inside the
+collection.
+
+**Part 4 (`confident_names.py`): high-confidence names.** In the pilot, all
+15 errors that matched an outside person to an employee were
+one-word names; full names resolved correctly in 49 of
+49 cases and one-word names in 28 of
+49. Keeping only full names, people mentioned to them still leads
+degree on non-core pairs by +3.9 points (+1.1 to
++8.0); keeping only names with one compatible person, by
++3.7 (+0.9 to +7.7).
+H1 (the advantage stays above zero in both) is met.
+
 ## Run
 
 From the repository root, with the main pipeline's certified run in place:
@@ -41,7 +76,11 @@ From the repository root, with the main pipeline's certified run in place:
 ```sh
 .venv/bin/python collection/experiment.py    # about 45 minutes
 .venv/bin/python collection/corrections.py   # about 45 minutes; checks every collection against experiment.py's
+.venv/bin/python collection/resolution.py --workers 2   # about 5 hours; saves each collection and resumes if stopped
+.venv/bin/python collection/confident_names.py          # about a minute
 ```
 
 Outputs: `results/collections.csv`, `results/summary.json`,
-`results/corrections.csv`, `results/corrections_summary.json`.
+`results/corrections.csv`, `results/corrections_summary.json`,
+`results/resolution.csv`, `results/resolution_summary.json`,
+`results/confident_names.csv`, `results/confident_names.json`.
