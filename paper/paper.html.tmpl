@@ -13,7 +13,7 @@ h1 { font-size: 16pt; line-height: 1.2; text-align: center; margin: 0 0 0.55em; 
 .author { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 0.25em; }
 .affil { text-align: center; font-size: 10pt; margin-bottom: 0.15em; }
 .mono, .affil .mono a { font-family: "Courier New", Courier, monospace; font-size: 9.5pt; }
-.draft { text-align: center; font-size: 8pt; color: #8a2a0a; letter-spacing: 0.04em; margin: 0.6em 0 1.1em; }
+.draft { text-align: center; font-size: 8pt; color: #52514e; letter-spacing: 0.04em; margin: 0.6em 0 1.1em; }
 .abstract { margin: 0 0 0.4em; font-size: 10pt; text-align: justify; hyphens: auto; }
 .abstract h2 { text-align: center; font-size: 11pt; margin: 0 0 0.3em; }
 .abstract p { text-indent: 0; }
@@ -52,7 +52,7 @@ a { color: #000; text-decoration: none; }
 <div class="affil">Gabelli School of Business, Fordham University, New York, NY<br>
 <span class="mono"><a href="mailto:jf167@fordham.edu">jf167@fordham.edu</a></span><br>
 Code: <span class="mono"><a href="https://github.com/jebfarneth/enron-knowledge-decay">github.com/jebfarneth/enron-knowledge-decay</a></span></div>
-<div class="draft">WORKING DRAFT &middot; OCTOBER 2026 &middot; NOT FOR CIRCULATION</div>
+<div class="draft">WORKING PAPER &middot; OCTOBER 2026</div>
 
 <div class="abstract">
 <h2>Abstract</h2>
@@ -74,8 +74,7 @@ collection does not decide the answer, on pairs of employees whose mailboxes wer
 weighted network measures beat degree by ${nc_gap_min} to ${nc_gap_max} points. Rebuilding every measure from random
 subsets of the mailboxes shows how much the collection decides: with 25 mailboxes, degree's accuracy ranges over
 ${col_deg25_width} points, ${col_ratio} times the largest gap between leading measures, and collected employees rise in
-the rankings. A count of the people who talk about someone in messages that person is not on is far more stable (a
-${cor_talk25_width}-point range) at a cost of ${cor_talk_cost} points on the full corpus. The pipeline, tests and results
+the rankings. ${abs_talk} The pipeline, tests and results
 are public.</p>
 </div>
 <p class="keywords"><b>Keywords:</b> Enron email corpus, organizational hierarchy, benchmark evaluation, electronic
@@ -110,7 +109,7 @@ uncollected employee, as well as degree does; these pairs are ${inter_share} of 
 measure from random subsets of the mailboxes moves degree's accuracy over a ${col_deg25_width}-point range at 25
 mailboxes and lifts the collected employees in the rankings.</li>
 <li><b>A measure that resists the collection.</b> Counting the people who talk about someone in messages that person
-is not on varies far less with the collection (a ${cor_talk25_width}-point range at 25 mailboxes) and is nearly as
+is not on ${intro_talk} and is nearly as
 accurate on the full corpus (${cor_full_talked} against ${cor_full_degree}). Two network-based corrections we tested
 did not hold up.</li>
 <li><b>Concentration.</b> Kenneth Lay and Jeffrey Skilling take part in ${ls_pairs} of ${main_pairs} pairs. Scoring
@@ -358,6 +357,14 @@ runs, by ${sens_gap_min} to ${sens_gap_max} points. On the title proxy, degree m
 and presidents removed) and ${t_degree_people_only} (people-only graph); building the graph only from messages with at
 most 10 recipients gives ${t_degree_max10}, so broadcasts account for part of degree's signal.</p>
 
+<p>Name resolution errors do not drive the mention results (a check added after a review of an earlier draft and planned
+in advance, <code>collection/PLAN_resolution.md</code>). In the pilot (Section 9), all ${hc_pilot_word_outside} errors that
+matched an outside person to an employee were one-word names; full names resolved correctly in ${hc_pilot_full_k} of
+${hc_pilot_full_n} sampled cases, against ${hc_pilot_word_k} of ${hc_pilot_word_n} for one-word names. Keeping only
+full names (${hc_full_share} of the links), people mentioned to them leads degree on non-core pairs by ${hc_nc_full}
+points (${hc_nc_full_ci}), against ${hc_nc_all} with all links; keeping only names with one compatible person gives
+${hc_nc_one} (${hc_nc_one_ci}). Talked about rises from ${hc_talk_all} to ${hc_talk_full} with full names only.</p>
+
 <h2>7.&ensp;How much does the collection decide?</h2>
 
 <p>Section 6.3 showed that knowing whose mailbox was collected orders most of the pairs that cross the collection
@@ -419,6 +426,7 @@ and it keeps ${cor_top20_25_talked} of the full corpus's top 20 at 25 mailboxes,
 degree and ${cor_top20_25_pagerank} for PageRank. Its cost on the full corpus is ${cor_talk_cost} points
 (${cor_full_talked} against ${cor_full_degree}). Anchored strength is less accurate throughout (${cor_full_strength}
 on the full corpus).</p>
+${res_paragraph}
 
 <div class="tbl wide">
 <table class="text">
@@ -434,7 +442,7 @@ E1 to E3 concern the collection effect; F1 to F3 the measures designed to resist
 choose whose data to preserve and collect (The Sedona Conference 2018), and every later analysis of the collected
 mail, including technology-assisted review (Grossman and Cormack 2011), inherits that choice. On this benchmark, a different choice of
 25 custodians moves a standard measure of rank over a ${col_deg25_width}-point range and replaces half or more of the 20
-people it ranks highest, while a count of who is talked about, rather than who emails whom, moves over ${cor_talk25_width} points.
+people it ranks highest, while ${impl_talk}
 Results computed on a collected corpus should report how they change when custodians are resampled, and measures that
 do not depend on a person's own mailbox are the safer basis for conclusions about who mattered.</p>
 
@@ -515,14 +523,13 @@ have no human check yet.</li>
 correct for ${p_high} of high-confidence links (n=${p_high_n}), ${p_medium} of medium (n=${p_medium_n}) and ${p_low} of
 low (n=${p_low_n}), about ${p_precision} weighted by link counts. Names in the mention measures resolved to the right
 person ${p_mention} of the time (n=${p_mention_n}; ${p_mention_ci}); ${p_mention_outside} of the ${p_mention_wrong}
-errors were people outside Enron matched to an employee with the same name. Signatures, rosters and forwarded text
-inside messages still contribute names.</li>
+errors were people outside Enron matched to an employee with the same name, all of them one-word names; restricting
+the measures to full names leaves the comparisons with degree unchanged (Section 6.6). Signatures, rosters and
+forwarded text inside messages still contribute names.</li>
 <li><b>The gold standard.</b> Our reconstruction does not reproduce the paper's pair counts, matching employees to the
 graph relies on rules, and the release cannot be redistributed, so others need to request it from its authors.</li>
 <li><b>The title proxy</b> is undated and gives rank level only.</li>
-<li><b>The collection experiment</b> resamples the investigators' mailboxes, not the company's full mail. Name
-resolution for the mention measures was done on the full corpus, so a real smaller collection would resolve fewer
-names; collection owners are inferred from the mail (the weakest inference covers ${owner_weakest} of its mailbox's
+<li><b>The collection experiment</b> resamples the investigators' mailboxes, not the company's full mail. ${lim_resolution} collection owners are inferred from the mail (the weakest inference covers ${owner_weakest} of its mailbox's
 messages); betweenness was left out; and the senior-first collections are chosen with the gold labels, so their
 accuracy is not independent of them. Talked about's stability was observed, not predicted in advance.</li>
 <li><b>Scope.</b> One company, 1998 to 2002, a small spaCy model in place of the original tagger, and runs reproduced

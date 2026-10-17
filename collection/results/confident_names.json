@@ -1,0 +1,152 @@
+{
+  "links": {
+    "all links": 586425,
+    "full names": 338092,
+    "one candidate": 393355
+  },
+  "link_share_by_kind": {
+    "full name": 0.5765,
+    "one word": 0.4222,
+    "initials": 0.0012
+  },
+  "pilot_precision": {
+    "all": {
+      "n": 98,
+      "correct": 77,
+      "outside_person": 15
+    },
+    "full names": {
+      "n": 49,
+      "correct": 49,
+      "outside_person": 0
+    },
+    "one word": {
+      "n": 49,
+      "correct": 28,
+      "outside_person": 15
+    },
+    "one candidate": {
+      "n": 59,
+      "correct": 52,
+      "outside_person": 3
+    },
+    "several candidates": {
+      "n": 39,
+      "correct": 25,
+      "outside_person": 12
+    }
+  },
+  "accuracy": {
+    "all links": {
+      "degree": {
+        "all": 0.8955,
+        "core": 0.9053,
+        "inter": 0.9547,
+        "non-core": 0.8617
+      },
+      "mention_degree": {
+        "all": 0.9052,
+        "core": 0.9053,
+        "inter": 0.9514,
+        "non-core": 0.879
+      },
+      "mentioned_to": {
+        "all": 0.9139,
+        "core": 0.8047,
+        "inter": 0.9473,
+        "non-core": 0.899
+      },
+      "third_party_mentioned_to": {
+        "all": 0.9225,
+        "core": 0.8107,
+        "inter": 0.9531,
+        "non-core": 0.9092
+      },
+      "talked_about": {
+        "all": 0.8876,
+        "core": 0.9645,
+        "inter": 0.9539,
+        "non-core": 0.8472
+      }
+    },
+    "full names": {
+      "degree": {
+        "all": 0.8955,
+        "core": 0.9053,
+        "inter": 0.9547,
+        "non-core": 0.8617
+      },
+      "mention_degree": {
+        "all": 0.9092,
+        "core": 0.8994,
+        "inter": 0.9516,
+        "non-core": 0.8855
+      },
+      "mentioned_to": {
+        "all": 0.9158,
+        "core": 0.8462,
+        "inter": 0.9464,
+        "non-core": 0.901
+      },
+      "third_party_mentioned_to": {
+        "all": 0.9245,
+        "core": 0.8521,
+        "inter": 0.9548,
+        "non-core": 0.91
+      },
+      "talked_about": {
+        "all": 0.8947,
+        "core": 0.9527,
+        "inter": 0.9454,
+        "non-core": 0.8639
+      }
+    },
+    "one candidate": {
+      "degree": {
+        "all": 0.8955,
+        "core": 0.9053,
+        "inter": 0.9547,
+        "non-core": 0.8617
+      },
+      "mention_degree": {
+        "all": 0.9071,
+        "core": 0.8935,
+        "inter": 0.9502,
+        "non-core": 0.8831
+      },
+      "mentioned_to": {
+        "all": 0.9138,
+        "core": 0.8343,
+        "inter": 0.9456,
+        "non-core": 0.8988
+      },
+      "third_party_mentioned_to": {
+        "all": 0.9234,
+        "core": 0.8195,
+        "inter": 0.9541,
+        "non-core": 0.9099
+      },
+      "talked_about": {
+        "all": 0.8916,
+        "core": 0.9408,
+        "inter": 0.9437,
+        "non-core": 0.8603
+      }
+    }
+  },
+  "expectations": {
+    "H1_non_core_advantage_of_people_mentioned_to_them": {
+      "full names": [
+        0.0393,
+        0.0108,
+        0.0802
+      ],
+      "one candidate": [
+        0.037,
+        0.0089,
+        0.0767
+      ]
+    },
+    "H1_met": true
+  }
+}

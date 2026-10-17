@@ -1,0 +1,744 @@
+{
+  "collections": 619,
+  "random_draws": {
+    "10": 200,
+    "25": 200,
+    "50": 50,
+    "75": 50,
+    "100": 50,
+    "125": 50
+  },
+  "by_size": {
+    "10": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.868,
+          "range_95": [
+            0.6747,
+            0.9148
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8688,
+          "range_95": [
+            0.7638,
+            0.9148
+          ]
+        },
+        "median_paired_change": -0.0012
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.8323,
+          "range_95": [
+            0.5291,
+            0.919
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8319,
+          "range_95": [
+            0.5453,
+            0.92
+          ]
+        },
+        "median_paired_change": 0.0,
+        "bias": {
+          "median": 0.0978,
+          "range_95": [
+            -0.0061,
+            0.2031
+          ]
+        },
+        "spearman": {
+          "median": 0.6541,
+          "range_95": [
+            0.5171,
+            0.7867
+          ]
+        },
+        "top20": {
+          "median": 0.3,
+          "range_95": [
+            0.05,
+            0.5
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.841,
+          "range_95": [
+            0.5249,
+            0.9126
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8413,
+          "range_95": [
+            0.545,
+            0.911
+          ]
+        },
+        "median_paired_change": -0.0016
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.836,
+          "range_95": [
+            0.7056,
+            0.8697
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8419,
+          "range_95": [
+            0.7597,
+            0.8711
+          ]
+        },
+        "median_paired_change": -0.003,
+        "bias": {
+          "median": -0.0413,
+          "range_95": [
+            -0.2691,
+            0.1023
+          ]
+        },
+        "spearman": {
+          "median": 0.5533,
+          "range_95": [
+            0.3985,
+            0.6926
+          ]
+        },
+        "top20": {
+          "median": 0.45,
+          "range_95": [
+            0.25,
+            0.7
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.0711,
+        "range_95": [
+          0.9816,
+          1.1539
+        ]
+      }
+    },
+    "25": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.8858,
+          "range_95": [
+            0.8277,
+            0.9223
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8843,
+          "range_95": [
+            0.8289,
+            0.9223
+          ]
+        },
+        "median_paired_change": 0.0006
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.8695,
+          "range_95": [
+            0.6899,
+            0.9279
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8701,
+          "range_95": [
+            0.7008,
+            0.9288
+          ]
+        },
+        "median_paired_change": 0.0006,
+        "bias": {
+          "median": 0.0664,
+          "range_95": [
+            0.0188,
+            0.1308
+          ]
+        },
+        "spearman": {
+          "median": 0.7905,
+          "range_95": [
+            0.6776,
+            0.8882
+          ]
+        },
+        "top20": {
+          "median": 0.4,
+          "range_95": [
+            0.2488,
+            0.6
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.8755,
+          "range_95": [
+            0.6934,
+            0.9246
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.876,
+          "range_95": [
+            0.7263,
+            0.9228
+          ]
+        },
+        "median_paired_change": -0.0003
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.8623,
+          "range_95": [
+            0.8296,
+            0.8887
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8608,
+          "range_95": [
+            0.833,
+            0.888
+          ]
+        },
+        "median_paired_change": 0.0,
+        "bias": {
+          "median": -0.004,
+          "range_95": [
+            -0.0994,
+            0.07
+          ]
+        },
+        "spearman": {
+          "median": 0.7361,
+          "range_95": [
+            0.6218,
+            0.8157
+          ]
+        },
+        "top20": {
+          "median": 0.6,
+          "range_95": [
+            0.4,
+            0.8
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.081,
+        "range_95": [
+          1.0253,
+          1.1158
+        ]
+      }
+    },
+    "50": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.8946,
+          "range_95": [
+            0.8677,
+            0.9225
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8951,
+          "range_95": [
+            0.8679,
+            0.9219
+          ]
+        },
+        "median_paired_change": 0.0006
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.8873,
+          "range_95": [
+            0.8279,
+            0.9349
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8847,
+          "range_95": [
+            0.826,
+            0.9343
+          ]
+        },
+        "median_paired_change": 0.0012,
+        "bias": {
+          "median": 0.0462,
+          "range_95": [
+            0.0133,
+            0.0844
+          ]
+        },
+        "spearman": {
+          "median": 0.8897,
+          "range_95": [
+            0.8052,
+            0.9476
+          ]
+        },
+        "top20": {
+          "median": 0.55,
+          "range_95": [
+            0.4,
+            0.7275
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.8989,
+          "range_95": [
+            0.8422,
+            0.9417
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8983,
+          "range_95": [
+            0.8402,
+            0.9407
+          ]
+        },
+        "median_paired_change": 0.0008
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.873,
+          "range_95": [
+            0.8549,
+            0.8975
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8717,
+          "range_95": [
+            0.8499,
+            0.8954
+          ]
+        },
+        "median_paired_change": 0.0005,
+        "bias": {
+          "median": 0.0011,
+          "range_95": [
+            -0.0455,
+            0.0364
+          ]
+        },
+        "spearman": {
+          "median": 0.8518,
+          "range_95": [
+            0.7827,
+            0.9125
+          ]
+        },
+        "top20": {
+          "median": 0.7,
+          "range_95": [
+            0.5112,
+            0.8887
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.085,
+        "range_95": [
+          1.05,
+          1.1087
+        ]
+      }
+    },
+    "75": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.8995,
+          "range_95": [
+            0.8842,
+            0.9154
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8985,
+          "range_95": [
+            0.8834,
+            0.9148
+          ]
+        },
+        "median_paired_change": 0.0006
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.8991,
+          "range_95": [
+            0.838,
+            0.9288
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8993,
+          "range_95": [
+            0.839,
+            0.9281
+          ]
+        },
+        "median_paired_change": 0.0004,
+        "bias": {
+          "median": 0.0302,
+          "range_95": [
+            0.0119,
+            0.0602
+          ]
+        },
+        "spearman": {
+          "median": 0.9379,
+          "range_95": [
+            0.8516,
+            0.9699
+          ]
+        },
+        "top20": {
+          "median": 0.65,
+          "range_95": [
+            0.55,
+            0.8387
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.9081,
+          "range_95": [
+            0.8563,
+            0.9329
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9085,
+          "range_95": [
+            0.8553,
+            0.9327
+          ]
+        },
+        "median_paired_change": 0.0003
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.8778,
+          "range_95": [
+            0.862,
+            0.8948
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8777,
+          "range_95": [
+            0.8613,
+            0.8946
+          ]
+        },
+        "median_paired_change": 0.0005,
+        "bias": {
+          "median": 0.0043,
+          "range_95": [
+            -0.0241,
+            0.0429
+          ]
+        },
+        "spearman": {
+          "median": 0.9152,
+          "range_95": [
+            0.8698,
+            0.9462
+          ]
+        },
+        "top20": {
+          "median": 0.75,
+          "range_95": [
+            0.6112,
+            0.9
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.084,
+        "range_95": [
+          1.0654,
+          1.1053
+        ]
+      }
+    },
+    "100": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.899,
+          "range_95": [
+            0.8874,
+            0.9125
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8991,
+          "range_95": [
+            0.8872,
+            0.9112
+          ]
+        },
+        "median_paired_change": 0.0003
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.9068,
+          "range_95": [
+            0.8762,
+            0.9241
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9066,
+          "range_95": [
+            0.8747,
+            0.9232
+          ]
+        },
+        "median_paired_change": 0.0003,
+        "bias": {
+          "median": 0.0163,
+          "range_95": [
+            -0.0004,
+            0.0332
+          ]
+        },
+        "spearman": {
+          "median": 0.9694,
+          "range_95": [
+            0.9262,
+            0.9878
+          ]
+        },
+        "top20": {
+          "median": 0.8,
+          "range_95": [
+            0.65,
+            0.9
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.9164,
+          "range_95": [
+            0.8937,
+            0.9283
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9161,
+          "range_95": [
+            0.8925,
+            0.9282
+          ]
+        },
+        "median_paired_change": -0.0002
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.8839,
+          "range_95": [
+            0.8677,
+            0.8922
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8827,
+          "range_95": [
+            0.8693,
+            0.8902
+          ]
+        },
+        "median_paired_change": 0.0005,
+        "bias": {
+          "median": 0.0036,
+          "range_95": [
+            -0.0258,
+            0.0232
+          ]
+        },
+        "spearman": {
+          "median": 0.9552,
+          "range_95": [
+            0.9177,
+            0.9793
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.75,
+            0.95
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.0864,
+        "range_95": [
+          1.0759,
+          1.0962
+        ]
+      }
+    },
+    "125": {
+      "mention_degree": {
+        "in_collection": {
+          "median": 0.9039,
+          "range_95": [
+            0.8972,
+            0.9174
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9037,
+          "range_95": [
+            0.8957,
+            0.9159
+          ]
+        },
+        "median_paired_change": 0.0002
+      },
+      "mentioned_to": {
+        "in_collection": {
+          "median": 0.9135,
+          "range_95": [
+            0.8888,
+            0.9293
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9137,
+          "range_95": [
+            0.8883,
+            0.9294
+          ]
+        },
+        "median_paired_change": 0.0002,
+        "bias": {
+          "median": 0.0078,
+          "range_95": [
+            -0.0014,
+            0.0223
+          ]
+        },
+        "spearman": {
+          "median": 0.9862,
+          "range_95": [
+            0.9597,
+            0.9971
+          ]
+        },
+        "top20": {
+          "median": 0.85,
+          "range_95": [
+            0.75,
+            0.95
+          ]
+        }
+      },
+      "third_party_mentioned_to": {
+        "in_collection": {
+          "median": 0.9217,
+          "range_95": [
+            0.9057,
+            0.9363
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.9221,
+          "range_95": [
+            0.9063,
+            0.936
+          ]
+        },
+        "median_paired_change": 0.0
+      },
+      "talked_about": {
+        "in_collection": {
+          "median": 0.8873,
+          "range_95": [
+            0.8715,
+            0.8922
+          ]
+        },
+        "full_corpus_resolution": {
+          "median": 0.8869,
+          "range_95": [
+            0.8704,
+            0.8908
+          ]
+        },
+        "median_paired_change": 0.0002,
+        "bias": {
+          "median": 0.0009,
+          "range_95": [
+            -0.0105,
+            0.0156
+          ]
+        },
+        "spearman": {
+          "median": 0.9807,
+          "range_95": [
+            0.9553,
+            0.9949
+          ]
+        },
+        "top20": {
+          "median": 0.9,
+          "range_95": [
+            0.8,
+            0.95
+          ]
+        }
+      },
+      "links_kept_share": {
+        "median": 1.0879,
+        "range_95": [
+          1.0807,
+          1.1016
+        ]
+      }
+    }
+  },
+  "expectations": {
+    "R1_range_at_25_points": {
+      "talked_about_in_collection": 5.91,
+      "talked_about_full_corpus_resolution": 5.5,
+      "degree": 16.76
+    },
+    "R1_met": true,
+    "R2_talked_about_bias_closer_to_zero_than_degree": {
+      "10": true,
+      "25": true,
+      "50": true,
+      "75": true,
+      "100": true,
+      "125": true
+    },
+    "R2_met": true
+  }
+}
