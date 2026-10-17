@@ -24,7 +24,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 PAPER = Path(__file__).resolve().parent
 BUILD = PAPER / "build"
-OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else PAPER / "Farneth_Can_Email_Reveal_Who_Outranks_Whom_draft.docx"
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else PAPER / "Farneth_Can_Email_Reveal_Who_Outranks_Whom.docx"
 FONT, MONO = "Times New Roman", "Courier New"
 WIDTH = Inches(6.5)
 

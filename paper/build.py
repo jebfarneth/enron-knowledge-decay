@@ -28,7 +28,7 @@ PAPER = ROOT / "paper"
 BUILD = PAPER / "build"
 FROZEN = Path.home() / "projects/enron_frozen_run_2026-09-26"  # the run before the time-shifted copy correction
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-PDF_NAME = "Farneth_Can_Email_Reveal_Who_Outranks_Whom_draft.pdf"
+PDF_NAME = "Farneth_Can_Email_Reveal_Who_Outranks_Whom.pdf"
 
 PUBLISHED_DEGREE = "83.88%"  # Agarwal et al. (2012), degree on their 13,724 pairs
 PUBLISHED_CC_CHECK = "69.7%"  # Agarwal et al. (2014), Cc check on their graph
@@ -471,7 +471,77 @@ def fig_shift(d: dict, path: Path) -> None:
 def collection_data() -> dict:
     return {"summary": json.loads((COLLECTION / "summary.json").read_text()),
             "corr": json.loads((COLLECTION / "corrections_summary.json").read_text()),
-            "runs": pd.read_csv(COLLECTION / "corrections.csv")}
+            "runs": pd.read_csv(COLLECTION / "corrections.csv"),
+            "resolution": json.loads((COLLECTION / "resolution_summary.json").read_text()),
+            "confident": json.loads((COLLECTION / "confident_names.json").read_text()),
+            "confident_rows": pd.read_csv(COLLECTION / "confident_names.csv")}
+
+
+def robustness_numbers(c: dict, base: dict[str, str]) -> dict[str, str]:
+    """Part 3 (names resolved inside each collection) and Part 4 (high-confidence names), collection/PLAN_resolution.md."""
+    r, h, rows = c["resolution"], c["confident"], c["confident_rows"]
+    rx = r["expectations"]
+    size = lambda k, m: r["by_size"][str(k)][m]  # noqa: E731
+    talk25, talk10 = size(25, "talked_about")["in_collection"], size(10, "talked_about")["in_collection"]
+    diff = lambda subset, pairs: rows[(rows["subset"] == subset) & (rows["measure"] == "mentioned_to")  # noqa: E731
+                                      & (rows["pairs_type"] == pairs)].iloc[0]
+    pilot = h["pilot_precision"]
+    n = {**{k: base[k] for k in ("col_deg25_width", "col_deg10_lo", "col_deg10_hi")},
+        "res_collections": comma(r["collections"]),
+        "res_large_draws": str(r["random_draws"]["50"]),
+        "res_talk25_lo": pct(talk25["range_95"][0]), "res_talk25_hi": pct(talk25["range_95"][1]),
+        "res_talk25_width": f"{rx['R1_range_at_25_points']['talked_about_in_collection']:.1f}",
+        "res_talk25_median": pct(talk25["median"]),
+        "res_talk10_lo": pct(talk10["range_95"][0]), "res_talk10_hi": pct(talk10["range_95"][1]),
+        "res_talk25_change": signed(size(25, "talked_about")["median_paired_change"]),
+        "res_bias10_talked": signed(size(10, "talked_about")["bias"]["median"]),
+        "res_bias25_talked": signed(size(25, "talked_about")["bias"]["median"]),
+        "res_links25_more": pct(r["by_size"]["25"]["links_kept_share"]["median"] - 1, 0),
+        "res_talk10_full_lo": pct(size(10, "talked_about")["full_corpus_resolution"]["range_95"][0]),
+        "res_talk10_full_hi": pct(size(10, "talked_about")["full_corpus_resolution"]["range_95"][1]),
+        "res_top20_25_talked": pct(size(25, "talked_about")["top20"]["median"], 0),
+        "res_r1": "met" if rx["R1_met"] else "not met", "res_r2": "met" if rx["R2_met"] else "not met",
+        "hc_full_share": pct(h["link_share_by_kind"]["full name"], 0),
+        "hc_pilot_full_k": str(pilot["full names"]["correct"]), "hc_pilot_full_n": str(pilot["full names"]["n"]),
+        "hc_pilot_word_k": str(pilot["one word"]["correct"]), "hc_pilot_word_n": str(pilot["one word"]["n"]),
+        "hc_pilot_word_outside": str(pilot["one word"]["outside_person"]),
+        "hc_pilot_outside": str(pilot["all"]["outside_person"]),
+    }
+    for key, subset in (("full", "full names"), ("one", "one candidate"), ("all", "all links")):
+        for pairs, tag in (("non-core", "nc"), ("all", "all")):
+            d = diff(subset, pairs)
+            n[f"hc_{tag}_{key}"] = signed(d["difference_vs_degree"])
+            n[f"hc_{tag}_{key}_ci"] = f"{signed(d['ci_low'])} to {signed(d['ci_high'])}"
+    n["hc_talk_full"] = pct(h["accuracy"]["full names"]["talked_about"]["all"])
+    n["hc_talk_all"] = pct(h["accuracy"]["all links"]["talked_about"]["all"])
+    # Section 6.6 says every outside-person error was a one-word name; the pilot labels must bear that out.
+    if pilot["full names"]["outside_person"] or pilot["one word"]["outside_person"] != pilot["all"]["outside_person"]:
+        raise SystemExit("pilot: outside-person errors are not all one-word names; revise the Section 6.6 wording")
+    # Wording that depends on Part 3. The plan (collection/PLAN_resolution.md, "What changes in the paper") fixes it:
+    # with R1 and R2 met, talked about's stability is reported under in-collection resolution.
+    if not (rx["R1_met"] and rx["R2_met"]):
+        raise SystemExit("R1 or R2 not met: write the softened wording the plan requires before building")
+    w = n["res_talk25_width"]
+    n["abs_talk"] = (f"A count of the people who talk about someone in messages that person is not on is far more stable "
+                     f"(a {w}-point range, with names resolved inside each collection) at a cost of {{cost}} points on the full corpus.")
+    n["intro_talk"] = f"varies far less with the collection (a {w}-point range at 25 mailboxes, with names resolved inside each collection)"
+    n["impl_talk"] = f"a count of who is talked about, rather than who emails whom, moves over {w} points."
+    n["lim_resolution"] = ("Names were resolved again inside each collection (Section 7.3), but addresses are still matched to "
+                           "people with the full corpus's identity table, which every measure uses, degree included;")
+    n["res_paragraph"] = (
+        f"<p>These figures resolve names with the whole corpus. An analyst holding 25 mailboxes would know only the people "
+        f"in those mailboxes' network, so after a review of an earlier draft we resolved every name again inside each of "
+        f"{n['res_collections']} collections, with only that collection's people and network distances (all random draws at "
+        f"10 and 25 mailboxes, {n['res_large_draws']} at each larger size; planned in advance in "
+        f"<code>collection/PLAN_resolution.md</code>). Fewer candidates leave fewer ties, so slightly more names resolve "
+        f"(a median {n['res_links25_more']} more links at 25 mailboxes). Talked about remains the most stable measure: at 25 "
+        f"mailboxes its accuracy ranges from {n['res_talk25_lo']} to {n['res_talk25_hi']} ({w} points, against "
+        f"{n['col_deg25_width']} for degree; median change {n['res_talk25_change']} points), and its collection bias stays "
+        f"closer to zero than degree's at every size ({n['res_bias10_talked']} at 10 mailboxes, {n['res_bias25_talked']} at "
+        f"25). Both expectations stated for this check were met. At 10 mailboxes the range widens, to {n['res_talk10_lo']} to "
+        f"{n['res_talk10_hi']} (from {n['res_talk10_full_lo']} to {n['res_talk10_full_hi']} with full-corpus resolution), "
+        f"still about half of degree's {n['col_deg10_lo']} to {n['col_deg10_hi']}.</p>")
+    return n
 
 
 def points(x: float) -> str:
@@ -624,6 +694,8 @@ def main() -> None:
     fig_shift(d, BUILD / "figures/shift.svg")
     c = collection_data()
     n |= collection_numbers(c, n["lead_gap"])
+    n |= robustness_numbers(c, n)
+    n["abs_talk"] = n["abs_talk"].replace("{cost}", n["cor_talk_cost"])
     fig_collection(c, BUILD / "figures/collection.svg")
     n |= tables(d, n)
     html = Template((PAPER / "paper.html.tmpl").read_text()).substitute(n)
