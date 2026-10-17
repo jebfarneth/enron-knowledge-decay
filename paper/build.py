@@ -532,13 +532,14 @@ def robustness_numbers(c: dict, base: dict[str, str]) -> dict[str, str]:
         f"<p>These figures resolve names with the whole corpus. An analyst holding 25 mailboxes would know only the people "
         f"in those mailboxes' network, so after a review of an earlier draft we resolved every name again inside each of "
         f"{n['res_collections']} collections, with only that collection's people and network distances (all random draws at "
-        f"10 and 25 mailboxes, {n['res_large_draws']} at each larger size; planned in advance in "
+        f"10 and 25 mailboxes, {n['res_large_draws']} at each larger size, the ordered collections and the full corpus; "
+        f"planned in advance in "
         f"<code>collection/PLAN_resolution.md</code>). Fewer candidates leave fewer ties, so slightly more names resolve "
         f"(a median {n['res_links25_more']} more links at 25 mailboxes). Talked about remains the most stable measure: at 25 "
         f"mailboxes its accuracy ranges from {n['res_talk25_lo']} to {n['res_talk25_hi']} ({w} points, against "
         f"{n['col_deg25_width']} for degree; median change {n['res_talk25_change']} points), and its collection bias stays "
         f"closer to zero than degree's at every size ({n['res_bias10_talked']} at 10 mailboxes, {n['res_bias25_talked']} at "
-        f"25). Both expectations stated for this check were met. At 10 mailboxes the range widens, to {n['res_talk10_lo']} to "
+        f"25). Both expectations stated for this check, R1 and R2 in Table 3, were met. At 10 mailboxes the range widens, to {n['res_talk10_lo']} to "
         f"{n['res_talk10_hi']} (from {n['res_talk10_full_lo']} to {n['res_talk10_full_hi']} with full-corpus resolution), "
         f"still about half of degree's {n['col_deg10_lo']} to {n['col_deg10_hi']}.</p>")
     return n
@@ -696,6 +697,16 @@ def main() -> None:
     n |= collection_numbers(c, n["lead_gap"])
     n |= robustness_numbers(c, n)
     n["abs_talk"] = n["abs_talk"].replace("{cost}", n["cor_talk_cost"])
+    rx = c["resolution"]["expectations"]
+    r_rows = [
+        ("R1", "With names resolved inside each collection, talked about's accuracy range at 25 mailboxes is narrower "
+               "than degree's", f"{n['res_talk25_width']} against {n['col_deg25_width']} points", "Met" if rx["R1_met"] else "Not met"),
+        ("R2", "With names resolved inside each collection, talked about's collection bias is closer to zero than "
+               "degree's at every size", f"{n['res_bias10_talked']} at 10; closer at every size",
+         "Met" if rx["R2_met"] else "Not met"),
+    ]
+    n["table_collection"] += "\n" + "\n".join(
+        f"<tr><td>{a}</td><td>{b_}</td><td>{c_}</td><td>{d_}</td></tr>" for a, b_, c_, d_ in r_rows)
     fig_collection(c, BUILD / "figures/collection.svg")
     n |= tables(d, n)
     html = Template((PAPER / "paper.html.tmpl").read_text()).substitute(n)
